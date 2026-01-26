@@ -1,4 +1,4 @@
-// src/app/admin/viewClients/page.js - Simplified version without three-dot menu
+// src/app/admin/viewClients/page.js - With Edit Form
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -19,7 +19,13 @@ import {
   ArrowLeft,
   CheckCircle,
   XCircle,
-  RefreshCw
+  RefreshCw,
+  Save,
+  X,
+  Eye,
+  EyeOff,
+  Lock,
+  UserCircle
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -33,6 +39,16 @@ export default function ViewClientsPage() {
   const [itemsPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
   const [clientToDelete, setClientToDelete] = useState(null);
+  const [editingClient, setEditingClient] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    isActive: true
+  });
+  const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
     fetchClients();
@@ -83,9 +99,7 @@ export default function ViewClientsPage() {
         phone: '(555) 123-4567',
         role: 'client',
         isActive: true,
-        createdAt: '2024-01-15T10:30:00Z',
-        appointments: 5,
-        lastAppointment: '2024-01-20T14:00:00Z'
+        createdAt: '2024-01-15T10:30:00Z'
       },
       {
         _id: '2',
@@ -94,9 +108,7 @@ export default function ViewClientsPage() {
         phone: '(555) 234-5678',
         role: 'client',
         isActive: true,
-        createdAt: '2024-01-10T09:15:00Z',
-        appointments: 3,
-        lastAppointment: '2024-01-18T11:30:00Z'
+        createdAt: '2024-01-10T09:15:00Z'
       }
     ];
   };
@@ -147,6 +159,140 @@ export default function ViewClientsPage() {
     setSortConfig({ key, direction });
   };
 
+  // Start editing a client
+  const startEdit = (client) => {
+    setEditingClient(client);
+    setFormData({
+      name: client.name,
+      email: client.email,
+      phone: client.phone || '',
+      password: '', // Leave password blank - admin can choose to update it
+      isActive: client.isActive
+    });
+    setFormErrors({});
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+    
+    // Clear error for this field
+    if (formErrors[name]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  // Validate form
+  const validateForm = () => {
+    const errors = {};
+    
+    if (!formData.name.trim()) {
+      errors.name = 'Name is required';
+    }
+    
+    if (!formData.email.trim()) {
+      errors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = 'Invalid email format';
+    }
+    
+    if (formData.password && formData.password.length < 6) {
+      errors.password = 'Password must be at least 6 characters';
+    }
+    
+    return errors;
+  };
+
+  // Handle form submission
+  const handleUpdateClient = async (e) => {
+    e.preventDefault();
+    
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Prepare update data - only send password if it's provided
+      const updateData = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        isActive: formData.isActive
+      };
+      
+      if (formData.password) {
+        updateData.password = formData.password;
+      }
+      
+      const response = await axios.put(
+        `http://localhost:5000/api/admin/users/${editingClient._id}`,
+        updateData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      if (response.data.success) {
+        toast.success('Client updated successfully');
+        
+        // Update local state
+        setClients(clients.map(client => 
+          client._id === editingClient._id 
+            ? { ...client, ...updateData }
+            : client
+        ));
+        
+        // Reset editing state
+        setEditingClient(null);
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          password: '',
+          isActive: true
+        });
+      }
+    } catch (error) {
+      console.error('Error updating client:', error);
+      
+      if (error.response?.status === 400 && error.response?.data?.message === 'Email already registered') {
+        setFormErrors(prev => ({
+          ...prev,
+          email: 'Email is already registered to another user'
+        }));
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to update client');
+      }
+    }
+  };
+
+  // Cancel editing
+  const cancelEdit = () => {
+    setEditingClient(null);
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      password: '',
+      isActive: true
+    });
+    setFormErrors({});
+  };
+
   // Handle status toggle (activate/deactivate)
   const toggleClientStatus = async (clientId, currentStatus) => {
     try {
@@ -180,7 +326,7 @@ export default function ViewClientsPage() {
     setClientToDelete({ id: clientId, name: clientName });
   };
 
-  // Handle delete client - ACTUALLY DELETE FROM DATABASE
+  // Handle delete client
   const handleDeleteClient = async () => {
     if (!clientToDelete) return;
     
@@ -197,11 +343,7 @@ export default function ViewClientsPage() {
       
       if (response.data.success) {
         toast.success(`Client "${clientToDelete.name}" deleted permanently from database`);
-        
-        // Update local state by removing the deleted client
         setClients(clients.filter(client => client._id !== clientToDelete.id));
-        
-        // Clear delete state
         setClientToDelete(null);
       }
     } catch (error) {
@@ -257,6 +399,157 @@ export default function ViewClientsPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Edit Client Form */}
+      {editingClient && (
+        <div className="mb-8 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-800/30">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center">
+              <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-3 rounded-lg mr-4">
+                <UserCircle className="size-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Edit Client: {editingClient.name}
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Update client information below
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={cancelEdit}
+              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+            >
+              <X className="size-5" />
+            </button>
+          </div>
+
+          <form onSubmit={handleUpdateClient} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Name Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className={`w-full px-4 py-3 rounded-lg border ${
+                    formErrors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                  } bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 dark:text-white`}
+                  placeholder="Enter client's full name"
+                />
+                {formErrors.name && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{formErrors.name}</p>
+                )}
+              </div>
+
+              {/* Email Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className={`w-full px-4 py-3 rounded-lg border ${
+                    formErrors.email ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                  } bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 dark:text-white`}
+                  placeholder="client@example.com"
+                />
+                {formErrors.email && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{formErrors.email}</p>
+                )}
+              </div>
+
+              {/* Phone Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
+                  placeholder="(555) 123-4567"
+                />
+              </div>
+
+              {/* Password Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  New Password (Leave blank to keep current)
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 pr-10 rounded-lg border ${
+                      formErrors.password ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    } bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 dark:text-white`}
+                    placeholder="Enter new password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
+                  </button>
+                </div>
+                {formErrors.password && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{formErrors.password}</p>
+                )}
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Password must be at least 6 characters
+                </p>
+              </div>
+            </div>
+
+            {/* Account Status */}
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="isActive"
+                name="isActive"
+                checked={formData.isActive}
+                onChange={handleInputChange}
+                className="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <label htmlFor="isActive" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                Account is active (client can log in)
+              </label>
+            </div>
+
+            {/* Form Actions */}
+            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all flex items-center"
+              >
+                <Save className="size-4 mr-2" />
+                Update Client
+              </button>
+            </div>
+          </form>
         </div>
       )}
 
@@ -349,17 +642,13 @@ export default function ViewClientsPage() {
         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">New This Month</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Editing</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">
-                {clients.filter(c => {
-                  const monthAgo = new Date();
-                  monthAgo.setMonth(monthAgo.getMonth() - 1);
-                  return new Date(c.createdAt) > monthAgo;
-                }).length}
+                {editingClient ? 1 : 0}
               </p>
             </div>
             <div className="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-lg">
-              <Calendar className="size-6 text-purple-600 dark:text-purple-400" />
+              <Edit className="size-6 text-purple-600 dark:text-purple-400" />
             </div>
           </div>
         </div>
@@ -517,8 +806,12 @@ export default function ViewClientsPage() {
                           <div className="flex items-center space-x-2">
                             {/* Edit Button */}
                             <button
-                              onClick={() => router.push(`/admin/editClient/${client._id}`)}
-                              className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                              onClick={() => startEdit(client)}
+                              className={`p-2 rounded-lg transition-colors ${
+                                editingClient?._id === client._id
+                                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                                  : 'text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                              }`}
                               title="Edit Client"
                             >
                               <Edit className="size-4" />
