@@ -25,6 +25,7 @@ import {
   HelpCircle,
   Moon,
   UserPlus,
+  Stethoscope,
   Sun
 } from 'lucide-react';
 
@@ -98,12 +99,12 @@ export default function AdminLayout({ children }) {
 
   const navItems = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: <LayoutDashboard className="size-5" /> },
-    { name: 'Services', href: '/admin/services', icon: <Package className="size-5" /> },
+    { name: 'Doctors', href: '/admin/doctors', icon: <Stethoscope className="size-5" /> },
     { name: 'Create Service', href: '/admin/services/create', icon: <PlusCircle className="size-5" /> },
     { name: 'Appointments', href: '/admin/appointments', icon: <Calendar className="size-5" /> },
     { name: 'View Clients', href: '/admin/viewClients', icon: <Users className="size-5" /> },
     { name: 'Create Client', href: '/admin/createClient', icon: <UserPlus className="size-5" /> },
-    { name: 'Staff', href: '/admin/staff', icon: <Briefcase className="size-5" /> },
+    { name: 'View Admin & Staff', href: '/admin/viewAdminStaff', icon: <Briefcase className="size-5" /> },
     { name: 'Create Admin/Staff', href: '/admin/createUsers', icon: <Shield className="size-5" /> },
     { name: 'Reports', href: '/admin/reports', icon: <BarChart3 className="size-5" /> },
     { name: 'Settings', href: '/admin/settings', icon: <Settings className="size-5" /> },
