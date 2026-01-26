@@ -1,4 +1,4 @@
-// src/app/staff/viewClients/page.js
+// src/app/admin/viewClients/page.js - Simplified version without three-dot menu
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -9,19 +9,21 @@ import {
   Users, 
   Search, 
   Filter, 
+  Edit, 
+  Trash2, 
   Mail, 
   Phone, 
   Calendar,
   User,
+  Shield,
   ArrowLeft,
   CheckCircle,
   XCircle,
-  RefreshCw,
-  Eye
+  RefreshCw
 } from 'lucide-react';
 import Link from 'next/link';
 
-export default function StaffViewClientsPage() {
+export default function ViewClientsPage() {
   const router = useRouter();
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,64 +32,48 @@ export default function StaffViewClientsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
+  const [clientToDelete, setClientToDelete] = useState(null);
 
   useEffect(() => {
     fetchClients();
   }, []);
 
- // Update the fetchClients function in your frontend code:
-const fetchClients = async () => {
-  setLoading(true);
-  try {
-    const token = localStorage.getItem('token');
-    const currentUser = JSON.parse(localStorage.getItem('user'));
-    
-    if (!token || !currentUser) {
-      toast.error('Please login first');
-      router.push('/signin');
-      return;
-    }
-    
-    if (currentUser.role !== 'staff' && currentUser.role !== 'admin') {
-      toast.error('Only staff members can access this page');
-      router.push('/dashboard');
-      return;
-    }
-
-    // Use the staff-specific endpoint
-    const response = await axios.get('http://localhost:5000/api/staff/clients', {
-      headers: {
-        'Authorization': `Bearer ${token}`
+  const fetchClients = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const currentUser = JSON.parse(localStorage.getItem('user'));
+      
+      if (!token || !currentUser) {
+        toast.error('Please login first');
+        router.push('/signin');
+        return;
       }
-    });
-    
-    if (response.data.success) {
-      setClients(response.data.clients);
-    }
-  } catch (error) {
-    console.error('Error fetching clients:', error);
-    
-    // Check if it's an authentication error
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      toast.error('Access denied. Please login again.');
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      router.push('/signin');
-      return;
-    }
-    
-    toast.error('Failed to load clients');
-    
-    // For demo purposes, show sample data only if backend fails
-    if (error.response?.status !== 404) {
-      setClients(getSampleClients());
-    }
-  } finally {
-    setLoading(false);
-  }
-};
+      
+      if (currentUser.role !== 'admin') {
+        toast.error('Only admins can view clients');
+        return;
+      }
 
-  // Sample data for demo
+      const response = await axios.get('http://localhost:5000/api/admin/users', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.data.success) {
+        const clientUsers = response.data.users.filter(user => user.role === 'client');
+        setClients(clientUsers);
+      }
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+      toast.error('Failed to load clients');
+      setClients(getSampleClients());
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getSampleClients = () => {
     return [
       {
@@ -111,39 +97,6 @@ const fetchClients = async () => {
         createdAt: '2024-01-10T09:15:00Z',
         appointments: 3,
         lastAppointment: '2024-01-18T11:30:00Z'
-      },
-      {
-        _id: '3',
-        name: 'David Wilson',
-        email: 'david@example.com',
-        phone: '(555) 345-6789',
-        role: 'client',
-        isActive: false,
-        createdAt: '2024-01-05T16:45:00Z',
-        appointments: 0,
-        lastAppointment: null
-      },
-      {
-        _id: '4',
-        name: 'Sarah Miller',
-        email: 'sarah@example.com',
-        phone: '(555) 456-7890',
-        role: 'client',
-        isActive: true,
-        createdAt: '2024-01-03T13:20:00Z',
-        appointments: 8,
-        lastAppointment: '2024-01-19T15:30:00Z'
-      },
-      {
-        _id: '5',
-        name: 'James Brown',
-        email: 'james@example.com',
-        phone: '(555) 567-8901',
-        role: 'client',
-        isActive: true,
-        createdAt: '2024-01-02T08:00:00Z',
-        appointments: 12,
-        lastAppointment: '2024-01-21T10:00:00Z'
       }
     ];
   };
@@ -194,6 +147,70 @@ const fetchClients = async () => {
     setSortConfig({ key, direction });
   };
 
+  // Handle status toggle (activate/deactivate)
+  const toggleClientStatus = async (clientId, currentStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(
+        `http://localhost:5000/api/admin/users/${clientId}`,
+        { isActive: !currentStatus },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      if (response.data.success) {
+        toast.success(`Client ${!currentStatus ? 'activated' : 'deactivated'} successfully`);
+        setClients(clients.map(client => 
+          client._id === clientId 
+            ? { ...client, isActive: !currentStatus }
+            : client
+        ));
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast.error('Failed to update client status');
+    }
+  };
+
+  // Show delete confirmation
+  const showDeleteConfirmation = (clientId, clientName) => {
+    setClientToDelete({ id: clientId, name: clientName });
+  };
+
+  // Handle delete client - ACTUALLY DELETE FROM DATABASE
+  const handleDeleteClient = async () => {
+    if (!clientToDelete) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.delete(
+        `http://localhost:5000/api/admin/users/${clientToDelete.id}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      if (response.data.success) {
+        toast.success(`Client "${clientToDelete.name}" deleted permanently from database`);
+        
+        // Update local state by removing the deleted client
+        setClients(clients.filter(client => client._id !== clientToDelete.id));
+        
+        // Clear delete state
+        setClientToDelete(null);
+      }
+    } catch (error) {
+      console.error('Error deleting client:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete client');
+      setClientToDelete(null);
+    }
+  };
+
   // Format date
   const formatDate = (dateString) => {
     if (!dateString) return 'Never';
@@ -207,29 +224,73 @@ const fetchClients = async () => {
 
   return (
     <div className="p-6">
+      {/* Delete Confirmation Modal */}
+      {clientToDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full">
+            <div className="flex items-start mb-4">
+              <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-lg mr-4">
+                <Trash2 className="size-6 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 dark:text-white text-lg">
+                  Delete Client Permanently
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">
+                  Are you sure you want to permanently delete client "{clientToDelete.name}"? This action cannot be undone and all client data will be lost.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setClientToDelete(null)}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteClient}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete Permanently
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center space-x-3 mb-2">
               <Link 
-                href="/staff/dashboard"
+                href="/admin/dashboard"
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <ArrowLeft className="size-5 text-gray-600 dark:text-gray-400" />
               </Link>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Client Directory
+                  Client Management
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400">
-                  View all client accounts (Read-only access)
+                  View and manage all client accounts
                 </p>
               </div>
             </div>
           </div>
           
           <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/admin/createClient"
+              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all flex items-center"
+            >
+              <User className="size-4 mr-2" />
+              Add Client
+            </Link>
+            
             <button
               onClick={fetchClients}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center"
@@ -307,7 +368,6 @@ const fetchClients = async () => {
       {/* Controls */}
       <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          {/* Search */}
           <div className="flex-1 max-w-md">
             <div className="relative">
               <Search className="absolute left-3 top-3 size-5 text-gray-400" />
@@ -321,7 +381,6 @@ const fetchClients = async () => {
             </div>
           </div>
           
-          {/* Filters */}
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <Filter className="size-5 text-gray-400" />
@@ -348,7 +407,6 @@ const fetchClients = async () => {
           </div>
         ) : (
           <>
-            {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 dark:bg-gray-700/50">
@@ -365,33 +423,36 @@ const fetchClients = async () => {
                       </div>
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Contact Information
+                      Contact
                     </th>
                     <th 
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-300"
                       onClick={() => handleSort('createdAt')}
                     >
                       <div className="flex items-center">
-                        Account Created
+                        Joined
                         {sortConfig.key === 'createdAt' && (
                           <span className="ml-1">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
                         )}
                       </div>
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Account Status
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {currentClients.length === 0 ? (
                     <tr>
-                      <td colSpan="4" className="px-6 py-12 text-center">
+                      <td colSpan="5" className="px-6 py-12 text-center">
                         <div className="flex flex-col items-center justify-center">
                           <Users className="size-12 text-gray-400 mb-4" />
                           <p className="text-gray-600 dark:text-gray-400">No clients found</p>
                           <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
-                            {searchTerm ? 'Try a different search term' : 'No clients in the system yet'}
+                            {searchTerm ? 'Try a different search term' : 'Add your first client to get started'}
                           </p>
                         </div>
                       </td>
@@ -415,10 +476,10 @@ const fetchClients = async () => {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="space-y-2">
+                          <div className="space-y-1">
                             <div className="flex items-center text-gray-600 dark:text-gray-400">
                               <Mail className="size-4 mr-2" />
-                              <span className="text-sm">{client.email}</span>
+                              <span className="text-sm truncate max-w-[200px]">{client.email}</span>
                             </div>
                             {client.phone && (
                               <div className="flex items-center text-gray-600 dark:text-gray-400">
@@ -431,14 +492,6 @@ const fetchClients = async () => {
                         <td className="px-6 py-4">
                           <div className="text-gray-600 dark:text-gray-400">
                             <div className="font-medium">{formatDate(client.createdAt)}</div>
-                            <div className="text-xs text-gray-500 dark:text-gray-500">
-                              {/* Appointment count if available */}
-                              {client.appointments > 0 ? (
-                                <span>{client.appointments} appointments</span>
-                              ) : (
-                                <span>No appointments yet</span>
-                              )}
-                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -459,6 +512,40 @@ const fetchClients = async () => {
                               </>
                             )}
                           </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center space-x-2">
+                            {/* Edit Button */}
+                            <button
+                              onClick={() => router.push(`/admin/editClient/${client._id}`)}
+                              className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                              title="Edit Client"
+                            >
+                              <Edit className="size-4" />
+                            </button>
+                            
+                            {/* Activate/Deactivate Button */}
+                            <button
+                              onClick={() => toggleClientStatus(client._id, client.isActive)}
+                              className={`p-2 rounded-lg transition-colors ${
+                                client.isActive
+                                  ? 'text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20'
+                                  : 'text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20'
+                              }`}
+                              title={client.isActive ? 'Deactivate Account' : 'Activate Account'}
+                            >
+                              {client.isActive ? <Shield className="size-4" /> : <CheckCircle className="size-4" />}
+                            </button>
+                            
+                            {/* Delete Button */}
+                            <button
+                              onClick={() => showDeleteConfirmation(client._id, client.name)}
+                              className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                              title="Delete Client Permanently"
+                            >
+                              <Trash2 className="size-4" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -530,8 +617,6 @@ const fetchClients = async () => {
           </>
         )}
       </div>
-
-  
     </div>
   );
 }

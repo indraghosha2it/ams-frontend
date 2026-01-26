@@ -33,55 +33,163 @@ export default function CreateUsersPage() {
     role: 'staff'
   });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
     
-    // Validation
-    if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
+//     // Validation
+//     if (formData.password !== formData.confirmPassword) {
+//       toast.error('Passwords do not match');
+//       return;
+//     }
+    
+//     if (formData.password.length < 8) {
+//       toast.error('Password must be at least 8 characters');
+//       return;
+//     }
+    
+//     setLoading(true);
+    
+//     try {
+//       // Get current user token
+//       const token = localStorage.getItem('token');
+//       const currentUser = JSON.parse(localStorage.getItem('user'));
+      
+//       if (!token || !currentUser) {
+//         toast.error('Please login first');
+//         router.push('/');
+//         return;
+//       }
+      
+//       if (currentUser.role !== 'admin') {
+//         toast.error('Only admins can create users');
+//         return;
+//       }
+      
+//       // Try the admin endpoint first
+//       let response;
+//       try {
+//         response = await axios.post('http://localhost:5000/api/admin/users', {
+//           name: formData.name,
+//           email: formData.email,
+//           phone: formData.phone,
+//           password: formData.password,
+//           role: formData.role
+//         }, {
+//           headers: {
+//             'Authorization': `Bearer ${token}`
+//           }
+//         });
+//       } catch (adminError) {
+//         // If admin endpoint fails, try business register endpoint as fallback
+//         console.log('Admin endpoint failed, trying business register endpoint...');
+//         response = await axios.post('http://localhost:5000/api/auth/register/business', {
+//           name: formData.name,
+//           email: formData.email,
+//           phone: formData.phone,
+//           password: formData.password,
+//           role: formData.role
+//         }, {
+//           headers: {
+//             'Authorization': `Bearer ${token}`
+//           }
+//         });
+//       }
+      
+//       if (response.data.success) {
+//         toast.success(`${formData.role === 'admin' ? 'Admin' : 'Staff'} account created successfully!`);
+        
+//         // Reset form
+//         setFormData({
+//           name: '',
+//           email: '',
+//           phone: '',
+//           password: '',
+//           confirmPassword: '',
+//           role: 'staff'
+//         });
+        
+//         // Show success details
+//         toast.success(`Login credentials sent to ${formData.email}`);
+//       }
+//     } catch (error) {
+//       console.error('Error creating user:', error);
+      
+//       // Better error messages
+//       if (error.response) {
+//         if (error.response.status === 401) {
+//           toast.error('Session expired. Please login again.');
+//           router.push('/signin');
+//         } else if (error.response.status === 403) {
+//           toast.error('You do not have permission to create users');
+//         } else if (error.response.status === 400) {
+//           toast.error(error.response.data.message || 'Invalid data. Please check all fields.');
+//         } else if (error.response.status === 409) {
+//           toast.error('Email already exists. Please use a different email.');
+//         } else {
+//           toast.error(error.response.data.message || 'Failed to create user');
+//         }
+//       } else if (error.request) {
+//         toast.error('Network error. Please check if backend server is running.');
+//         console.log('Backend URL:', 'http://localhost:5000');
+//         console.log('Is backend running? Check: http://localhost:5000/api/health');
+//       } else {
+//         toast.error('Error: ' + error.message);
+//       }
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  // Validation
+  if (formData.password !== formData.confirmPassword) {
+    toast.error('Passwords do not match');
+    return;
+  }
+  
+  if (formData.password.length < 8) {
+    toast.error('Password must be at least 8 characters');
+    return;
+  }
+  
+  setLoading(true);
+  
+  try {
+    // Get current user token
+    const token = localStorage.getItem('token');
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    
+    if (!token || !currentUser) {
+      toast.error('Please login first');
+      router.push('/');
       return;
     }
     
-    if (formData.password.length < 8) {
-      toast.error('Password must be at least 8 characters');
+    if (currentUser.role !== 'admin') {
+      toast.error('Only admins can create users');
       return;
     }
     
-    setLoading(true);
-    
+    // Try the admin endpoint first
+    let response;
     try {
-      // Get current user token
-      const token = localStorage.getItem('token');
-      const currentUser = JSON.parse(localStorage.getItem('user'));
-      
-      if (!token || !currentUser) {
-        toast.error('Please login first');
-        router.push('/');
-        return;
-      }
-      
-      if (currentUser.role !== 'admin') {
-        toast.error('Only admins can create users');
-        return;
-      }
-      
-      // Try the admin endpoint first
-      let response;
+      response = await axios.post('http://localhost:5000/api/admin/users', {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+        role: formData.role
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+    } catch (adminError) {
+      // If admin endpoint fails, try business register endpoint as fallback
       try {
-        response = await axios.post('http://localhost:5000/api/admin/users', {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          password: formData.password,
-          role: formData.role
-        }, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-      } catch (adminError) {
-        // If admin endpoint fails, try business register endpoint as fallback
-        console.log('Admin endpoint failed, trying business register endpoint...');
         response = await axios.post('http://localhost:5000/api/auth/register/business', {
           name: formData.name,
           email: formData.email,
@@ -93,53 +201,52 @@ export default function CreateUsersPage() {
             'Authorization': `Bearer ${token}`
           }
         });
+      } catch (businessError) {
+        // If business endpoint also fails, use the admin error
+        throw adminError;
       }
-      
-      if (response.data.success) {
-        toast.success(`${formData.role === 'admin' ? 'Admin' : 'Staff'} account created successfully!`);
-        
-        // Reset form
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          password: '',
-          confirmPassword: '',
-          role: 'staff'
-        });
-        
-        // Show success details
-        toast.success(`Login credentials sent to ${formData.email}`);
-      }
-    } catch (error) {
-      console.error('Error creating user:', error);
-      
-      // Better error messages
-      if (error.response) {
-        if (error.response.status === 401) {
-          toast.error('Session expired. Please login again.');
-          router.push('/signin');
-        } else if (error.response.status === 403) {
-          toast.error('You do not have permission to create users');
-        } else if (error.response.status === 400) {
-          toast.error(error.response.data.message || 'Invalid data. Please check all fields.');
-        } else if (error.response.status === 409) {
-          toast.error('Email already exists. Please use a different email.');
-        } else {
-          toast.error(error.response.data.message || 'Failed to create user');
-        }
-      } else if (error.request) {
-        toast.error('Network error. Please check if backend server is running.');
-        console.log('Backend URL:', 'http://localhost:5000');
-        console.log('Is backend running? Check: http://localhost:5000/api/health');
-      } else {
-        toast.error('Error: ' + error.message);
-      }
-    } finally {
-      setLoading(false);
     }
-  };
-
+    
+    if (response.data.success) {
+      toast.success(`${formData.role === 'admin' ? 'Admin' : 'Staff'} account created successfully!`);
+      
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        password: '',
+        confirmPassword: '',
+        role: 'staff'
+      });
+      
+      // Show success details
+      toast.success(`Login credentials sent to ${formData.email}`);
+    }
+  } catch (error) {
+    // Better error messages
+    if (error.response) {
+      if (error.response.status === 401) {
+        toast.error('Session expired. Please login again.');
+        router.push('/signin');
+      } else if (error.response.status === 403) {
+        toast.error('You do not have permission to create users');
+      } else if (error.response.status === 400) {
+        toast.error(error.response.data.message || 'Invalid data. Please check all fields.');
+      } else if (error.response.status === 409) {
+        toast.error('Email already exists. Please use a different email.');
+      } else {
+        toast.error(error.response.data.message || 'Failed to create user');
+      }
+    } else if (error.request) {
+      toast.error('Network error. Please check if backend server is running.');
+    } else {
+      toast.error('Error: ' + error.message);
+    }
+  } finally {
+    setLoading(false);
+  }
+};
   const handleRoleChange = (role) => {
     setFormData({
       ...formData,
