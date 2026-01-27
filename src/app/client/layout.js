@@ -101,12 +101,11 @@ export default function ClientLayout({ children }) {
 
   const navItems = [
     { name: 'Dashboard', href: '/client/dashboard', icon: <LayoutDashboard className="size-5" /> },
-    { name: 'Book Appointment', href: '/client/book', icon: <PlusCircle className="size-5" /> },
-    { name: 'Upcoming Appointments', href: '/client/upcoming', icon: <CalendarDays className="size-5" /> },
-    { name: 'Past Appointments', href: '/client/history', icon: <History className="size-5" /> },
+    { name: 'Book Appointment', href: '/client/bookApp', icon: <PlusCircle className="size-5" /> },
+    { name: 'Upcoming Appointments', href: '/client/upcomingApp', icon: <CalendarDays className="size-5" /> },
+    { name: 'Past Appointments', href: '/client/pastApp', icon: <History className="size-5" /> },
     { name: 'Services', href: '/client/services', icon: <Package className="size-5" /> },
-    { name: 'Messages', href: '/client/messages', icon: <MessageSquare className="size-5" /> },
-    { name: 'Reviews', href: '/client/reviews', icon: <Star className="size-5" /> },
+   
     { name: 'Settings', href: '/client/settings', icon: <Settings className="size-5" /> },
   ];
 
@@ -364,7 +363,7 @@ export default function ClientLayout({ children }) {
                 Need help? <button className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">Contact Support</button>
               </span>
               <Link
-                href="/client/book"
+                href="/client/bookApp"
                 className="text-sm text-white bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all"
               >
                 Book Appointment

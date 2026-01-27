@@ -44,6 +44,11 @@ body {
   font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
 }
 
+/* Toast container - minimal fix */
+.go3958317564 {
+  z-index: 9999 !important;
+}
+
 /* Custom utility classes */
 .glass-effect {
   backdrop-filter: blur(10px);

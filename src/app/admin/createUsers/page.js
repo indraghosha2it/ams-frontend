@@ -187,8 +187,36 @@ const handleSubmit = async (e) => {
           'Authorization': `Bearer ${token}`
         }
       });
+      
+      if (response.data.success) {
+        // Simple success message
+        toast.success('User created successfully!');
+        
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          password: '',
+          confirmPassword: '',
+          role: 'staff'
+        });
+      }
+      
+      return; // Exit if successful
+      
     } catch (adminError) {
-      // If admin endpoint fails, try business register endpoint as fallback
+      // Check if it's a 400 error (email exists)
+      if (adminError.response?.status === 400 || adminError.response?.status === 409) {
+        const errorMessage = adminError.response?.data?.message?.toLowerCase() || '';
+        if (errorMessage.includes('email') && 
+            (errorMessage.includes('already') || errorMessage.includes('exists'))) {
+          toast.error('Email already exists. Please use a different email.');
+          return;
+        }
+      }
+      
+      // If admin endpoint fails for other reasons, try business register endpoint as fallback
       try {
         response = await axios.post('http://localhost:5000/api/auth/register/business', {
           name: formData.name,
@@ -201,52 +229,65 @@ const handleSubmit = async (e) => {
             'Authorization': `Bearer ${token}`
           }
         });
+        
+        if (response.data.success) {
+          // Simple success message
+          toast.success('User created successfully!');
+          
+          // Reset form
+          setFormData({
+            name: '',
+            email: '',
+            phone: '',
+            password: '',
+            confirmPassword: '',
+            role: 'staff'
+          });
+        }
+        
+        return; // Exit if successful
+        
       } catch (businessError) {
+        // Check if it's a 400 error (email exists)
+        if (businessError.response?.status === 400 || businessError.response?.status === 409) {
+          const errorMessage = businessError.response?.data?.message?.toLowerCase() || '';
+          if (errorMessage.includes('email') && 
+              (errorMessage.includes('already') || errorMessage.includes('exists'))) {
+            toast.error('Email already exists. Please use a different email.');
+            return;
+          }
+        }
+        
         // If business endpoint also fails, use the admin error
         throw adminError;
       }
     }
-    
-    if (response.data.success) {
-      toast.success(`${formData.role === 'admin' ? 'Admin' : 'Staff'} account created successfully!`);
-      
-      // Reset form
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        password: '',
-        confirmPassword: '',
-        role: 'staff'
-      });
-      
-      // Show success details
-      toast.success(`Login credentials sent to ${formData.email}`);
-    }
   } catch (error) {
-    // Better error messages
+    // Only handle generic errors here
     if (error.response) {
       if (error.response.status === 401) {
         toast.error('Session expired. Please login again.');
-        router.push('/signin');
+        setTimeout(() => {
+          router.push('/signin');
+        }, 1000);
       } else if (error.response.status === 403) {
         toast.error('You do not have permission to create users');
       } else if (error.response.status === 400) {
-        toast.error(error.response.data.message || 'Invalid data. Please check all fields.');
-      } else if (error.response.status === 409) {
-        toast.error('Email already exists. Please use a different email.');
+        toast.error('Invalid data. Please check all fields.');
       } else {
-        toast.error(error.response.data.message || 'Failed to create user');
+        toast.error('Failed to create user. Please try again.');
       }
     } else if (error.request) {
       toast.error('Network error. Please check if backend server is running.');
     } else {
-      toast.error('Error: ' + error.message);
+      toast.error('Error creating user. Please try again.');
     }
   } finally {
     setLoading(false);
   }
 };
+
+
   const handleRoleChange = (role) => {
     setFormData({
       ...formData,
@@ -284,6 +325,7 @@ const handleSubmit = async (e) => {
           </div>
         </div>
       </div>
+      
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Form */}
