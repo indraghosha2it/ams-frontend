@@ -785,49 +785,146 @@ export default function SignInPage() {
     setShowPasswordRequirements(false);
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  // const handleLogin = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
     
-    try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', loginData);
+  //   try {
+  //     const response = await axios.post('http://localhost:5000/api/auth/login', loginData);
       
-      if (response.data.success) {
-        toast.success('Welcome back!');
+  //     if (response.data.success) {
+  //       toast.success('Welcome back!');
         
-        // Store token and user data
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+  //       // Store token and user data
+  //       localStorage.setItem('token', response.data.token);
+  //       localStorage.setItem('user', JSON.stringify(response.data.user));
         
-        // Redirect based on role
-        const role = response.data.user?.role || response.data.role;
+  //       // Redirect based on role
+  //       const role = response.data.user?.role || response.data.role;
         
-        console.log('Login successful, role:', role);
+  //       console.log('Login successful, role:', role);
         
+  //       switch (role) {
+  //         case 'admin':
+  //           toast.success('Welcome Admin!');
+  //           router.push('/admin/dashboard');
+  //           break;
+  //         case 'staff':
+  //           toast.success('Welcome Staff!');
+  //           router.push('/staff/dashboard');
+  //           break;
+  //         case 'client':
+  //         default:
+  //           toast.success('Welcome!');
+  //           router.push('/client/dashboard');
+  //           break;
+  //       }
+  //     }
+  //   } catch (error) {
+  //     const errorMessage = error.response?.data?.message || 'Invalid credentials. Please try again.';
+  //     toast.error(errorMessage);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  
+  try {
+    const response = await axios.post('http://localhost:5000/api/auth/login', loginData);
+    
+    if (response.data.success) {
+      // Show success toast
+      toast.success('Welcome back!', {
+        duration: 3000,
+        position: 'top-right',
+      });
+      
+      // Store token and user data
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      
+      // Get role
+      const role = response.data.user?.role || response.data.role;
+      console.log('Login successful, role:', role);
+      
+      // Show role-specific welcome toast after a short delay
+      setTimeout(() => {
         switch (role) {
           case 'admin':
-            toast.success('Welcome Admin!');
+            toast.success('Welcome Admin!', { 
+              duration: 2000,
+              position: 'top-right',
+            });
+            break;
+          case 'staff':
+            toast.success('Welcome Staff!', { 
+              duration: 2000,
+              position: 'top-right',
+            });
+            break;
+          case 'client':
+          default:
+            toast.success('Welcome!', { 
+              duration: 2000,
+              position: 'top-right',
+            });
+            break;
+        }
+      }, 500);
+      
+      // Redirect after showing the first toast
+      setTimeout(() => {
+        switch (role) {
+          case 'admin':
             router.push('/admin/dashboard');
             break;
           case 'staff':
-            toast.success('Welcome Staff!');
             router.push('/staff/dashboard');
             break;
           case 'client':
           default:
-            toast.success('Welcome!');
             router.push('/client/dashboard');
             break;
         }
-      }
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Invalid credentials. Please try again.';
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
+      }, 1500); // Give user time to see the toast
     }
-  };
-
+  } catch (error) {
+    // Catch the error to prevent it from appearing in console as uncaught
+    console.log('Login error caught:', error.response?.status, error.response?.data);
+    
+    // Show appropriate error message
+    let errorMessage = 'Invalid credentials. Please try again.';
+    
+    if (error.response) {
+      if (error.response.status === 401) {
+        errorMessage = 'Invalid email or password';
+      } else if (error.response.status === 400) {
+        errorMessage = error.response.data?.message || 'Please check your input';
+      } else if (error.response.status === 404) {
+        errorMessage = 'User not found. Please sign up first';
+      } else {
+        errorMessage = error.response.data?.message || 'Login failed. Please try again.';
+      }
+    } else if (error.request) {
+      errorMessage = 'Network error. Please check your connection';
+    } else {
+      errorMessage = 'An error occurred. Please try again.';
+    }
+    
+    // Show error toast
+    toast.error(errorMessage, {
+      duration: 4000,
+      position: 'top-right',
+    });
+    
+  } finally {
+    setLoading(false);
+  }
+};
   const handleRegister = async (e) => {
     e.preventDefault();
     
