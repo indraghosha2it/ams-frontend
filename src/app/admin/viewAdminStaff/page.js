@@ -696,7 +696,7 @@ export default function ViewStaffPage() {
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/admin/createStaff"
-              className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all flex items-center"
+              className="px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-semibold rounded-lg hover:from-teal-700 hover:to-emerald-700 transition-all flex items-center"
             >
               <UserPlus className="size-4 mr-2" />
               Add Staff
@@ -1030,7 +1030,7 @@ export default function ViewStaffPage() {
                             onClick={() => setCurrentPage(pageNum)}
                             className={`px-3 py-1 rounded-lg ${
                               currentPage === pageNum
-                                ? 'bg-blue-600 text-white'
+                                ? 'bg-teal-600 text-white'
                                 : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                             }`}
                           >

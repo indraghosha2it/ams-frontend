@@ -100,7 +100,14 @@ const BookApp = () => {
       </div>
     );
   }
-
+    const getStatusColor = (status) => {
+    switch (status) {
+      case 'active': return 'bg-emerald-100 text-emerald-800 border border-emerald-200';
+      case 'inactive': return 'bg-gray-100 text-gray-800 border border-gray-200';
+      case 'on_leave': return 'bg-amber-100 text-amber-800 border border-amber-200';
+      default: return 'bg-gray-100 text-gray-800 border border-gray-200';
+    }
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50 p-4 md:p-6">
       <Toaster position="top-right" />
@@ -212,8 +219,21 @@ const BookApp = () => {
                         </div>
                       )}
                       
+
+                           {/* Status Badge */}
+                  <div className="absolute top-4 right-4">
+                    <div className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(doctor.status)}`}>
+                      {doctor.status.charAt(0).toUpperCase() + doctor.status.slice(1)}
+                    </div>
+                  </div>
+                  
+                
+
+
+
+
                       {/* Speciality Badge */}
-                      <div className="absolute top-4 left-4">
+                      <div className="absolute bottom-4 left-4 mb-1">
                         <span className="px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-sm rounded-lg font-semibold shadow-lg">
                           {doctor.speciality}
                         </span>

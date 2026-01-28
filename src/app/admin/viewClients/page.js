@@ -578,7 +578,7 @@ export default function ViewClientsPage() {
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/admin/createClient"
-              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all flex items-center"
+              className="px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-semibold rounded-lg hover:from-teal-700 hover:to-emerald-700 transition-all flex items-center"
             >
               <User className="size-4 mr-2" />
               Add Client
@@ -886,7 +886,7 @@ export default function ViewClientsPage() {
                             onClick={() => setCurrentPage(pageNum)}
                             className={`px-3 py-1 rounded-lg ${
                               currentPage === pageNum
-                                ? 'bg-blue-600 text-white'
+                                ? 'bg-teal-600 text-white'
                                 : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                             }`}
                           >

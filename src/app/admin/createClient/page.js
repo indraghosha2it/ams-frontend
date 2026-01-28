@@ -217,7 +217,7 @@ export default function CreateClientPage() {
             </div>
           </div>
           <div className="hidden md:flex items-center space-x-2">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-500 size-12 rounded-xl flex items-center justify-center">
+            <div className="bg-gradient-to-r from-teal-600 to-emerald-600  size-12 rounded-xl flex items-center justify-center">
               <UserPlus className="size-6 text-white" />
             </div>
           </div>
@@ -365,7 +365,7 @@ export default function CreateClientPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-md hover:shadow-lg"
+                  className="w-full py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-semibold rounded-lg hover:from-teal-700 hover:to-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-md hover:shadow-lg"
                 >
                   {loading ? (
                     <>

@@ -671,7 +671,7 @@ const DoctorsPage = () => {
                   {/* Name and Designation */}
                   <div className="mb-5">
                     <h3 className="text-xl font-bold text-slate-900 truncate">{doctor.name}</h3>
-                    <p className="text-emerald-600 text-sm font-medium mb-2">{doctor.designation || "Medical Specialist"}</p>
+                    <p className="text-emerald-600 text-sm font-medium mb-2 line-clamp-1">{doctor.designation || "Medical Specialist"}</p>
                   
                   </div>
 
@@ -739,17 +739,16 @@ const DoctorsPage = () => {
                   </div>
 
                   {/* Book Appointment Button - Single Row */}
-                  <div className="mb-4">
-                    <button
-                      onClick={() => {/* Add booking logic */}}
-                      className="w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition-all duration-300 flex items-center justify-center gap-2 font-medium shadow-md hover:shadow-lg"
-                    >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/>
-                      </svg>
-                      Book Appointment
-                    </button>
-                  </div>
+                
+          <Link
+            href={`/admin/bookAppointmentPage?doctorId=${doctor._id}`}
+            className="w-full px-4 mb-2 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition-all duration-300 flex items-center justify-center gap-2 font-medium shadow-md hover:shadow-lg"
+          >
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/>
+            </svg>
+            Book Appointment
+          </Link>
 
                   {/* Delete and Edit Buttons - Separate Row */}
                   <div className="grid grid-cols-2 gap-3">
