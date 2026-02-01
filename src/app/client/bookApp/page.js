@@ -290,7 +290,7 @@ const BookApp = () => {
 
                       {/* Book Appointment Button - Fixed at bottom */}
                       <Link
-                        href={`/book-appointment/${doctor._id}`}
+                        href={`/client/appointmentBooking?doctorId=${doctor._id}`}
                         className="mt-4 block w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all duration-300 flex items-center justify-center gap-2 font-semibold shadow-md hover:shadow-lg"
                       >
                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
