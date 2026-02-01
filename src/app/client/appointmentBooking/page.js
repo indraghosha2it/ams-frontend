@@ -80,7 +80,7 @@ const ClientAppointmentBooking = () => {
       fetchAvailableSlots();
     } else {
       toast.error('No doctor selected');
-      router.push('/book-appointment');
+      router.push('/bookApp');
     }
   }, [doctorId]);
 
@@ -119,12 +119,12 @@ const ClientAppointmentBooking = () => {
         setDoctor(response.data.data);
       } else {
         toast.error('Doctor not found');
-        router.push('/book-appointment');
+        router.push('/bookApp');
       }
     } catch (error) {
       console.error('Error fetching doctor:', error);
       toast.error('Failed to load doctor details');
-      router.push('/book-appointment');
+      router.push('/bookApp');
     } finally {
       setLoading(false);
     }
@@ -468,9 +468,9 @@ const ClientAppointmentBooking = () => {
           toast.success('Confirmation email has been sent to your email address!');
           setTimeout(() => {
             if (userData) {
-              router.push('/my-appointments');
+              router.push('/upcomingApp');
             } else {
-              router.push('/book-appointment');
+              router.push('/bookApp');
             }
           }, 2000);
         }, 1000);
@@ -497,9 +497,9 @@ const ClientAppointmentBooking = () => {
           toast.success('You will receive a confirmation email once approved!');
           setTimeout(() => {
             if (userData) {
-              router.push('/my-appointments');
+              router.push('/upcomingApp');
             } else {
-              router.push('/book-appointment');
+              router.push('/bookApp');
             }
           }, 2000);
         }, 1000);
@@ -565,7 +565,7 @@ const ClientAppointmentBooking = () => {
             <h2 className="text-2xl font-bold text-slate-800 mb-2">Doctor Not Found</h2>
             <p className="text-slate-600 mb-6">The doctor you're looking for might not be available.</p>
             <Link
-              href="/book-appointment"
+              href="/bookApp"
               className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition-all shadow-md hover:shadow-lg"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -634,7 +634,7 @@ const ClientAppointmentBooking = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Link
-                href="/book-appointment"
+                href="/bookApp"
                 className="p-2 bg-white rounded-lg shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"
               >
                 <ArrowLeft className="w-5 h-5 text-slate-700" />
@@ -1221,7 +1221,7 @@ const ClientAppointmentBooking = () => {
               {/* Submit Button */}
               <div className="flex justify-end gap-4 pt-4 border-t border-slate-200">
                 <Link
-                  href="/book-appointment"
+                  href="/bookApp"
                   className="px-6 py-3 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition font-medium flex items-center gap-2"
                 >
                   <ArrowLeft className="w-4 h-4" />

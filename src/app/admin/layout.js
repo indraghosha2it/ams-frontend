@@ -459,7 +459,7 @@ export default function AdminLayout({ children }) {
     { name: 'Dashboard', href: '/admin/dashboard', icon: <LayoutDashboard className="size-5" /> },
     { name: 'Doctors', href: '/admin/doctors', icon: <Stethoscope className="size-5" /> },
     { name: 'Create Doctor', href: '/admin/createService', icon: <PlusCircle className="size-5" /> },
-    { name: 'Appointments', href: '/admin/appointments', icon: <Calendar className="size-5" /> },
+    { name: 'All Appointments', href: '/admin/allAppointments', icon: <Calendar className="size-5" /> },
     { name: 'View Clients', href: '/admin/viewClients', icon: <Users className="size-5" /> },
     { name: 'Create Client', href: '/admin/createClient', icon: <UserPlus className="size-5" /> },
     { name: 'View Admin & Staff', href: '/admin/viewAdminStaff', icon: <Briefcase className="size-5" /> },

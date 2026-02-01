@@ -599,7 +599,7 @@ const handleSubmit = async (e) => {
             patient: patientData,
             appointmentDate: selectedDate,
             appointmentTime: selectedTime.startTime,
-            status: 'pending'
+            status: 'confirmed'
         };
         
         console.log('📤 Booking appointment with data:', appointmentData);
@@ -643,7 +643,7 @@ const handleSubmit = async (e) => {
         console.log('✅ Appointment response:', response.data);
         
         if (response.data.success) {  // <-- Using "response" here
-            toast.success('Appointment booked successfully!');
+            toast.success('Appointment booked and confirmed successfully!');
             
             // Redirect back to doctors
             setTimeout(() => {
