@@ -27,7 +27,8 @@ import {
   Shield,
   X,
   Sparkles,
-  CalendarCheck
+  CalendarCheck,
+  RotateCw
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -50,6 +51,7 @@ const ClientRescheduleAppointment = () => {
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successData, setSuccessData] = useState(null);
+  const [showRescheduleConfirm, setShowRescheduleConfirm] = useState(false);
 
   // Helper functions
   const formatDateToLocalString = (date) => {
@@ -273,8 +275,8 @@ const ClientRescheduleAppointment = () => {
     if (date.isPast) return 'bg-gray-100 text-gray-400 cursor-not-allowed';
     if (date.isOriginalDate) return 'bg-amber-100 text-amber-800 border-amber-300';
     if (!date.hasSlots) return 'bg-red-50 text-red-400 border-red-200 cursor-not-allowed';
-    if (date.isSelected) return 'bg-blue-500 text-white border-blue-600';
-    if (date.isToday) return 'bg-blue-50 text-blue-600 border-blue-200';
+    if (date.isSelected) return 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-emerald-600';
+    if (date.isToday) return 'bg-emerald-50 text-emerald-600 border-emerald-200';
     if (date.hasSlots) return 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100';
     return 'bg-white text-slate-700 border-slate-200';
   };
@@ -326,10 +328,8 @@ const ClientRescheduleAppointment = () => {
            appointment.status !== 'completed';
   };
 
-  // Handle reschedule submission
-  const handleReschedule = async (e) => {
-    e.preventDefault();
-    
+  // Show reschedule confirmation modal
+  const showRescheduleConfirmation = () => {
     if (!selectedDate || !selectedTime) {
       toast.error('Please select a new date and time slot');
       return;
@@ -340,10 +340,17 @@ const ClientRescheduleAppointment = () => {
       return;
     }
     
-    // Confirm with user before rescheduling
-    if (!window.confirm(`Are you sure you want to reschedule your appointment?\n\nFrom: ${new Date(appointment.appointmentDate).toLocaleDateString()} ${appointment.appointmentTime}\nTo: ${selectedSlotInfo?.formattedDate} ${selectedTime.startTime}`)) {
-      return;
-    }
+    setShowRescheduleConfirm(true);
+  };
+
+  // Close reschedule confirmation modal
+  const closeRescheduleConfirmation = () => {
+    setShowRescheduleConfirm(false);
+  };
+
+  // Perform the actual rescheduling
+  const performRescheduling = async () => {
+    if (!selectedDate || !selectedTime || !appointment) return;
     
     setSubmitting(true);
     
@@ -387,6 +394,7 @@ const ClientRescheduleAppointment = () => {
         });
         
         setShowSuccessModal(true);
+        closeRescheduleConfirmation();
         
         // Update local appointment state
         setAppointment(prev => ({
@@ -470,12 +478,12 @@ const ClientRescheduleAppointment = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50 p-6">
         <Toaster position="top-right" />
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-center items-center h-96">
             <div className="text-center">
-              <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               <h3 className="text-xl font-semibold text-slate-800">Loading Appointment Details</h3>
               <p className="text-slate-600 mt-2">Preparing reschedule options...</p>
             </div>
@@ -487,7 +495,7 @@ const ClientRescheduleAppointment = () => {
 
   if (!appointment) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50 p-6">
         <Toaster position="top-right" />
         <div className="max-w-6xl mx-auto">
           <div className="text-center py-16">
@@ -496,7 +504,7 @@ const ClientRescheduleAppointment = () => {
             <p className="text-slate-600 mb-6">The appointment you're looking for might not be available.</p>
             <Link
               href="/client/bookApp"
-              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg"
+              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-lg hover:from-emerald-700 hover:to-teal-800 transition-all shadow-md hover:shadow-lg"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Appointments
@@ -512,7 +520,7 @@ const ClientRescheduleAppointment = () => {
 
   if (!canBeRescheduled) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50 p-6">
         <Toaster position="top-right" />
         <div className="max-w-6xl mx-auto">
           <div className="text-center py-16">
@@ -530,7 +538,7 @@ const ClientRescheduleAppointment = () => {
             </p>
             <Link
               href="/client/bookApp"
-              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg"
+              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-lg hover:from-emerald-700 hover:to-teal-800 transition-all shadow-md hover:shadow-lg"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Appointments
@@ -542,8 +550,86 @@ const ClientRescheduleAppointment = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 md:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50 p-4 md:p-6">
       <Toaster position="top-right" />
+      
+      {/* Reschedule Confirmation Modal */}
+      {showRescheduleConfirm && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-5 animate-in zoom-in-95">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <RotateCw className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Reschedule Appointment</h3>
+                <p className="text-slate-600 text-sm">Are you sure you want to reschedule?</p>
+              </div>
+            </div>
+            
+            <div className="bg-emerald-50 p-3 rounded-lg mb-4 text-sm">
+              <div className="font-medium text-emerald-800 mb-2">Current Appointment:</div>
+              <div className="text-slate-700">
+                <div>{new Date(appointment.appointmentDate).toLocaleDateString('en-US', {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric'
+                })}</div>
+                <div>{appointment.appointmentTime} - {appointment.endTime}</div>
+                <div className="text-xs text-slate-500 mt-1">
+                  Serial No: {appointment.slotSerialNumber || 'N/A'}
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-center my-3">
+                <div className="text-emerald-500">↓</div>
+              </div>
+              
+              <div className="font-medium text-emerald-800 mb-2">New Appointment:</div>
+              <div className="text-slate-700">
+                <div>{selectedSlotInfo?.formattedDate}</div>
+                <div>{selectedTime?.startTime} - {selectedTime?.endTime}</div>
+                <div className="text-xs text-slate-500 mt-1">
+                Serial No:{selectedTime?.serialNumber || 'N/A'}
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-emerald-600 bg-emerald-50 p-3 rounded-lg mb-5 text-sm">
+              <div className="flex items-center gap-2 font-medium">
+                <AlertCircle className="w-4 h-4" />
+                Appointment status will become "pending"
+              </div>
+            </div>
+            
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={closeRescheduleConfirmation}
+                className="px-4 py-2 text-sm text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={performRescheduling}
+                disabled={submitting}
+                className="px-4 py-2 text-sm bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition font-medium flex items-center gap-2"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <RotateCw className="w-4 h-4" />
+                    Confirm Reschedule
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Success Modal */}
       {showSuccessModal && successData && (
@@ -564,7 +650,7 @@ const ClientRescheduleAppointment = () => {
                 <div className="flex items-center justify-between mb-3">
                   <div className="text-sm text-emerald-700">New Appointment</div>
                   <div className="text-xs font-bold bg-emerald-100 text-emerald-800 px-2 py-1 rounded">
-                    Slot #{successData.serialNumber}
+                    Serial No: {successData.serialNumber}
                   </div>
                 </div>
                 <div className="font-medium text-emerald-800">{successData.newDate}</div>
@@ -575,7 +661,7 @@ const ClientRescheduleAppointment = () => {
               <div className="flex flex-col gap-3">
                 <button
                   onClick={() => router.push('/client/upcomingApp')}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition font-medium"
+                  className="w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition font-medium"
                 >
                   View My Appointments
                 </button>
@@ -611,7 +697,7 @@ const ClientRescheduleAppointment = () => {
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <div className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium flex items-center gap-2">
+              <div className="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium flex items-center gap-2">
                 <CalendarCheck className="w-4 h-4" />
                 Appointment ID: {appointmentId?.substring(0, 8)}...
               </div>
@@ -656,7 +742,7 @@ const ClientRescheduleAppointment = () => {
           {/* Current Appointment Information */}
           <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
             <h2 className="text-xl font-semibold text-slate-800 border-b pb-3 border-slate-200 mb-6 flex items-center gap-2">
-              <CalendarDays className="w-5 h-5 text-blue-600" />
+              <CalendarDays className="w-5 h-5 text-emerald-600" />
               Current Appointment Details
             </h2>
             
@@ -666,8 +752,8 @@ const ClientRescheduleAppointment = () => {
                 <h3 className="text-lg font-semibold text-slate-800 mb-4">Your Information</h3>
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                      <User className="w-6 h-6 text-blue-600" />
+                    <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
+                      <User className="w-6 h-6 text-emerald-600" />
                     </div>
                     <div>
                       <div className="font-medium text-slate-900">{appointment.patient.fullName}</div>
@@ -679,18 +765,18 @@ const ClientRescheduleAppointment = () => {
                   
                   <div className="space-y-3">
                     <div className="flex items-center text-slate-700">
-                      <Mail className="w-4 h-4 text-blue-500 mr-3 flex-shrink-0" />
+                      <Mail className="w-4 h-4 text-emerald-500 mr-3 flex-shrink-0" />
                       <div className="text-sm">{appointment.patient.email}</div>
                     </div>
                     
                     <div className="flex items-center text-slate-700">
-                      <Phone className="w-4 h-4 text-blue-500 mr-3 flex-shrink-0" />
+                      <Phone className="w-4 h-4 text-emerald-500 mr-3 flex-shrink-0" />
                       <div className="text-sm">{appointment.patient.phone}</div>
                     </div>
                     
                     {appointment.patient.address && (
                       <div className="flex items-start text-slate-700">
-                        <MapPin className="w-4 h-4 text-blue-500 mr-3 flex-shrink-0 mt-0.5" />
+                        <MapPin className="w-4 h-4 text-emerald-500 mr-3 flex-shrink-0 mt-0.5" />
                         <div className="text-sm">{appointment.patient.address}</div>
                       </div>
                     )}
@@ -717,7 +803,7 @@ const ClientRescheduleAppointment = () => {
                       </div>
                       <div className="px-3 py-1 bg-amber-100 text-amber-700 text-sm font-medium rounded-full flex items-center gap-1">
                         <Hash className="w-3 h-3" />
-                        Slot #{appointment.slotSerialNumber || 'N/A'}
+                        Serial No: {appointment.slotSerialNumber || 'N/A'}
                       </div>
                     </div>
                     
@@ -760,7 +846,7 @@ const ClientRescheduleAppointment = () => {
           <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
-                <RotateCcw className="w-5 h-5 text-blue-600" />
+                <RotateCcw className="w-5 h-5 text-emerald-600" />
                 Select New Date & Time
               </h2>
               <div className="mt-2 md:mt-0 flex gap-2">
@@ -798,7 +884,7 @@ const ClientRescheduleAppointment = () => {
                     className="w-full px-4 py-3 border border-slate-300 rounded-lg text-left flex items-center justify-between hover:bg-slate-50 transition"
                   >
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-blue-500" />
+                      <Calendar className="w-4 h-4 text-emerald-500" />
                       <span className={selectedDate ? "text-slate-800" : "text-slate-500"}>
                         {selectedDate ? new Date(selectedDate).toLocaleDateString('en-US', {
                           weekday: 'long',
@@ -865,7 +951,7 @@ const ClientRescheduleAppointment = () => {
                             >
                               {day.day}
                               {day.isToday && !day.isSelected && !day.isOriginalDate && (
-                                <div className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                                <div className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
                               )}
                               {day.isOriginalDate && (
                                 <div className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-amber-500 rounded-full"></div>
@@ -880,7 +966,7 @@ const ClientRescheduleAppointment = () => {
                     <div className="mt-4 pt-4 border-t border-slate-200">
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded bg-blue-500"></div>
+                          <div className="w-3 h-3 rounded bg-gradient-to-r from-emerald-500 to-teal-600"></div>
                           <span className="text-slate-600">Selected</span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -902,7 +988,7 @@ const ClientRescheduleAppointment = () => {
                     <div className="mt-4 flex justify-end">
                       <button
                         onClick={() => setShowDatePicker(false)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm"
+                        className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition font-medium text-sm"
                       >
                         Done
                       </button>
@@ -934,10 +1020,10 @@ const ClientRescheduleAppointment = () => {
                       }`}
                   >
                     <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-blue-500" />
+                      <Clock className="w-4 h-4 text-emerald-500" />
                       <span className={selectedTime ? "text-slate-800" : "text-slate-500"}>
                         {selectedTime ? 
-                          `Slot #${selectedTime.serialNumber}: ${selectedTime.startTime} - ${selectedTime.endTime}` 
+                          `Sl No-${selectedTime.serialNumber}: ${selectedTime.startTime} - ${selectedTime.endTime}` 
                           : 'Select a time slot'}
                       </span>
                     </div>
@@ -953,11 +1039,11 @@ const ClientRescheduleAppointment = () => {
                 {showTimePicker && selectedDate && (
                   <div className="border border-slate-200 rounded-lg p-4 bg-white shadow-sm mb-4">
                     {/* Date Header */}
-                    <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-blue-600" />
-                          <span className="font-medium text-blue-800">
+                          <Calendar className="w-4 h-4 text-emerald-600" />
+                          <span className="font-medium text-emerald-800">
                             {new Date(selectedDate).toLocaleDateString('en-US', {
                               weekday: 'long',
                               year: 'numeric',
@@ -966,7 +1052,7 @@ const ClientRescheduleAppointment = () => {
                             })}
                           </span>
                         </div>
-                        <div className="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded-full flex items-center gap-1">
+                        <div className="text-sm text-emerald-600 bg-emerald-100 px-2 py-1 rounded-full flex items-center gap-1">
                           <Hash className="w-3 h-3" />
                           {filteredSlots.length} slots
                         </div>
@@ -983,15 +1069,15 @@ const ClientRescheduleAppointment = () => {
                               onClick={() => handleTimeSelect(slot)}
                               className={`p-3 border rounded-lg text-left transition-all relative
                                 ${selectedTime?._id === slot._id 
-                                  ? 'bg-blue-500 text-white border-blue-600 shadow-md' 
-                                  : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50 hover:border-blue-300'
+                                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-emerald-600 shadow-md' 
+                                  : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50 hover:border-emerald-300'
                                 }`}
                             >
                               {/* Serial Number Badge */}
                               <div className="absolute top-1.5 right-1.5">
                                 <div className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold
                                   ${selectedTime?._id === slot._id 
-                                    ? 'bg-blue-600 text-white' 
+                                    ? 'bg-emerald-600 text-white' 
                                     : 'bg-slate-100 text-slate-600'
                                   }`}
                                 >
@@ -1017,7 +1103,7 @@ const ClientRescheduleAppointment = () => {
                         <div className="flex justify-end">
                           <button
                             onClick={() => setShowTimePicker(false)}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm"
+                            className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition font-medium text-sm"
                           >
                             Done
                           </button>
@@ -1055,9 +1141,9 @@ const ClientRescheduleAppointment = () => {
           <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
             {/* New Appointment Summary */}
             {selectedSlotInfo && (
-              <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
-                <h4 className="font-semibold text-blue-800 mb-4 flex items-center gap-2">
-                  <Sparkles className="w-5 h-5" />
+              <div className="p-6 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg">
+                <h4 className="font-semibold text-emerald-800 mb-4 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-emerald-600" />
                   New Appointment Details
                 </h4>
                 
@@ -1068,28 +1154,28 @@ const ClientRescheduleAppointment = () => {
                     <div className="text-lg font-bold text-amber-600">#{appointment.slotSerialNumber || 'N/A'}</div>
                   </div>
                   
-                  <div className="flex items-center justify-between p-3 bg-blue-100 border border-blue-300 rounded-lg">
-                    <div className="text-sm text-blue-700">New Serial</div>
-                    <div className="text-lg font-bold text-blue-800">#{selectedSlotInfo.serialNumber}</div>
+                  <div className="flex items-center justify-between p-3 bg-emerald-100 border border-emerald-300 rounded-lg">
+                    <div className="text-sm text-emerald-700">New Serial</div>
+                    <div className="text-lg font-bold text-emerald-800">#{selectedSlotInfo.serialNumber}</div>
                   </div>
                 </div>
                 
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <Calendar className="w-5 h-5 text-blue-600" />
+                    <Calendar className="w-5 h-5 text-emerald-600" />
                     <div>
-                      <div className="text-xs text-blue-700 font-medium">Date</div>
-                      <div className="text-sm font-medium text-blue-800">
+                      <div className="text-xs text-emerald-700 font-medium">Date</div>
+                      <div className="text-sm font-medium text-emerald-800">
                         {selectedSlotInfo.formattedDate}
                       </div>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-3">
-                    <Clock className="w-5 h-5 text-blue-600" />
+                    <Clock className="w-5 h-5 text-emerald-600" />
                     <div>
-                      <div className="text-xs text-blue-700 font-medium">Time</div>
-                      <div className="text-sm font-medium text-blue-800">
+                      <div className="text-xs text-emerald-700 font-medium">Time</div>
+                      <div className="text-sm font-medium text-emerald-800">
                         {selectedSlotInfo.formattedTime}
                       </div>
                     </div>
@@ -1099,9 +1185,9 @@ const ClientRescheduleAppointment = () => {
                     Duration: {selectedSlotInfo.duration} minutes
                   </div>
                   
-                  <div className="pt-4 border-t border-blue-200">
-                    <div className="text-xs text-blue-700 font-medium mb-1">Doctor</div>
-                    <div className="text-sm font-medium text-blue-800">
+                  <div className="pt-4 border-t border-emerald-200">
+                    <div className="text-xs text-emerald-700 font-medium mb-1">Doctor</div>
+                    <div className="text-sm font-medium text-emerald-800">
                       Dr. {appointment.doctorInfo.name} - {appointment.doctorInfo.speciality}
                     </div>
                   </div>
@@ -1114,7 +1200,7 @@ const ClientRescheduleAppointment = () => {
                     setShowDatePicker(true);
                     setShowTimePicker(false);
                   }}
-                  className="mt-6 w-full px-4 py-2 text-sm border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-100 transition font-medium"
+                  className="mt-6 w-full px-4 py-2 text-sm border border-emerald-300 text-emerald-700 rounded-lg hover:bg-emerald-100 transition font-medium"
                 >
                   Change Selection
                 </button>
@@ -1126,7 +1212,7 @@ const ClientRescheduleAppointment = () => {
               {/* Important Notes */}
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
                 <h4 className="font-semibold text-amber-800 mb-3 flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5" />
+                  <AlertCircle className="w-5 h-5 text-amber-600" />
                   Important Notes
                 </h4>
                 <ul className="text-sm text-amber-700 space-y-2">
@@ -1153,21 +1239,12 @@ const ClientRescheduleAppointment = () => {
               <div className="bg-white border border-slate-200 rounded-xl p-6">
                 <div className="space-y-3">
                   <button
-                    onClick={handleReschedule}
+                    onClick={showRescheduleConfirmation}
                     disabled={submitting || !selectedDate || !selectedTime}
-                    className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 font-medium shadow-md hover:shadow-lg"
+                    className="w-full px-6 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 font-medium shadow-md hover:shadow-lg"
                   >
-                    {submitting ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>Processing...</span>
-                      </>
-                    ) : (
-                      <>
-                        <RotateCcw className="w-5 h-5" />
-                        <span>Confirm Reschedule</span>
-                      </>
-                    )}
+                    <RotateCw className="w-5 h-5" />
+                    <span>Confirm Reschedule</span>
                   </button>
                   
                   <div className="grid grid-cols-2 gap-3">
@@ -1194,9 +1271,9 @@ const ClientRescheduleAppointment = () => {
                   <div className="mt-6 p-4 bg-slate-50 rounded-lg">
                     <div className="text-sm text-slate-600 mb-2">Reschedule Summary</div>
                     <div className="text-sm font-medium text-slate-800">
-                      Changing from <span className="text-amber-600">Slot #{appointment.slotSerialNumber || 'N/A'}</span> 
+                      Changing from <span className="text-amber-600">Sl No:{appointment.slotSerialNumber || 'N/A'}</span> 
                       {' '}to{' '}
-                      <span className="text-blue-600">Slot #{selectedSlotInfo.serialNumber}</span>
+                      <span className="text-emerald-600">Sl No:{selectedSlotInfo.serialNumber}</span>
                     </div>
                   </div>
                 )}
