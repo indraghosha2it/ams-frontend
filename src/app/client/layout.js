@@ -104,7 +104,7 @@ export default function ClientLayout({ children }) {
     { name: 'Book Appointment', href: '/client/bookApp', icon: <PlusCircle className="size-5" /> },
     { name: 'Upcoming Appointments', href: '/client/upcomingApp', icon: <CalendarDays className="size-5" /> },
     { name: 'Past Appointments', href: '/client/pastApp', icon: <History className="size-5" /> },
-    { name: 'Services', href: '/client/services', icon: <Package className="size-5" /> },
+  
    
     { name: 'Settings', href: '/client/settings', icon: <Settings className="size-5" /> },
   ];

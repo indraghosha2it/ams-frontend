@@ -445,11 +445,7 @@ const PastAppointments = () => {
     }
   };
 
-  const handleViewDetails = (appointment) => {
-    // Implement view details functionality
-    toast.success(`Viewing details for appointment with Dr. ${appointment.doctorInfo.name}`);
-    // You could open a modal or navigate to a details page here
-  };
+ 
 
   const handleDownloadPrescription = (appointment) => {
     // Implement download prescription functionality
@@ -876,7 +872,7 @@ const PastAppointments = () => {
                 </button>
               ) : (
                 <button
-                  onClick={() => window.location.href = '/book-appointment'}
+                  onClick={() => window.location.href = '/client/bookApp'}
                   className="px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg hover:from-gray-700 hover:to-gray-800 transition-all font-medium"
                 >
                   Book New Appointment
@@ -997,13 +993,7 @@ const PastAppointments = () => {
                           {/* Action Buttons */}
                           <div className="flex flex-wrap gap-2 pt-2">
                             {/* View Details Button */}
-                            <button
-                              onClick={() => handleViewDetails(appointment)}
-                              className="px-3 py-1.5 text-sm text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-lg transition flex items-center gap-1"
-                            >
-                              <FileText className="w-3 h-3" />
-                              View Details
-                            </button>
+                            
                             
                             {/* Rate Appointment Button (for completed appointments only) */}
                             {appointment.status === 'completed' && (

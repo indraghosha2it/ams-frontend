@@ -9,12 +9,10 @@ import {
   User,
   MapPin,
   Stethoscope,
-  ChevronRight,
   CheckCircle,
   Clock as ClockIcon,
   XCircle,
   Phone,
-  Mail,
   AlertCircle,
   CalendarDays,
   Hash,
@@ -26,8 +24,11 @@ import {
   Filter,
   ChevronDown,
   ChevronUp,
-  X
+  X,
+  Trash2
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
 
 const UpcomingAppointments = () => {
   const [appointments, setAppointments] = useState([]);
@@ -35,6 +36,9 @@ const UpcomingAppointments = () => {
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState('');
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [appointmentToCancel, setAppointmentToCancel] = useState(null);
+  const router = useRouter();
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -285,6 +289,110 @@ const UpcomingAppointments = () => {
     return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
   };
 
+  // Helper function to check if appointment time has passed
+  const hasAppointmentTimePassed = (appointmentDate, appointmentTime) => {
+    const now = new Date();
+    const appointmentDateTime = new Date(appointmentDate);
+    const [hours, minutes] = appointmentTime.split(':').map(Number);
+    appointmentDateTime.setHours(hours, minutes, 0, 0);
+    return appointmentDateTime < now;
+  };
+
+  // Helper function to check if appointment can be cancelled
+  const canCancelAppointment = (appointmentDate, appointmentTime, status) => {
+    if (status === 'cancelled' || status === 'completed') return false;
+    
+    const now = new Date();
+    const appointmentDateTime = new Date(appointmentDate);
+    const [hours, minutes] = appointmentTime.split(':').map(Number);
+    appointmentDateTime.setHours(hours, minutes, 0, 0);
+    
+    return appointmentDateTime > now;
+  };
+
+  // Helper function to check if appointment can be rescheduled
+  const canRescheduleAppointment = (appointmentDate, appointmentTime, status) => {
+    if (status === 'cancelled' || status === 'completed') return false;
+    
+    const now = new Date();
+    const appointmentDateTime = new Date(appointmentDate);
+    const [hours, minutes] = appointmentTime.split(':').map(Number);
+    appointmentDateTime.setHours(hours, minutes, 0, 0);
+    
+    return appointmentDateTime > now;
+  };
+
+  // Show cancel confirmation modal
+  const showCancelConfirmation = (appointment) => {
+    // Check if appointment can be cancelled
+    if (!canCancelAppointment(appointment.appointmentDate, appointment.appointmentTime, appointment.status)) {
+      if (appointment.status === 'cancelled') {
+        toast.error('This appointment has already been cancelled.');
+      } else if (appointment.status === 'completed') {
+        toast.error('Cannot cancel a completed appointment.');
+      } else {
+        toast.error('Appointment time has already passed. Please contact the clinic directly if you need to make changes.');
+      }
+      return;
+    }
+
+    setAppointmentToCancel(appointment);
+    setShowCancelConfirm(true);
+  };
+
+  // Close cancel confirmation modal
+  const closeCancelConfirmation = () => {
+    setShowCancelConfirm(false);
+    setAppointmentToCancel(null);
+  };
+
+  // Perform the actual cancellation
+  const performCancellation = async (appointmentId) => {
+    try {
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const token = localStorage.getItem('token');
+      
+      console.log('📱 Frontend: Cancelling appointment ID:', appointmentId);
+      
+      const response = await axios({
+        method: 'put',
+        url: `${BACKEND_URL}/api/appointments/${appointmentId}/cancel`,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      console.log('✅ Cancel response:', response.data);
+      
+      if (response.data.success) {
+        toast.success('Appointment cancelled successfully');
+        fetchAppointments(); // Refresh the list
+        closeCancelConfirmation();
+      }
+    } catch (error) {
+      console.error('❌ Error cancelling appointment:', error);
+      
+      if (error.response) {
+        if (error.response.status === 403) {
+          toast.error('You do not have permission to cancel this appointment');
+        } else if (error.response.status === 404) {
+          toast.error('Appointment not found');
+        } else if (error.response.status === 400) {
+          toast.error(error.response.data.message || 'Cannot cancel this appointment');
+        } else {
+          toast.error('Failed to cancel appointment');
+        }
+      } else {
+        toast.error('Failed to cancel appointment');
+      }
+    }
+  };
+
+  // Handle cancel button click
+  const handleCancelClick = (appointment) => {
+    showCancelConfirmation(appointment);
+  };
+
   // Helper function to get card class based on status
   const getStatusCardClass = (status) => {
     const statusConfig = {
@@ -382,17 +490,6 @@ const UpcomingAppointments = () => {
       'completed': 'bg-green-100 text-green-800'
     };
     return colors[status] || 'bg-slate-100 text-slate-800';
-  };
-
-  // Helper function for details button
-  const getDetailsButtonColor = (status) => {
-    const colors = {
-      'pending': 'text-blue-600 bg-blue-50 hover:bg-blue-100',
-      'confirmed': 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100',
-      'cancelled': 'text-red-600 bg-red-50 hover:bg-red-100',
-      'completed': 'text-green-600 bg-green-50 hover:bg-green-100'
-    };
-    return colors[status] || 'text-slate-600 bg-slate-50 hover:bg-slate-100';
   };
 
   // Helper functions for today's appointment indicator
@@ -535,35 +632,6 @@ const UpcomingAppointments = () => {
     return '';
   };
 
-  const handleCancelAppointment = async (appointmentId) => {
-    if (!confirm('Are you sure you want to cancel this appointment?')) {
-      return;
-    }
-    
-    try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
-      const token = localStorage.getItem('token');
-      
-      const response = await axios.put(
-        `${BACKEND_URL}/api/appointments/${appointmentId}/status`,
-        { status: 'cancelled' },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-      
-      if (response.data.success) {
-        toast.success('Appointment cancelled successfully');
-        fetchAppointments(); // Refresh the list
-      }
-    } catch (error) {
-      console.error('Error cancelling appointment:', error);
-      toast.error('Failed to cancel appointment');
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
@@ -587,6 +655,62 @@ const UpcomingAppointments = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 md:p-6">
       <Toaster position="top-right" />
+      
+      {/* Cancel Confirmation Modal */}
+      {showCancelConfirm && appointmentToCancel && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-5 animate-in zoom-in-95">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Trash2 className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Cancel Appointment</h3>
+                <p className="text-slate-600 text-sm">Are you sure you want to cancel?</p>
+              </div>
+            </div>
+            
+            <div className="bg-slate-50 p-3 rounded-lg mb-4 text-sm">
+              <div className="font-medium text-slate-800 mb-1">Appointment Details:</div>
+              <div className="text-slate-600 space-y-1">
+                <div className="truncate">
+                  <span className="font-medium">Dr. {appointmentToCancel.doctorInfo.name}</span>
+                </div>
+                <div>
+                  {new Date(appointmentToCancel.appointmentDate).toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    month: 'short', 
+                    day: 'numeric' 
+                  })}
+                </div>
+                <div>{appointmentToCancel.appointmentTime} - {appointmentToCancel.endTime}</div>
+              </div>
+            </div>
+            
+            <div className="text-red-600 bg-red-50 p-3 rounded-lg mb-5 text-sm">
+              <div className="flex items-center gap-2 font-medium">
+                <AlertCircle className="w-4 h-4" />
+                This action cannot be undone
+              </div>
+            </div>
+            
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={closeCancelConfirmation}
+                className="px-4 py-2 text-sm text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition font-medium"
+              >
+                Keep Appointment
+              </button>
+              <button
+                onClick={() => performCancellation(appointmentToCancel._id)}
+                className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
+              >
+                Cancel Appointment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       <div className="max-w-6xl mx-auto">
         {/* Header */}
@@ -946,6 +1070,9 @@ const UpcomingAppointments = () => {
               
               const isToday = appointmentDate.setHours(0, 0, 0, 0) === today.getTime();
               const isTomorrow = new Date(today).setDate(today.getDate() + 1) === appointmentDate.getTime();
+              const timePassed = hasAppointmentTimePassed(appointment.appointmentDate, appointment.appointmentTime);
+              const canCancel = canCancelAppointment(appointment.appointmentDate, appointment.appointmentTime, appointment.status);
+              const canReschedule = canRescheduleAppointment(appointment.appointmentDate, appointment.appointmentTime, appointment.status);
               
               return (
                 <div
@@ -977,6 +1104,11 @@ const UpcomingAppointments = () => {
                               <span className="text-lg font-semibold text-slate-800">
                                 {appointment.appointmentTime} - {appointment.endTime}
                               </span>
+                              {timePassed && (
+                                <span className="text-xs px-2 py-0.5 rounded bg-red-100 text-red-800 font-medium">
+                                  Time Expired
+                                </span>
+                              )}
                             </div>
                             
                             {/* Serial Number */}
@@ -1039,38 +1171,68 @@ const UpcomingAppointments = () => {
                           
                           {/* Action Buttons */}
                           <div className="flex flex-wrap gap-2 pt-2">
-                            {appointment.status !== 'cancelled' && (
-                              <>
-                                <button
-                                  onClick={() => handleCancelAppointment(appointment._id)}
-                                  className="px-3 py-1.5 text-sm text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition flex items-center gap-1"
-                                >
-                                  <XCircle className="w-3 h-3" />
-                                  Cancel
-                                </button>
-                                
-                                <button
-                                  onClick={() => {
-                                    toast.success('Reschedule feature coming soon!');
-                                  }}
-                                  className="px-3 py-1.5 text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition flex items-center gap-1"
-                                >
-                                  <Calendar className="w-3 h-3" />
-                                  Reschedule
-                                </button>
-                              </>
-                            )}
+                            {/* Cancel Button with Tooltip */}
+                            <div className="relative group">
+                              <button
+                                onClick={() => handleCancelClick(appointment)}
+                                disabled={!canCancel}
+                                className={`px-3 py-1.5 text-sm rounded-lg transition flex items-center gap-1 ${
+                                  canCancel
+                                    ? 'text-red-600 bg-red-50 hover:bg-red-100'
+                                    : 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                                }`}
+                              >
+                                <XCircle className="w-3 h-3" />
+                                {appointment.status === 'cancelled' ? 'Cancelled' : 'Cancel'}
+                              </button>
+                              
+                              {/* Tooltip for disabled cancel button */}
+                              {!canCancel && (
+                                <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 bg-gray-800 text-white text-xs rounded-lg py-2 px-3 z-10">
+                                  <div className="font-medium mb-1">Cannot Cancel Appointment</div>
+                                  <div className="text-gray-300">
+                                    {appointment.status === 'cancelled' 
+                                      ? 'This appointment has already been cancelled.'
+                                      : appointment.status === 'completed'
+                                      ? 'This appointment has already been completed.'
+                                      : 'Appointment time has already passed. Please contact the clinic directly for any changes.'}
+                                  </div>
+                                  <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-gray-800"></div>
+                                </div>
+                              )}
+                            </div>
                             
-                            <button
-                              onClick={() => {
-                                // View appointment details
-                                toast.success('View details feature coming soon!');
-                              }}
-                              className={`px-3 py-1.5 text-sm ${getDetailsButtonColor(appointment.status)} rounded-lg transition flex items-center gap-1`}
-                            >
-                              View Details
-                              <ChevronRight className="w-3 h-3" />
-                            </button>
+                            {/* Reschedule Button with Tooltip */}
+                            <div className="relative group">
+                              <button
+                                onClick={() => canReschedule && router.push(`/client/rescheduleAppointment?id=${appointment._id}`)}
+                                disabled={!canReschedule}
+                                className={`px-3 py-1.5 text-sm rounded-lg transition flex items-center gap-1 ${
+                                  canReschedule
+                                    ? 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+                                    : 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                                }`}
+                                title={canReschedule ? "Reschedule this appointment" : "Cannot reschedule this appointment"}
+                              >
+                                <Calendar className="w-3 h-3" />
+                                Reschedule
+                              </button>
+                              
+                              {/* Tooltip for disabled reschedule button */}
+                              {!canReschedule && (
+                                <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-56 bg-gray-800 text-white text-xs rounded-lg py-2 px-3 z-10">
+                                  <div className="font-medium mb-1">Cannot Reschedule Appointment</div>
+                                  <div className="text-gray-300">
+                                    {appointment.status === 'cancelled' 
+                                      ? 'This appointment has been cancelled. Please book a new appointment.'
+                                      : appointment.status === 'completed'
+                                      ? 'This appointment has been completed.'
+                                      : 'Appointment time has already passed.Please take new appointment.'}
+                                  </div>
+                                  <div className="absolute top-full left-4 -mt-1 border-4 border-transparent border-t-gray-800"></div>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1078,47 +1240,46 @@ const UpcomingAppointments = () => {
                   </div>
                   
                   {/* Special indicator for today's appointments */}
-                {/* Special indicator for today's appointments */}
-{isToday && (
-  <div className={`${getTodayIndicatorBg(appointment.status)} border-t ${getTodayIndicatorBorder(appointment.status)} px-6 py-2`}>
-    <div className={`flex items-center gap-2 ${getTodayIndicatorText(appointment.status)} text-sm`}>
-      <AlertCircle className="w-4 h-4" />
-      <span className="font-medium">
-        {(() => {
-          switch(appointment.status) {
-            case 'confirmed':
-              return 'Today\'s Appointment is Confirmed';
-            case 'cancelled':
-              return 'Today\'s Appointment is Cancelled';
-            case 'pending':
-              return 'Today\'s Appointment Request is Still Pending';
-            case 'completed':
-              return 'Today\'s Appointment is Completed';
-            default:
-              return 'Today\'s Appointment';
-          }
-        })()}
-      </span>
-      - 
-      <span>
-        {(() => {
-          switch(appointment.status) {
-            case 'confirmed':
-              return 'Please arrive 30 minutes before your scheduled time.';
-            case 'cancelled':
-              return 'Please Take an Appointment again.';
-            case 'pending':
-              return 'Please wait for the confirmation Mail.';
-            case 'completed':
-              return 'Thank you for your visit!';
-            default:
-              return 'Please arrive 10 minutes before your scheduled time.';
-          }
-        })()}
-      </span>
-    </div>
-  </div>
-)}
+                  {isToday && (
+                    <div className={`${getTodayIndicatorBg(appointment.status)} border-t ${getTodayIndicatorBorder(appointment.status)} px-6 py-2`}>
+                      <div className={`flex items-center gap-2 ${getTodayIndicatorText(appointment.status)} text-sm`}>
+                        <AlertCircle className="w-4 h-4" />
+                        <span className="font-medium">
+                          {(() => {
+                            switch(appointment.status) {
+                              case 'confirmed':
+                                return 'Today\'s Appointment is Confirmed';
+                              case 'cancelled':
+                                return 'Today\'s Appointment is Cancelled';
+                              case 'pending':
+                                return 'Today\'s Appointment Request is Still Pending';
+                              case 'completed':
+                                return 'Today\'s Appointment is Completed';
+                              default:
+                                return 'Today\'s Appointment';
+                            }
+                          })()}
+                        </span>
+                        - 
+                        <span>
+                          {(() => {
+                            switch(appointment.status) {
+                              case 'confirmed':
+                                return 'Please arrive 30 minutes before your scheduled time.';
+                              case 'cancelled':
+                                return 'Please Take an Appointment again.';
+                              case 'pending':
+                                return 'Please wait for the confirmation Mail.';
+                              case 'completed':
+                                return 'Thank you for your visit!';
+                              default:
+                                return 'Please arrive 10 minutes before your scheduled time.';
+                            }
+                          })()}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })
@@ -1237,11 +1398,11 @@ const UpcomingAppointments = () => {
                 </ul>
               </div>
               <div>
-                <div className="font-medium text-blue-700 mb-1">Need Help?</div>
+                <div className="font-medium text-blue-700 mb-1">Rescheduling</div>
                 <ul className="text-blue-600 space-y-1">
-                  <li>• Call: (555) 123-4567</li>
-                  <li>• Email: support@clinic.com</li>
-                  <li>• Hours: Mon-Fri, 8AM-6PM</li>
+                  <li>• Reschedule up to 2 hours before appointment</li>
+                  <li>• Select new date/time from available slots</li>
+                  <li>• Rescheduled appointments require re-approval</li>
                 </ul>
               </div>
             </div>
