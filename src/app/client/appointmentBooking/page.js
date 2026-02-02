@@ -2000,7 +2000,7 @@ const ClientAppointmentBooking = () => {
         toast.success('Confirmation email has been sent to your email address!');
         setTimeout(() => {
           if (userData) {
-            router.push('/upcomingApp');
+            router.push('/client/upcomingApp');
           } else {
             router.push('/bookApp');
           }
@@ -2032,7 +2032,7 @@ const ClientAppointmentBooking = () => {
         toast.success('You will receive a confirmation email once approved!');
         setTimeout(() => {
           if (userData) {
-            router.push('/upcomingApp');
+            router.push('/client/upcomingApp');
           } else {
             router.push('/bookApp');
           }

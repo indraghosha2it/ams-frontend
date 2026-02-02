@@ -1003,6 +1003,7 @@ import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { toast, Toaster } from 'react-hot-toast';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation'; 
 import {
   Search,
   Filter,
@@ -1057,6 +1058,7 @@ const AllAppointments = () => {
   });
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(null);
   const [appointmentToDelete, setAppointmentToDelete] = useState(null); // Added for delete modal
+    const router = useRouter();
 
   const statusOptions = [
     { value: 'all', label: 'All Status', color: 'bg-gray-100 text-gray-800' },
@@ -1840,13 +1842,20 @@ const AllAppointments = () => {
                       <div className="col-span-1">
                         <div className="flex justify-center gap-2">
                           {/* Reschedule Button */}
-                          <button
+                          {/* <button
                             onClick={() => handleReschedule(appointment._id)}
                             className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition"
                             title="Reschedule Appointment"
                           >
                             <CalendarDays className="w-4 h-4" />
-                          </button>
+                          </button> */}
+                          <button
+  onClick={() => router.push(`/admin/rescheduleApp?id=${appointment._id}`)}
+  className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition"
+  title="Reschedule Appointment"
+>
+  <CalendarDays className="w-4 h-4" />
+</button>
                           
                           {/* Delete Button */}
                           <button
