@@ -1,59 +1,284 @@
 // src/app/admin/dashboard/page.js
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import axios from 'axios';
+import { toast, Toaster } from 'react-hot-toast';
 import { 
   Calendar, 
   Users, 
-  Package, 
   Briefcase, 
   PlusCircle,
   BarChart3,
   UserCircle,
-  Building2,
   Eye,
   Edit3,
-  Trash2 
+  Trash2,
+  Clock,
+  FileText,
+  Activity,
+  Stethoscope,
+  UserPlus,
+  Shield,
+  CheckCircle,
+  AlertCircle,
+  TrendingUp,
+  CalendarRange,
+  TrendingDown,
+  ChevronRight,
+  ArrowUpRight,
+  ArrowDownRight
 } from 'lucide-react';
-import { useState } from 'react';
 
 export default function DashboardPage() {
-  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    todayAppointments: 0,
+    upcomingAppointments: 0,
+    totalAppointments: 0,
+    totalDoctors: 0,
+    totalPatients: 0,
+    pendingAppointments: 0
+  });
+  const [todayAppointments, setTodayAppointments] = useState([]);
+  const [recentAppointments, setRecentAppointments] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [monthlyTrend, setMonthlyTrend] = useState({ up: true, percentage: 12 });
   
-  // Move these from layout.js
-  const stats = [
-    { label: 'Total Appointments', value: '1,254', change: '+12%', icon: <Calendar className="size-5" /> },
-    { label: 'Active Services', value: '24', change: '+3', icon: <Package className="size-5" /> },
-    { label: 'Total Clients', value: '856', change: '+8%', icon: <Users className="size-5" /> },
-    { label: 'Staff Members', value: '12', change: '+2', icon: <Briefcase className="size-5" /> },
-  ];
-
-  const recentAppointments = [
-    { id: 1, client: 'John Doe', service: 'Haircut', time: 'Today, 10:00 AM', status: 'Confirmed' },
-    { id: 2, client: 'Jane Smith', service: 'Massage', time: 'Today, 11:30 AM', status: 'Pending' },
-    { id: 3, client: 'Bob Johnson', service: 'Facial', time: 'Today, 2:00 PM', status: 'Confirmed' },
-    { id: 4, client: 'Alice Brown', service: 'Manicure', time: 'Tomorrow, 9:00 AM', status: 'Pending' },
-  ];
-
   const quickActions = [
-    { title: 'Add New Service', icon: <PlusCircle />, color: 'bg-blue-500', href: '/admin/services/create' },
-    { title: 'Schedule Appointment', icon: <Calendar />, color: 'bg-green-500', href: '/admin/appointments/create' },
-    { title: 'Add Staff Member', icon: <UserCircle />, color: 'bg-purple-500', href: '/admin/staff/create' },
-    { title: 'View Reports', icon: <BarChart3 />, color: 'bg-orange-500', href: '/admin/reports' },
+    { title: 'Add New Doctor', icon: <PlusCircle />, color: 'from-emerald-500 to-teal-600', href: '/admin/createService' },
+    { title: 'Schedule Appointment', icon: <Calendar />, color: 'from-blue-500 to-cyan-600', href: '/admin/doctors' },
+    { title: 'Add Patient', icon: <UserPlus />, color: 'from-purple-500 to-indigo-600', href: '/admin/createClient' },
   ];
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+const fetchDashboardData = async () => {
+  try {
+    setLoading(true);
+    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+    const token = localStorage.getItem('token');
+    
+    // Fetch appointments
+    const appointmentsResponse = await axios.get(`${BACKEND_URL}/api/appointments`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    // Fetch doctors
+    const doctorsResponse = await axios.get(`${BACKEND_URL}/api/doctors`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (appointmentsResponse.data.success && doctorsResponse.data.success) {
+      const allAppointments = appointmentsResponse.data.data;
+      const allDoctors = doctorsResponse.data.data;
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      console.log('📊 === DASHBOARD STATS DEBUG ===');
+      console.log('Total appointments from API:', allAppointments.length);
+      
+      // Get current month start and end dates (simpler approach)
+      const currentYear = today.getFullYear();
+      const currentMonth = today.getMonth();
+      
+      // First day of current month
+      const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+      // Last day of current month
+      const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
+      
+      console.log('Current month:', firstDayOfMonth.toDateString(), 'to', lastDayOfMonth.toDateString());
+      
+      // Calculate stats
+      const todayAppointmentsCount = allAppointments.filter(app => {
+        const appDate = new Date(app.appointmentDate);
+        appDate.setHours(0, 0, 0, 0);
+        return appDate.getTime() === today.getTime();
+      }).length;
+      
+      const upcomingAppointmentsCount = allAppointments.filter(app => {
+        const appDate = new Date(app.appointmentDate);
+        return appDate > new Date(today.getTime() + 24 * 60 * 60 * 1000);
+      }).length;
+      
+      const pendingAppointmentsCount = allAppointments.filter(app => app.status === 'pending').length;
+      
+      // Calculate current month appointments - SIMPLIFIED
+      const currentMonthAppointments = allAppointments.filter(app => {
+        try {
+          const appDate = new Date(app.appointmentDate);
+          // Reset time to compare only dates
+          appDate.setHours(0, 0, 0, 0);
+          const monthStart = new Date(firstDayOfMonth);
+          monthStart.setHours(0, 0, 0, 0);
+          const monthEnd = new Date(lastDayOfMonth);
+          monthEnd.setHours(23, 59, 59, 999);
+          
+          return appDate >= monthStart && appDate <= monthEnd;
+        } catch (error) {
+          console.error('Error parsing date:', app.appointmentDate);
+          return false;
+        }
+      }).length;
+      
+      console.log('Current month appointments count:', currentMonthAppointments);
+      
+      // Verify by checking a few appointments
+      console.log('Checking first 5 appointments:');
+      allAppointments.slice(0, 5).forEach((app, index) => {
+        const appDate = new Date(app.appointmentDate);
+        console.log(`${index + 1}. ${app.patient?.fullName || 'Unknown'}: ${appDate.toDateString()} (Month: ${appDate.getMonth()}, Current Month: ${currentMonth})`);
+      });
+      
+      // Get today's appointments for display
+      const todaysApps = allAppointments.filter(app => {
+        try {
+          const appDate = new Date(app.appointmentDate);
+          appDate.setHours(0, 0, 0, 0);
+          return appDate.getTime() === today.getTime();
+        } catch (error) {
+          return false;
+        }
+      }).slice(0, 6);
+      
+      // Get recent appointments (last 4)
+      const recentApps = allAppointments
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 4);
+      
+      // Calculate monthly trend (for current month vs last month)
+      const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+      const prevMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+      
+      // First and last day of previous month
+      const firstDayPrevMonth = new Date(prevMonthYear, prevMonth, 1);
+      const lastDayPrevMonth = new Date(prevMonthYear, prevMonth + 1, 0);
+      
+      const prevMonthApps = allAppointments.filter(app => {
+        try {
+          const appDate = new Date(app.appointmentDate);
+          appDate.setHours(0, 0, 0, 0);
+          const prevMonthStart = new Date(firstDayPrevMonth);
+          prevMonthStart.setHours(0, 0, 0, 0);
+          const prevMonthEnd = new Date(lastDayPrevMonth);
+          prevMonthEnd.setHours(23, 59, 59, 999);
+          
+          return appDate >= prevMonthStart && appDate <= prevMonthEnd;
+        } catch (error) {
+          return false;
+        }
+      }).length;
+      
+      const monthlyPercentage = prevMonthApps > 0 
+        ? Math.round(((currentMonthAppointments - prevMonthApps) / prevMonthApps) * 100)
+        : currentMonthAppointments > 0 ? 100 : 0;
+      
+      setStats({
+        todayAppointments: todayAppointmentsCount,
+        upcomingAppointments: upcomingAppointmentsCount,
+        totalAppointments: currentMonthAppointments, // This should be current month appointments
+        totalAppointmentsAllTime: allAppointments.length, // Keep this if needed elsewhere
+        totalDoctors: allDoctors.length,
+        totalPatients: new Set(allAppointments.map(app => app.patient?.email)).size,
+        pendingAppointments: pendingAppointmentsCount
+      });
+      
+      setTodayAppointments(todaysApps);
+      setRecentAppointments(recentApps);
+      setDoctors(allDoctors);
+      setMonthlyTrend({
+        up: currentMonthAppointments >= prevMonthApps,
+        percentage: Math.abs(monthlyPercentage)
+      });
+      
+      console.log('✅ Stats set:', {
+        currentMonthAppointments,
+        todayAppointmentsCount,
+        upcomingAppointmentsCount,
+        pendingAppointmentsCount
+      });
+    }
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+    toast.error('Failed to load dashboard data');
+  } finally {
+    setLoading(false);
+  }
+};
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'confirmed': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400';
+      case 'pending': return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400';
+      case 'cancelled': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+      default: return 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-400';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'confirmed': return <CheckCircle className="size-3 mr-1" />;
+      case 'pending': return <Clock className="size-3 mr-1" />;
+      case 'cancelled': return <AlertCircle className="size-3 mr-1" />;
+      default: return <Clock className="size-3 mr-1" />;
+    }
+  };
+
+  const getDoctorStatusColor = (status) => {
+    switch (status) {
+      case 'active': return 'bg-emerald-100 text-emerald-800';
+      case 'inactive': return 'bg-slate-100 text-slate-800';
+      case 'on_leave': return 'bg-amber-100 text-amber-800';
+      default: return 'bg-slate-100 text-slate-800';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50 p-6">
+        <Toaster position="top-right" />
+        <div className="flex justify-center items-center h-96">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <h3 className="text-xl font-semibold text-slate-800">Loading Dashboard</h3>
+            <p className="text-slate-600 mt-2">Please wait while we fetch your data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
       {/* Welcome Banner */}
       <div className="mb-8">
-        <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-6 text-white">
+        <div className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold mb-2">Welcome back, Admin!</h1>
-              <p className="text-blue-100">Here's what's happening with your business today.</p>
+              <h1 className="text-2xl font-bold mb-2">Welcome back, Admin! 👋</h1>
+              <p className="text-emerald-100 opacity-90">Here's your dashboard overview.</p>
+              <div className="flex items-center mt-4 space-x-4">
+                <div className="flex items-center">
+                  <Clock className="size-4 mr-2" />
+                  <span className="text-sm">{new Date().toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}</span>
+                </div>
+                <div className="flex items-center">
+                  <Activity className="size-4 mr-2" />
+                  <span className="text-sm">{stats.todayAppointments} appointments scheduled today</span>
+                </div>
+              </div>
             </div>
             <div className="hidden md:block">
-              <Calendar className="size-24 opacity-20" />
+              <Stethoscope className="size-24 opacity-20" />
             </div>
           </div>
         </div>
@@ -61,125 +286,284 @@ export default function DashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat, index) => (
-          <div key={index} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-4">
-              <div className={`p-3 rounded-lg ${index === 0 ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 
-                index === 1 ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
-                index === 2 ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' :
-                'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'}`}>
-                {stat.icon}
-              </div>
-              <span className="text-sm font-medium text-green-600 dark:text-green-400">{stat.change}</span>
+        {/* Today's Appointments */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 rounded-lg bg-gradient-to-r from-emerald-400 to-teal-500 shadow-md">
+              <Calendar className="size-5 text-white" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{stat.value}</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
+            <div className={`flex items-center text-sm font-medium ${monthlyTrend.up ? 'text-emerald-600' : 'text-red-600'}`}>
+              {monthlyTrend.up ? <ArrowUpRight className="size-4 mr-1" /> : <ArrowDownRight className="size-4 mr-1" />}
+              {monthlyTrend.percentage}%
+            </div>
           </div>
-        ))}
-      </div>
+          <h3 className="text-2xl font-bold text-slate-900 mb-1">{stats.todayAppointments}</h3>
+          <p className="text-sm text-slate-600">Today's Appointments</p>
+          <div className="mt-2 text-xs text-slate-500">
+            <span className="inline-flex items-center">
+              <TrendingUp className="size-3 mr-1" />
+              {stats.pendingAppointments} pending approval
+            </span>
+          </div>
+        </div>
 
-      {/* Quick Actions */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {quickActions.map((action, index) => (
-            <Link
-              key={index}
-              href={action.href}
-              className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow group"
-            >
-              <div className={`inline-flex p-3 rounded-lg mb-4 ${action.color} text-white`}>
-                {action.icon}
-              </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                {action.title}
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Click to {action.title.toLowerCase()}
-              </p>
-            </Link>
-          ))}
+        {/* Upcoming Appointments */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 rounded-lg bg-gradient-to-r from-blue-400 to-cyan-500 shadow-md">
+              <CalendarRange className="size-5 text-white" />
+            </div>
+            <div className="text-sm font-medium text-blue-600">Total</div>
+          </div>
+          <h3 className="text-2xl font-bold text-slate-900 mb-1">{stats.upcomingAppointments}</h3>
+          <p className="text-sm text-slate-600">Upcoming Appointments</p>
+          <div className="mt-2 text-xs text-slate-500">
+            Scheduled in advance
+          </div>
+        </div>
+
+        {/* Total Appointments (Monthly) */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 rounded-lg bg-gradient-to-r from-purple-400 to-indigo-500 shadow-md">
+              <FileText className="size-5 text-white" />
+            </div>
+            <div className="text-sm font-medium text-purple-600">This month</div>
+          </div>
+          <h3 className="text-2xl font-bold text-slate-900 mb-1">{stats.totalAppointments}</h3>
+          <p className="text-sm text-slate-600">Total Appointments</p>
+          <div className="mt-2 text-xs text-slate-500">
+            All appointments this month
+          </div>
+        </div>
+
+        {/* Doctors Overview */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-3 rounded-lg bg-gradient-to-r from-amber-400 to-orange-500 shadow-md">
+              <Stethoscope className="size-5 text-white" />
+            </div>
+            <div className="text-sm font-medium text-amber-600">Active</div>
+          </div>
+          <h3 className="text-2xl font-bold text-slate-900 mb-1">{stats.totalDoctors}</h3>
+          <p className="text-sm text-slate-600">Doctors Available</p>
+          <div className="mt-2 text-xs text-slate-500">
+            {doctors.filter(d => d.status === 'active').length} active doctors
+          </div>
         </div>
       </div>
 
-      {/* Recent Appointments & Content */}
+
+      {/* Today's Appointments & Doctors Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Today's Appointments */}
+        <div className="lg:col-span-2">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-slate-900">Today's Appointments</h2>
+                <Link href="/admin/allAppointments?tab=today" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium flex items-center">
+                  View All <ChevronRight className="size-4 ml-1" />
+                </Link>
+              </div>
+            </div>
+            <div className="p-6">
+              {todayAppointments.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="text-slate-400 text-4xl mb-3">📅</div>
+                  <h3 className="text-lg font-semibold text-slate-700 mb-2">No appointments today</h3>
+                  <p className="text-slate-500 mb-4">No appointments scheduled for today</p>
+                  <Link
+                    href="/admin/allAppointments"
+                    className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
+                  >
+                    Schedule Appointment
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {todayAppointments.map((appointment) => (
+                    <div key={appointment._id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mr-4">
+                          <UserCircle className="size-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-slate-900">{appointment.patient?.fullName || 'N/A'}</h4>
+                          <p className="text-sm text-slate-600">{appointment.appointmentTime || 'N/A'} • {appointment.doctorInfo?.name || 'N/A'}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
+                          {getStatusIcon(appointment.status)}
+                          {appointment.status?.charAt(0).toUpperCase() + appointment.status?.slice(1)}
+                        </span>
+                        <Link
+                          href={`/admin/allAppointments`}
+                          className="text-emerald-600 hover:text-emerald-800 p-1.5 hover:bg-emerald-50 rounded-lg transition"
+                          title="View Details"
+                        >
+                          <Eye className="size-4" />
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Doctors Overview */}
+        <div>
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-slate-900">Doctors Overview</h2>
+                <Link href="/admin/doctors" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+                  View All →
+                </Link>
+              </div>
+            </div>
+            <div className="p-6">
+              {doctors.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="text-slate-400 text-4xl mb-3">👨‍⚕️</div>
+                  <h3 className="text-lg font-semibold text-slate-700 mb-2">No doctors</h3>
+                  <p className="text-slate-500 mb-4">Add your first doctor to get started</p>
+                  <Link
+                    href="/admin/createService"
+                    className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
+                  >
+                    Add Doctor
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {doctors.slice(0, 5).map((doctor) => (
+                    <div key={doctor._id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
+                      <div className="flex items-center">
+                        {doctor.image?.url ? (
+                          <img 
+                            src={doctor.image.url} 
+                            alt={doctor.name}
+                            className="w-10 h-10 rounded-full object-cover mr-3"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mr-3">
+                            <Stethoscope className="size-5" />
+                          </div>
+                        )}
+                        <div>
+                          <h4 className="font-medium text-slate-900">{doctor.name}</h4>
+                          <p className="text-xs text-slate-600">{doctor.speciality}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs px-2 py-1 rounded-full ${getDoctorStatusColor(doctor.status)}`}>
+                          {doctor.status === 'active' ? 'Active' : 
+                           doctor.status === 'on_leave' ? 'On Leave' : 'Inactive'}
+                        </span>
+                        <div className="text-xs text-slate-500">
+                          {doctor.timeSlots?.filter(s => s.status === 'available').length || 0} slots
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Stats Summary */}
+              <div className="mt-4 pt-4 border-t border-slate-200">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-emerald-600">
+                      {doctors.filter(d => d.status === 'active').length}
+                    </div>
+                    <div className="text-xs text-slate-600">Active Doctors</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-amber-600">
+                      {doctors.reduce((total, doctor) => total + (doctor.timeSlots?.filter(s => s.status === 'available').length || 0), 0)}
+                    </div>
+                    <div className="text-xs text-slate-600">Available Slots</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Activity & Upcoming Appointments */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
         {/* Recent Appointments */}
         <div className="lg:col-span-2">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Recent Appointments</h2>
-                <Link href="/admin/appointments" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-                  View All
+                <h2 className="text-xl font-bold text-slate-900">Recent Appointments</h2>
+                <Link href="/admin/allAppointments" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+                  View All →
                 </Link>
               </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-700/50">
+                <thead className="bg-slate-50/50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Client
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                      Patient
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Service
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                      Doctor
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Time
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
+                      Date & Time
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-600 uppercase tracking-wider">
                       Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="divide-y divide-slate-200">
                   {recentAppointments.map((appointment) => (
-                    <tr key={appointment.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                    <tr key={appointment._id} className="hover:bg-slate-50/50">
+                      <td className="px-6 py-4">
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 size-10">
-                            <div className="bg-gradient-to-r from-blue-400 to-purple-400 size-10 rounded-full flex items-center justify-center">
-                              <UserCircle className="size-6 text-white" />
-                            </div>
+                          <div className="flex-shrink-0 w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mr-3">
+                            <UserCircle className="w-4 h-4 text-emerald-600" />
                           </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">
-                              {appointment.client}
+                          <div>
+                            <div className="text-sm font-semibold text-slate-900">
+                              {appointment.patient?.fullName || 'N/A'}
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              {appointment.patient?.email || 'N/A'}
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900 dark:text-white">{appointment.service}</div>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-slate-900">{appointment.doctorInfo?.name || 'N/A'}</div>
+                        <div className="text-xs text-slate-500">{appointment.doctorInfo?.speciality || 'N/A'}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900 dark:text-white">{appointment.time}</div>
+                      <td className="px-6 py-4">
+                        <div className="text-sm font-medium text-slate-900">
+                          {new Date(appointment.appointmentDate).toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric' 
+                          })}
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          {appointment.appointmentTime || 'N/A'}
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                          appointment.status === 'Confirmed' 
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-                        }`}>
-                          {appointment.status}
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
+                          {getStatusIcon(appointment.status)}
+                          {appointment.status?.charAt(0).toUpperCase() + appointment.status?.slice(1)}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center space-x-2">
-                          <button className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">
-                            <Eye className="size-4" />
-                          </button>
-                          <button className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300">
-                            <Edit3 className="size-4" />
-                          </button>
-                          <button className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
-                            <Trash2 className="size-4" />
-                          </button>
-                        </div>
                       </td>
                     </tr>
                   ))}
@@ -189,66 +573,106 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Activity Feed */}
+        {/* Quick Stats */}
         <div>
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-8">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Activity Feed</h2>
-            </div>
-            <div className="p-6 space-y-4">
-              {[
-                { user: 'John Doe', action: 'booked an appointment', time: '10 min ago' },
-                { user: 'Staff Member', action: 'updated service pricing', time: '1 hour ago' },
-                { user: 'Jane Smith', action: 'completed payment', time: '2 hours ago' },
-                { user: 'System', action: 'weekly backup completed', time: '3 hours ago' },
-              ].map((activity, index) => (
-                <div key={index} className="flex items-start space-x-3">
-                  <div className="flex-shrink-0">
-                    <div className="bg-gradient-to-r from-blue-400 to-purple-400 size-10 rounded-full flex items-center justify-center">
-                      <UserCircle className="size-5 text-white" />
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-900 dark:text-white">
-                      <span className="font-semibold">{activity.user}</span> {activity.action}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{activity.time}</p>
+          <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-6">
+            <h3 className="font-semibold text-emerald-800 mb-4 flex items-center gap-2">
+              <Activity className="size-4" />
+              Quick Insights
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-slate-600 text-sm">Total Patients</div>
+                  <div className="font-semibold text-slate-900">{stats.totalPatients}</div>
+                </div>
+                <div className="text-emerald-500 bg-emerald-100 p-2 rounded-lg">
+                  <Users className="size-4" />
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-slate-600 text-sm">Pending Approvals</div>
+                  <div className="font-semibold text-amber-700">{stats.pendingAppointments}</div>
+                </div>
+                <div className="text-amber-500 bg-amber-100 p-2 rounded-lg">
+                  <Clock className="size-4" />
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-slate-600 text-sm">Upcoming Appointments </div>
+                  <div className="font-semibold text-blue-700">
+                    {stats.upcomingAppointments}
                   </div>
                 </div>
-              ))}
+                <div className="text-blue-500 bg-blue-100 p-2 rounded-lg">
+                  <CalendarRange className="size-4" />
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-slate-600 text-sm">Monthly Growth</div>
+                  <div className={`font-semibold ${monthlyTrend.up ? 'text-emerald-700' : 'text-red-700'}`}>
+                    {monthlyTrend.up ? '+' : '-'}{monthlyTrend.percentage}%
+                  </div>
+                </div>
+                <div className={`${monthlyTrend.up ? 'text-emerald-500 bg-emerald-100' : 'text-red-500 bg-red-100'} p-2 rounded-lg`}>
+                  {monthlyTrend.up ? <TrendingUp className="size-4" /> : <TrendingDown className="size-4" />}
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-6 pt-6 border-t border-emerald-200">
+              <div className="text-xs text-slate-600 mb-2">System Status</div>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></div>
+                <span className="text-sm text-emerald-700 font-medium">All Systems Operational</span>
+              </div>
             </div>
           </div>
+          
+          {/* Refresh Button */}
+          <div className="mt-4">
+            <button
+              onClick={fetchDashboardData}
+              className="w-full px-4 py-3 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition flex items-center justify-center gap-2 font-medium shadow-sm hover:shadow"
+            >
+              <Activity className="size-4" />
+              Refresh Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
 
-          {/* System Status */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">System Status</h2>
-            </div>
-            <div className="p-6 space-y-4">
-              {[
-                { name: 'Server Uptime', value: '99.9%', status: 'good' },
-                { name: 'Database', value: 'Healthy', status: 'good' },
-                { name: 'API Response', value: 'Fast', status: 'good' },
-                { name: 'Storage', value: '85%', status: 'warning' },
-              ].map((item, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <span className="text-sm text-gray-700 dark:text-gray-300">{item.name}</span>
-                  <div className="flex items-center space-x-2">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                      item.status === 'good' 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-                    }`}>
-                      {item.value}
-                    </span>
-                    <div className={`size-2 rounded-full ${
-                      item.status === 'good' ? 'bg-green-500' : 'bg-yellow-500'
-                    }`}></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+      
+      {/* Quick Actions */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-slate-900">Quick Actions</h2>
+          <span className="text-sm text-emerald-600 font-medium">Most used features</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
+          {quickActions.map((action, index) => (
+            <Link
+              key={index}
+              href={action.href}
+              className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-all hover:-translate-y-1 group"
+            >
+              <div className={`inline-flex p-3 rounded-lg mb-4 bg-gradient-to-r ${action.color} text-white shadow-md`}>
+                {action.icon}
+              </div>
+              <h3 className="font-semibold text-slate-900 mb-2 group-hover:text-emerald-600">
+                {action.title}
+              </h3>
+              <p className="text-sm text-slate-500">
+                Click to {action.title.toLowerCase()}
+              </p>
+            </Link>
+          ))}
         </div>
       </div>
     </>

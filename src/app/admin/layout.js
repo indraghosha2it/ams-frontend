@@ -694,27 +694,13 @@ export default function AdminLayout({ children }) {
         </div>
 
         {/* Footer */}
-        <footer className="border-t border-slate-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm px-6 py-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <footer className="border-t justify-items-center border-slate-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm px-6 py-4">
+        
             <p className="text-sm text-slate-600 dark:text-gray-400">
               © {new Date().getFullYear()} MediFlow Healthcare. All rights reserved.
             </p>
-            <div className="flex items-center space-x-6">
-              <a href="#" className="text-sm text-slate-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-                Privacy Policy
-              </a>
-              <a href="#" className="text-sm text-slate-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-                Terms of Service
-              </a>
-              <a href="#" className="text-sm text-slate-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-                Help Center
-              </a>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">System Active</span>
-              </div>
-            </div>
-          </div>
+          
+       
         </footer>
       </main>
     </div>
