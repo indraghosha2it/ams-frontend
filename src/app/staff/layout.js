@@ -103,11 +103,9 @@ export default function StaffLayout({ children }) {
     { name: 'Dashboard', href: '/staff/dashboard', icon: <LayoutDashboard className="size-5" /> },
     { name: 'Appointments', href: '/staff/appointments', icon: <Clock className="size-5" /> },
     { name: 'View Clients', href: '/staff/viewClients', icon: <Users className="size-5" /> },
-        { name: 'My Schedule', href: '/staff/schedule', icon: <Calendar className="size-5" /> },
+       
 
-    { name: 'Services', href: '/staff/services', icon: <Package className="size-5" /> },
-    { name: 'Messages', href: '/staff/messages', icon: <MessageSquare className="size-5" /> },
-    { name: 'Reports', href: '/staff/reports', icon: <BarChart3 className="size-5" /> },
+ 
     { name: 'Settings', href: '/staff/settings', icon: <Settings className="size-5" /> },
   ];
 
@@ -212,12 +210,13 @@ export default function StaffLayout({ children }) {
               {/* Search */}
               <div className="flex-1 max-w-xl">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-5" />
-                  <input
-                    type="search"
-                    placeholder="Search appointments, clients, services..."
-                    className="w-full pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-700 border-none rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white dark:focus:bg-gray-600"
-                  />
+      <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+  Welcome back, {user.name}
+</h1>
+<p className="text-sm text-gray-500 dark:text-gray-400">
+  Ready to manage Appointments!!
+</p>
+            
                 </div>
               </div>
 
@@ -232,23 +231,8 @@ export default function StaffLayout({ children }) {
                   {darkMode ? <Sun className="size-5" /> : <Moon className="size-5" />}
                 </button>
 
-                {/* Help Button */}
-                <button
-                  className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                  aria-label="Help"
-                >
-                  <HelpCircle className="size-5" />
-                </button>
+               
 
-                {/* Notifications */}
-                <div className="relative">
-                  <button className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <Bell className="size-5" />
-                    {notifications.filter(n => !n.read).length > 0 && (
-                      <span className="absolute top-1 right-1 size-2 bg-red-500 rounded-full"></span>
-                    )}
-                  </button>
-                </div>
 
                 {/* User Menu */}
                 <div className="relative" ref={userMenuRef}>
@@ -304,14 +288,7 @@ export default function StaffLayout({ children }) {
                           <Settings className="size-5 mr-3 text-gray-400" />
                           Account Settings
                         </Link>
-                        <Link
-                          href="/help"
-                          className="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
-                          <HelpCircle className="size-5 mr-3 text-gray-400" />
-                          Help & Support
-                        </Link>
+                        
                       </div>
 
                       {/* Logout Button */}

@@ -1,9 +1,11 @@
+
 // "use client";
 
 // import { useState, useEffect, useMemo } from 'react';
 // import axios from 'axios';
 // import { toast, Toaster } from 'react-hot-toast';
 // import Link from 'next/link';
+// import { useRouter } from 'next/navigation'; 
 // import {
 //   Search,
 //   Filter,
@@ -33,7 +35,8 @@
 //   Sparkles,
 //   Lock,
 //   ChevronsUpDown,
-//   CalendarDays // Added for reschedule icon
+//   CalendarDays,
+//   Hash // Added for serial number icon
 // } from 'lucide-react';
 
 // const AllAppointments = () => {
@@ -57,6 +60,7 @@
 //   });
 //   const [statusDropdownOpen, setStatusDropdownOpen] = useState(null);
 //   const [appointmentToDelete, setAppointmentToDelete] = useState(null); // Added for delete modal
+//     const router = useRouter();
 
 //   const statusOptions = [
 //     { value: 'all', label: 'All Status', color: 'bg-gray-100 text-gray-800' },
@@ -410,6 +414,7 @@
 //       'Doctor Speciality',
 //       'Appointment Date',
 //       'Appointment Time',
+//       'Slot Serial Number', // Added serial number
 //       'Status',
 //       'Reason'
 //     ];
@@ -424,6 +429,7 @@
 //         `"${app.doctorInfo.speciality}"`,
 //         `"${formatDate(app.appointmentDate)}"`,
 //         `"${app.appointmentTime}"`,
+//         `"${app.slotSerialNumber || app.serialNumber || ''}"`, // Added serial number
 //         `"${app.status}"`,
 //         `"${app.patient.reason}"`
 //       ].join(','))
@@ -670,9 +676,9 @@
 
 //         {/* Appointments Table */}
 //         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-//           {/* Table Header */}
+//           {/* Table Header - Updated to 13 columns */}
 //           <div className="border-b border-slate-200">
-//             <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-slate-50">
+//             <div className="grid grid-cols-13 gap-4 px-6 py-4 bg-slate-50">
 //               <div 
 //                 className="col-span-3 font-medium text-slate-700 cursor-pointer hover:text-slate-900 flex items-center gap-1"
 //                 onClick={() => handleSort('patientName')}
@@ -692,10 +698,10 @@
 //                 )}
 //               </div>
 //               <div 
-//                 className="col-span-2 font-medium text-slate-700 cursor-pointer hover:text-slate-900 flex items-center gap-1"
+//                 className="col-span-3 font-medium text-slate-700 cursor-pointer hover:text-slate-900 flex items-center gap-1"
 //                 onClick={() => handleSort('appointmentDate')}
 //               >
-//                 Date & Time
+//                 Date, Time & Serial
 //                 {sortConfig.key === 'appointmentDate' && (
 //                   <ChevronDown className={`w-4 h-4 transition-transform ${sortConfig.direction === 'desc' ? 'rotate-180' : ''}`} />
 //                 )}
@@ -735,7 +741,7 @@
 //                     key={appointment._id} 
 //                     className={`px-6 py-4 transition-colors ${getRowColorClass(appointment.status)}`}
 //                   >
-//                     <div className="grid grid-cols-12 gap-4 items-center">
+//                     <div className="grid grid-cols-13 gap-4 items-center">
 //                       {/* Patient Info */}
 //                       <div className="col-span-3">
 //                         <div className="flex items-center gap-3">
@@ -769,8 +775,8 @@
 //                         </div>
 //                       </div>
 
-//                       {/* Date & Time */}
-//                       <div className="col-span-2">
+//                       {/* Date & Time with Serial Number */}
+//                       <div className="col-span-3">
 //                         <div className="flex items-center gap-2 text-slate-700">
 //                           <Calendar className={`w-4 h-4 ${
 //                             appointment.status === 'confirmed' ? 'text-emerald-500' :
@@ -789,8 +795,18 @@
 //                           }`} />
 //                           <span>{appointment.appointmentTime} - {appointment.endTime}</span>
 //                         </div>
-//                         <div className="text-xs text-slate-500 mt-1">
-//                           Duration: {appointment.doctorInfo.perPatientTime} min
+                        
+//                         {/* Serial Number Display */}
+//                         <div className="  items-center gap-2">
+                             
+//                           <div className="text-xs font-semibold  py-1  text-gray-600 rounded-full flex items-center gap-1">
+                           
+//                             Sl No-{appointment.slotSerialNumber || appointment.serialNumber || 'N/A'}
+//                           </div>
+//                            <div className="text-xs text-slate-500">
+//                             Duration: {appointment.doctorInfo.perPatientTime} min
+//                           </div>
+                        
 //                         </div>
 //                       </div>
 
@@ -828,8 +844,15 @@
 //                       <div className="col-span-1">
 //                         <div className="flex justify-center gap-2">
 //                           {/* Reschedule Button */}
-//                           <button
+//                           {/* <button
 //                             onClick={() => handleReschedule(appointment._id)}
+//                             className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition"
+//                             title="Reschedule Appointment"
+//                           >
+//                             <CalendarDays className="w-4 h-4" />
+//                           </button> */}
+//                           <button
+//                             onClick={() => router.push(`/admin/rescheduleApp?id=${appointment._id}`)}
 //                             className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition"
 //                             title="Reschedule Appointment"
 //                           >
@@ -996,7 +1019,6 @@
 // export default AllAppointments;
 
 
-
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
@@ -1034,7 +1056,9 @@ import {
   Lock,
   ChevronsUpDown,
   CalendarDays,
-  Hash // Added for serial number icon
+  Hash,
+  CalendarRange, // Added for calendar range icon
+  TrendingUp // Added for upcoming icon
 } from 'lucide-react';
 
 const AllAppointments = () => {
@@ -1057,14 +1081,22 @@ const AllAppointments = () => {
     cancelled: 0
   });
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(null);
-  const [appointmentToDelete, setAppointmentToDelete] = useState(null); // Added for delete modal
-    const router = useRouter();
+  const [appointmentToDelete, setAppointmentToDelete] = useState(null);
+  const [activeTab, setActiveTab] = useState('all'); // 'all', 'today', 'upcoming', 'past'
+  const router = useRouter();
 
   const statusOptions = [
     { value: 'all', label: 'All Status', color: 'bg-gray-100 text-gray-800' },
     { value: 'pending', label: 'Pending', color: 'bg-amber-100 text-amber-800' },
     { value: 'confirmed', label: 'Confirmed', color: 'bg-emerald-100 text-emerald-800' },
     { value: 'cancelled', label: 'Cancelled', color: 'bg-red-100 text-red-800' }
+  ];
+
+  const tabs = [
+    { id: 'all', label: 'All Appointments', icon: CalendarRange },
+    { id: 'today', label: "Today's", icon: Calendar },
+    { id: 'upcoming', label: 'Upcoming', icon: TrendingUp },
+    { id: 'past', label: 'Past', icon: ClockIcon }
   ];
 
   useEffect(() => {
@@ -1074,7 +1106,7 @@ const AllAppointments = () => {
 
   useEffect(() => {
     filterAndSortAppointments();
-  }, [appointments, searchTerm, selectedStatus, selectedDoctor, selectedDate, sortConfig]);
+  }, [appointments, searchTerm, selectedStatus, selectedDoctor, selectedDate, sortConfig, activeTab]);
 
   // Close status dropdown when clicking outside
   useEffect(() => {
@@ -1134,81 +1166,118 @@ const AllAppointments = () => {
   };
 
   const calculateStats = (appointmentsList) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const todayAppointments = appointmentsList.filter(app => {
+      const appDate = new Date(app.appointmentDate);
+      appDate.setHours(0, 0, 0, 0);
+      return appDate.getTime() === today.getTime();
+    });
+
     const stats = {
       total: appointmentsList.length,
       pending: appointmentsList.filter(a => a.status === 'pending').length,
       confirmed: appointmentsList.filter(a => a.status === 'confirmed').length,
-      cancelled: appointmentsList.filter(a => a.status === 'cancelled').length
+      cancelled: appointmentsList.filter(a => a.status === 'cancelled').length,
+      today: todayAppointments.length,
+      todayPending: todayAppointments.filter(a => a.status === 'pending').length,
+      todayConfirmed: todayAppointments.filter(a => a.status === 'confirmed').length,
+      todayCancelled: todayAppointments.filter(a => a.status === 'cancelled').length
     };
     setStats(stats);
   };
 
-  const filterAndSortAppointments = () => {
-    let filtered = [...appointments];
+ const filterAndSortAppointments = () => {
+  let filtered = [...appointments];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Set to start of day (midnight)
 
-    // Filter by search term
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(appointment =>
-        appointment.patient.fullName.toLowerCase().includes(term) ||
-        appointment.patient.email.toLowerCase().includes(term) ||
-        appointment.patient.phone.includes(term) ||
-        appointment.doctorInfo.name.toLowerCase().includes(term) ||
-        appointment.doctorInfo.speciality.toLowerCase().includes(term)
-      );
-    }
-
-    // Filter by status
-    if (selectedStatus !== 'all') {
-      filtered = filtered.filter(appointment => appointment.status === selectedStatus);
-    }
-
-    // Filter by doctor
-    if (selectedDoctor !== 'all') {
-      filtered = filtered.filter(appointment => appointment.doctorId._id === selectedDoctor);
-    }
-
-    // Filter by date
-    if (selectedDate) {
-      const filterDate = new Date(selectedDate);
-      filtered = filtered.filter(appointment => {
-        const appointmentDate = new Date(appointment.appointmentDate);
-        return appointmentDate.toDateString() === filterDate.toDateString();
-      });
-    }
-
-    // Sort appointments
-    filtered.sort((a, b) => {
-      if (sortConfig.key === 'appointmentDate') {
-        const dateA = new Date(a.appointmentDate);
-        const dateB = new Date(b.appointmentDate);
-        return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
-      }
-      
-      if (sortConfig.key === 'patientName') {
-        return sortConfig.direction === 'asc' 
-          ? a.patient.fullName.localeCompare(b.patient.fullName)
-          : b.patient.fullName.localeCompare(a.patient.fullName);
-      }
-      
-      if (sortConfig.key === 'doctorName') {
-        return sortConfig.direction === 'asc'
-          ? a.doctorInfo.name.localeCompare(b.doctorInfo.name)
-          : b.doctorInfo.name.localeCompare(a.doctorInfo.name);
-      }
-      
-      if (sortConfig.key === 'status') {
-        const statusOrder = { 'pending': 0, 'confirmed': 1, 'cancelled': 2 };
-        return sortConfig.direction === 'asc'
-          ? statusOrder[a.status] - statusOrder[b.status]
-          : statusOrder[b.status] - statusOrder[a.status];
-      }
-      
-      return 0;
+  // Filter by active tab
+  if (activeTab === 'today') {
+    filtered = filtered.filter(appointment => {
+      const appointmentDate = new Date(appointment.appointmentDate);
+      appointmentDate.setHours(0, 0, 0, 0);
+      return appointmentDate.getTime() === today.getTime();
     });
+  } else if (activeTab === 'upcoming') {
+    filtered = filtered.filter(appointment => {
+      const appointmentDate = new Date(appointment.appointmentDate);
+      // Only include appointments after today (not including today)
+      return appointmentDate > new Date(today.getTime() + 24 * 60 * 60 * 1000); // Tomorrow onwards
+    });
+  } else if (activeTab === 'past') {
+    filtered = filtered.filter(appointment => {
+      const appointmentDate = new Date(appointment.appointmentDate);
+      appointmentDate.setHours(0, 0, 0, 0);
+      return appointmentDate.getTime() < today.getTime(); // Before today
+    });
+  }
 
-    setFilteredAppointments(filtered);
-  };
+  // Rest of the filtering logic remains the same...
+  // Filter by search term
+  if (searchTerm) {
+    const term = searchTerm.toLowerCase();
+    filtered = filtered.filter(appointment =>
+      appointment.patient.fullName.toLowerCase().includes(term) ||
+      appointment.patient.email.toLowerCase().includes(term) ||
+      appointment.patient.phone.includes(term) ||
+      appointment.doctorInfo.name.toLowerCase().includes(term) ||
+      appointment.doctorInfo.speciality.toLowerCase().includes(term)
+    );
+  }
+
+  // Filter by status
+  if (selectedStatus !== 'all') {
+    filtered = filtered.filter(appointment => appointment.status === selectedStatus);
+  }
+
+  // Filter by doctor
+  if (selectedDoctor !== 'all') {
+    filtered = filtered.filter(appointment => appointment.doctorId._id === selectedDoctor);
+  }
+
+  // Filter by date
+  if (selectedDate) {
+    const filterDate = new Date(selectedDate);
+    filtered = filtered.filter(appointment => {
+      const appointmentDate = new Date(appointment.appointmentDate);
+      return appointmentDate.toDateString() === filterDate.toDateString();
+    });
+  }
+
+  // Sort appointments
+  filtered.sort((a, b) => {
+    if (sortConfig.key === 'appointmentDate') {
+      const dateA = new Date(a.appointmentDate);
+      const dateB = new Date(b.appointmentDate);
+      return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
+    }
+    
+    if (sortConfig.key === 'patientName') {
+      return sortConfig.direction === 'asc' 
+        ? a.patient.fullName.localeCompare(b.patient.fullName)
+        : b.patient.fullName.localeCompare(a.patient.fullName);
+    }
+    
+    if (sortConfig.key === 'doctorName') {
+      return sortConfig.direction === 'asc'
+        ? a.doctorInfo.name.localeCompare(b.doctorInfo.name)
+        : b.doctorInfo.name.localeCompare(a.doctorInfo.name);
+    }
+    
+    if (sortConfig.key === 'status') {
+      const statusOrder = { 'pending': 0, 'confirmed': 1, 'cancelled': 2 };
+      return sortConfig.direction === 'asc'
+        ? statusOrder[a.status] - statusOrder[b.status]
+        : statusOrder[b.status] - statusOrder[a.status];
+    }
+    
+    return 0;
+  });
+
+  setFilteredAppointments(filtered);
+};
 
   const handleSort = (key) => {
     setSortConfig(prevConfig => ({
@@ -1274,12 +1343,6 @@ const AllAppointments = () => {
       console.error('Error deleting appointment:', error);
       toast.error('Failed to delete appointment');
     }
-  };
-
-  // Handle reschedule - placeholder function
-  const handleReschedule = (appointmentId) => {
-    toast.success('Reschedule feature coming soon!');
-    // You can implement reschedule functionality here
   };
 
   // Get row color based on status
@@ -1412,7 +1475,7 @@ const AllAppointments = () => {
       'Doctor Speciality',
       'Appointment Date',
       'Appointment Time',
-      'Slot Serial Number', // Added serial number
+      'Slot Serial Number',
       'Status',
       'Reason'
     ];
@@ -1427,7 +1490,7 @@ const AllAppointments = () => {
         `"${app.doctorInfo.speciality}"`,
         `"${formatDate(app.appointmentDate)}"`,
         `"${app.appointmentTime}"`,
-        `"${app.slotSerialNumber || app.serialNumber || ''}"`, // Added serial number
+        `"${app.slotSerialNumber || app.serialNumber || ''}"`,
         `"${app.status}"`,
         `"${app.patient.reason}"`
       ].join(','))
@@ -1440,6 +1503,38 @@ const AllAppointments = () => {
     a.download = `appointments_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
   };
+
+  // Get tab badge count
+// Get tab badge count
+const getTabBadgeCount = (tabId) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  switch (tabId) {
+    case 'all':
+      return appointments.length;
+    case 'today':
+      return appointments.filter(app => {
+        const appDate = new Date(app.appointmentDate);
+        appDate.setHours(0, 0, 0, 0);
+        return appDate.getTime() === today.getTime();
+      }).length;
+    case 'upcoming':
+      return appointments.filter(app => {
+        const appDate = new Date(app.appointmentDate);
+        // Only count appointments after today (not including today)
+        return appDate > new Date(today.getTime() + 24 * 60 * 60 * 1000);
+      }).length;
+    case 'past':
+      return appointments.filter(app => {
+        const appDate = new Date(app.appointmentDate);
+        appDate.setHours(0, 0, 0, 0);
+        return appDate.getTime() < today.getTime();
+      }).length;
+    default:
+      return 0;
+  }
+};
 
   if (loading) {
     return (
@@ -1525,23 +1620,55 @@ const AllAppointments = () => {
           </div>
         </div>
 
+       
+
         {/* Stats Dashboard */}
         <div className="mb-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-2xl font-bold text-slate-900">{stats.total}</div>
-                  <div className="text-slate-600 text-sm font-medium">Total Appointments</div>
-                </div>
-                <div className="text-emerald-500 text-2xl bg-emerald-100 p-3 rounded-lg">📅</div>
-              </div>
-            </div>
+           <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-200">
+  <div className="flex items-center justify-between">
+    <div>
+      <div className="text-2xl font-bold text-slate-900">
+        {activeTab === 'today' ? stats.today : 
+         activeTab === 'upcoming' ? appointments.filter(a => {
+           const today = new Date();
+           today.setHours(0, 0, 0, 0);
+           const appointmentDate = new Date(a.appointmentDate);
+           // Only count appointments after today (not including today)
+           return appointmentDate > new Date(today.getTime() + 24 * 60 * 60 * 1000);
+         }).length :
+         activeTab === 'past' ? appointments.filter(a => {
+           const appDate = new Date(a.appointmentDate);
+           appDate.setHours(0, 0, 0, 0);
+           return appDate.getTime() < new Date().setHours(0, 0, 0, 0);
+         }).length :
+         stats.total}
+      </div>
+      <div className="text-slate-600 text-sm font-medium">
+        {activeTab === 'all' ? 'Total Appointments' :
+         activeTab === 'today' ? "Today's Appointments" :
+         activeTab === 'upcoming' ? 'Upcoming Appointments' :
+         'Past Appointments'}
+      </div>
+    </div>
+    <div className={`text-2xl p-3 rounded-lg ${
+      activeTab === 'today' ? 'bg-emerald-100 text-emerald-500' :
+      activeTab === 'upcoming' ? 'bg-blue-100 text-blue-500' :
+      activeTab === 'past' ? 'bg-amber-100 text-amber-500' :
+      'bg-slate-100 text-slate-500'
+    }`}>
+      📅
+    </div>
+  </div>
+</div>
             
             <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold text-amber-700">{stats.pending}</div>
+                  <div className="text-2xl font-bold text-amber-700">
+                    {activeTab === 'today' ? stats.todayPending :
+                     filteredAppointments.filter(a => a.status === 'pending').length}
+                  </div>
                   <div className="text-slate-600 text-sm font-medium">Pending</div>
                 </div>
                 <div className="text-amber-500 text-2xl bg-amber-100 p-3 rounded-lg">⏳</div>
@@ -1551,7 +1678,10 @@ const AllAppointments = () => {
             <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold text-emerald-700">{stats.confirmed}</div>
+                  <div className="text-2xl font-bold text-emerald-700">
+                    {activeTab === 'today' ? stats.todayConfirmed :
+                     filteredAppointments.filter(a => a.status === 'confirmed').length}
+                  </div>
                   <div className="text-slate-600 text-sm font-medium">Confirmed</div>
                 </div>
                 <div className="text-emerald-500 text-2xl bg-emerald-100 p-3 rounded-lg">✅</div>
@@ -1561,7 +1691,10 @@ const AllAppointments = () => {
             <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-2xl font-bold text-red-700">{stats.cancelled}</div>
+                  <div className="text-2xl font-bold text-red-700">
+                    {activeTab === 'today' ? stats.todayCancelled :
+                     filteredAppointments.filter(a => a.status === 'cancelled').length}
+                  </div>
                   <div className="text-slate-600 text-sm font-medium">Cancelled</div>
                 </div>
                 <div className="text-red-500 text-2xl bg-red-100 p-3 rounded-lg">❌</div>
@@ -1671,10 +1804,84 @@ const AllAppointments = () => {
             </div>
           )}
         </div>
+        
+         {/* Tabs Section */}
+      <div className="mb-8 w-full">
+  <div className="flex w-full p-1.5 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl shadow-inner">
+    {tabs.map((tab) => {
+      const Icon = tab.icon;
+      const badgeCount = getTabBadgeCount(tab.id);
+      const isActive = activeTab === tab.id;
+      
+      return (
+        <button
+          key={tab.id}
+          onClick={() => {
+            setActiveTab(tab.id);
+            setCurrentPage(1);
+          }}
+          className={`relative flex-1 px-4 py-3.5 rounded-xl flex items-center justify-center gap-3 transition-all duration-400 ease-out
+            ${isActive
+              ? 'bg-white text-slate-900 shadow-lg shadow-slate-300/50 transform scale-[1.02]'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+            }`}
+        >
+          {/* Glow effect for active tab */}
+          {isActive && (
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-blue-500/10 rounded-xl -z-10"></div>
+          )}
+          
+          {/* Icon with floating effect */}
+          <div className={`relative transition-transform duration-300
+            ${isActive ? 'translate-y-[-2px]' : ''}`}
+          >
+            <Icon className={`w-5 h-5 transition-colors duration-300
+              ${isActive 
+                ? 'text-emerald-600' 
+                : 'text-slate-500'
+              }`}
+            />
+          </div>
+          
+          {/* Label with bold effect */}
+          <span className={`font-semibold text-sm whitespace-nowrap transition-all duration-300
+            ${isActive ? 'text-slate-900 font-bold tracking-wide' : 'text-slate-700'}`}
+          >
+            {tab.label}
+          </span>
+          
+          {/* Floating badge */}
+          <div className={`transition-all duration-300
+            ${isActive 
+              ? 'translate-y-[-1px] scale-105' 
+              : ''
+            }`}
+          >
+            <span className={`text-xs font-bold px-2 py-1 rounded-full shadow-sm
+              ${isActive
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white'
+                : 'bg-slate-300 text-slate-700'
+              }`}
+            >
+              {badgeCount}
+            </span>
+          </div>
+          
+          {/* Active indicator dot */}
+          {isActive && (
+            <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
+              <div className="w-1.5 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full animate-pulse"></div>
+            </div>
+          )}
+        </button>
+      );
+    })}
+  </div>
+</div>
 
         {/* Appointments Table */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          {/* Table Header - Updated to 13 columns */}
+          {/* Table Header */}
           <div className="border-b border-slate-200">
             <div className="grid grid-cols-13 gap-4 px-6 py-4 bg-slate-50">
               <div 
@@ -1722,12 +1929,24 @@ const AllAppointments = () => {
           <div className="divide-y divide-slate-200/50">
             {currentAppointments.length === 0 ? (
               <div className="p-12 text-center">
-                <div className="text-slate-400 text-6xl mb-4">📅</div>
-                <h3 className="text-lg font-semibold text-slate-700 mb-2">No appointments found</h3>
+                <div className="text-slate-400 text-6xl mb-4">
+                  {activeTab === 'today' ? '📅' :
+                   activeTab === 'upcoming' ? '🚀' :
+                   activeTab === 'past' ? '⏰' : '📅'}
+                </div>
+                <h3 className="text-lg font-semibold text-slate-700 mb-2">
+                  {activeTab === 'today' ? "No appointments today" :
+                   activeTab === 'upcoming' ? "No upcoming appointments" :
+                   activeTab === 'past' ? "No past appointments" :
+                   "No appointments found"}
+                </h3>
                 <p className="text-slate-500">
                   {searchTerm || selectedStatus !== 'all' || selectedDoctor !== 'all' || selectedDate
                     ? 'Try adjusting your filters'
-                    : 'No appointments have been booked yet'}
+                    : activeTab === 'today' ? "No appointments scheduled for today" :
+                      activeTab === 'upcoming' ? "All appointments are either past or today" :
+                      activeTab === 'past' ? "No past appointments found" :
+                      'No appointments have been booked yet'}
                 </p>
               </div>
             ) : (
@@ -1795,16 +2014,13 @@ const AllAppointments = () => {
                         </div>
                         
                         {/* Serial Number Display */}
-                        <div className="  items-center gap-2">
-                             
-                          <div className="text-xs font-semibold  py-1  text-gray-600 rounded-full flex items-center gap-1">
-                           
+                        <div className="items-center gap-2">
+                          <div className="text-xs font-semibold py-1 text-gray-600 rounded-full flex items-center gap-1">
                             Sl No-{appointment.slotSerialNumber || appointment.serialNumber || 'N/A'}
                           </div>
-                           <div className="text-xs text-slate-500">
+                          <div className="text-xs text-slate-500">
                             Duration: {appointment.doctorInfo.perPatientTime} min
                           </div>
-                        
                         </div>
                       </div>
 
@@ -1838,24 +2054,17 @@ const AllAppointments = () => {
                         )}
                       </div>
 
-                      {/* Actions - Updated with Reschedule icon */}
+                      {/* Actions */}
                       <div className="col-span-1">
                         <div className="flex justify-center gap-2">
                           {/* Reschedule Button */}
-                          {/* <button
-                            onClick={() => handleReschedule(appointment._id)}
+                          <button
+                            onClick={() => router.push(`/admin/rescheduleApp?id=${appointment._id}`)}
                             className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition"
                             title="Reschedule Appointment"
                           >
                             <CalendarDays className="w-4 h-4" />
-                          </button> */}
-                          <button
-  onClick={() => router.push(`/admin/rescheduleApp?id=${appointment._id}`)}
-  className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition"
-  title="Reschedule Appointment"
->
-  <CalendarDays className="w-4 h-4" />
-</button>
+                          </button>
                           
                           {/* Delete Button */}
                           <button
@@ -1965,14 +2174,14 @@ const AllAppointments = () => {
               </div>
             </div>
             <div>
-              <div className="text-slate-600">This Week</div>
+              <div className="text-slate-600">Upcoming (Next 7 days)</div>
               <div className="font-semibold text-slate-900">
                 {appointments.filter(a => {
                   const today = new Date();
                   const appDate = new Date(a.appointmentDate);
-                  const oneWeekAgo = new Date(today);
-                  oneWeekAgo.setDate(today.getDate() - 7);
-                  return appDate >= oneWeekAgo && appDate <= today;
+                  const nextWeek = new Date(today);
+                  nextWeek.setDate(today.getDate() + 7);
+                  return appDate > today && appDate <= nextWeek;
                 }).length}
               </div>
             </div>

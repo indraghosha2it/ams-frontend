@@ -24,11 +24,13 @@ import {
   Hash,
   CalendarDays,
   CalendarCheck,
-  RotateCcw
+  RotateCcw,
+  Shield,
+  X
 } from 'lucide-react';
 import Link from 'next/link';
 
-const RescheduleAppointmentPage = () => {
+const StaffRescheduleAppointmentPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const appointmentId = searchParams.get('id');
@@ -43,6 +45,9 @@ const RescheduleAppointmentPage = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [showRescheduleConfirm, setShowRescheduleConfirm] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successData, setSuccessData] = useState(null);
 
   // Helper functions
   const formatDateToLocalString = (date) => {
@@ -65,7 +70,7 @@ const RescheduleAppointmentPage = () => {
       fetchAppointmentDetails();
     } else {
       toast.error('No appointment selected');
-      router.push('/admin/allAppointments');
+      router.push('/staff/appointments');
     }
   }, [appointmentId]);
 
@@ -94,13 +99,13 @@ const RescheduleAppointmentPage = () => {
     } catch (error) {
       console.error('Error fetching appointment:', error);
       toast.error('Failed to load appointment details');
-      router.push('/admin/appointments');
+      router.push('/staff/appointments');
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchDoctorAndSlots = async (doctorId, existingDate) => {
+  const fetchDoctorAndSlots = async (doctorId, existingDate = null) => {
     try {
       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
       const token = localStorage.getItem('token');
@@ -228,6 +233,7 @@ const RescheduleAppointmentPage = () => {
       const todayMidnight = new Date();
       todayMidnight.setHours(0, 0, 0, 0);
       const isPast = date < todayMidnight;
+      const isOriginalDate = appointment && dateString === formatDateToLocalString(appointment.appointmentDate);
       
       days.push({
         date,
@@ -237,12 +243,13 @@ const RescheduleAppointmentPage = () => {
         isSelected,
         hasSlots,
         isPast,
-        isWeekend: date.getDay() === 0 || date.getDay() === 6
+        isWeekend: date.getDay() === 0 || date.getDay() === 6,
+        isOriginalDate
       });
     }
     
     return days;
-  }, [currentMonth, selectedDate, availableDates]);
+  }, [currentMonth, selectedDate, availableDates, appointment]);
 
   // Handle date selection
   const handleDateSelect = (dateInput) => {
@@ -258,14 +265,15 @@ const RescheduleAppointmentPage = () => {
     setSelectedTime(slot);
   };
 
-  // Get date status color
+  // Get date status color - Updated color scheme
   const getDateColor = (date) => {
     if (!date) return '';
     if (date.isPast) return 'bg-gray-100 text-gray-400 cursor-not-allowed';
-    if (!date.hasSlots) return 'bg-red-50 text-red-400 border-red-200';
-    if (date.isSelected) return 'bg-emerald-500 text-white border-emerald-600';
+    if (date.isOriginalDate) return 'bg-amber-100 text-amber-800 border-amber-300';
+    if (!date.hasSlots) return 'bg-red-50 text-red-400 border-red-200 cursor-not-allowed';
+    if (date.isSelected) return 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-blue-600';
     if (date.isToday) return 'bg-blue-50 text-blue-600 border-blue-200';
-    if (date.hasSlots) return 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100';
+    if (date.hasSlots) return 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100';
     return 'bg-white text-slate-700 border-slate-200';
   };
 
@@ -300,10 +308,8 @@ const RescheduleAppointmentPage = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
 
-  // Handle reschedule submission
-  const handleReschedule = async (e) => {
-    e.preventDefault();
-    
+  // Show reschedule confirmation modal
+  const showRescheduleConfirmation = () => {
     if (!selectedDate || !selectedTime) {
       toast.error('Please select a new date and time slot');
       return;
@@ -314,11 +320,21 @@ const RescheduleAppointmentPage = () => {
       return;
     }
     
-    // Confirm with user before rescheduling
-    if (!window.confirm(`Are you sure you want to reschedule ${appointment.patient.fullName}'s appointment?\n\nFrom: ${new Date(appointment.appointmentDate).toLocaleDateString()} ${appointment.appointmentTime}\nTo: ${selectedSlotInfo?.formattedDate} ${selectedTime.startTime}`)) {
+    if (appointment.status === 'cancelled') {
+      toast.error('Cannot reschedule cancelled appointments');
       return;
     }
     
+    setShowRescheduleConfirm(true);
+  };
+
+  // Close reschedule confirmation modal
+  const closeRescheduleConfirmation = () => {
+    setShowRescheduleConfirm(false);
+  };
+
+  // Handle reschedule submission
+  const handleReschedule = async () => {
     setSubmitting(true);
     
     try {
@@ -326,7 +342,7 @@ const RescheduleAppointmentPage = () => {
       const token = localStorage.getItem('token');
       const doctorId = appointment.doctorId._id || appointment.doctorId;
       
-      console.log('🔄 Starting reschedule process...');
+      console.log('🔄 Staff starting reschedule process...');
       
       // 1. Free up the old slot (set to available)
       console.log('📝 Freeing old slot:', appointment.slotId);
@@ -368,7 +384,7 @@ const RescheduleAppointmentPage = () => {
         endTime: selectedTime.endTime,
         slotId: selectedTime._id,
         slotSerialNumber: selectedTime.serialNumber || 0,
-        status: appointment.status // Keep existing status
+        status: 'confirmed'
       };
       
       const response = await axios.put(
@@ -378,7 +394,24 @@ const RescheduleAppointmentPage = () => {
       );
       
       if (response.data.success) {
-        toast.success(`Appointment #${selectedTime.serialNumber} rescheduled successfully!`);
+        // Set success data for modal
+        setSuccessData({
+          oldDate: new Date(appointment.appointmentDate).toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }),
+          oldTime: appointment.appointmentTime,
+          newDate: selectedSlotInfo?.formattedDate,
+          newTime: selectedTime?.startTime,
+          serialNumber: selectedTime?.serialNumber,
+          patientName: appointment.patient.fullName,
+          doctorName: appointment.doctorInfo.name
+        });
+        
+        setShowSuccessModal(true);
+        closeRescheduleConfirmation();
         
         // Update local appointment state
         setAppointment(prev => ({
@@ -388,16 +421,10 @@ const RescheduleAppointmentPage = () => {
         
         // Refresh slots to reflect changes
         fetchAvailableSlots(doctorId);
-        
-        // Show success message and redirect
-        setTimeout(() => {
-          router.push('/admin/appointments');
-        }, 2000);
       }
     } catch (error) {
       console.error('❌ Error rescheduling appointment:', error);
       
-      // Provide specific error messages
       if (error.response) {
         const status = error.response.status;
         const data = error.response.data;
@@ -408,7 +435,6 @@ const RescheduleAppointmentPage = () => {
           toast.error(data.message || 'Slot or appointment not found');
         } else if (status === 409) {
           toast.error('This time slot is no longer available. Please select another slot.');
-          // Refresh slots
           if (doctor) {
             fetchAvailableSlots(doctor._id);
           }
@@ -445,26 +471,31 @@ const RescheduleAppointmentPage = () => {
   };
 
   // Reset to original appointment
-  const resetToOriginal = () => {
-    if (!appointment) return;
-    
-    const originalDate = formatDateToLocalString(appointment.appointmentDate);
-    setSelectedDate(originalDate);
-    setSelectedTime(null);
-    
-    // Try to find and select the original slot
-    const originalSlot = availableSlots.find(slot => 
-      slot.date === originalDate && 
-      slot.startTime === appointment.appointmentTime
-    );
-    
-    if (originalSlot) {
-      setSelectedTime(originalSlot);
-      toast.success('Reset to original appointment time');
-    } else {
-      toast.info('Original slot is no longer available');
-    }
-  };
+ // Reset to original appointment
+const resetToOriginal = () => {
+  if (!appointment) return;
+  
+  const originalDate = formatDateToLocalString(appointment.appointmentDate);
+  setSelectedDate(originalDate);
+  setSelectedTime(null);
+  
+  // Try to find and select the original slot
+  const originalSlot = availableSlots.find(slot => 
+    slot.date === originalDate && 
+    slot.startTime === appointment.appointmentTime
+  );
+  
+  if (originalSlot) {
+    setSelectedTime(originalSlot);
+    toast.success('Reset to original appointment time');
+  } else {
+    // Use toast() instead of toast.info()
+    toast('Original slot is no longer available', {
+      icon: 'ℹ️',
+      duration: 3000,
+    });
+  }
+};
 
   if (loading) {
     return (
@@ -473,7 +504,7 @@ const RescheduleAppointmentPage = () => {
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-center items-center h-96">
             <div className="text-center">
-              <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               <h3 className="text-xl font-semibold text-slate-800">Loading Appointment Details</h3>
               <p className="text-slate-600 mt-2">Preparing reschedule options...</p>
             </div>
@@ -493,8 +524,8 @@ const RescheduleAppointmentPage = () => {
             <h2 className="text-2xl font-bold text-slate-800 mb-2">Appointment Not Found</h2>
             <p className="text-slate-600 mb-6">The appointment you're looking for might not be available.</p>
             <Link
-              href="/admin/appointments"
-              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition-all shadow-md hover:shadow-lg"
+              href="/staff/appointments"
+              className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Appointments
@@ -509,25 +540,164 @@ const RescheduleAppointmentPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 md:p-6">
       <Toaster position="top-right" />
       
+      {/* Reschedule Confirmation Modal */}
+      {showRescheduleConfirm && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-5 animate-in zoom-in-95">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Shield className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Staff Reschedule</h3>
+                <p className="text-slate-600 text-sm">Are you sure you want to reschedule this appointment?</p>
+              </div>
+            </div>
+            
+            <div className="bg-blue-50 p-3 rounded-lg mb-4 text-sm">
+              <div className="font-medium text-blue-800 mb-2">Patient:</div>
+              <div className="text-slate-700 font-medium">{appointment.patient.fullName}</div>
+              
+              <div className="font-medium text-blue-800 mb-2 mt-3">Current Appointment:</div>
+              <div className="text-slate-700">
+                <div>{new Date(appointment.appointmentDate).toLocaleDateString('en-US', {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric'
+                })}</div>
+                <div>{appointment.appointmentTime} - {appointment.endTime}</div>
+                <div className="text-xs text-slate-500 mt-1">
+                  Serial No: {appointment.slotSerialNumber || 'N/A'}
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-center my-3">
+                <div className="text-blue-500">↓</div>
+              </div>
+              
+              <div className="font-medium text-blue-800 mb-2">New Appointment:</div>
+              <div className="text-slate-700">
+                <div>{selectedSlotInfo?.formattedDate}</div>
+                <div>{selectedTime?.startTime} - {selectedTime?.endTime}</div>
+                <div className="text-xs text-slate-500 mt-1">
+                  Serial No:{selectedTime?.serialNumber || 'N/A'}
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-blue-600 bg-blue-50 p-3 rounded-lg mb-5 text-sm">
+              <div className="flex items-center gap-2 font-medium">
+                <Shield className="w-4 h-4" />
+                Staff reschedule will automatically confirm the appointment
+              </div>
+            </div>
+            
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={closeRescheduleConfirmation}
+                className="px-4 py-2 text-sm text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleReschedule}
+                disabled={submitting}
+                className="px-4 py-2 text-sm bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition font-medium flex items-center gap-2"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <RotateCcw className="w-4 h-4" />
+                    Confirm Reschedule
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Success Modal */}
+      {showSuccessModal && successData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-8 h-8 text-blue-600" />
+              </div>
+              
+              <h3 className="text-xl font-bold text-slate-800 mb-2">Appointment Rescheduled!</h3>
+              
+              <div className="mb-6 text-slate-600">
+                <p>Successfully rescheduled appointment for <strong>{successData.patientName}</strong></p>
+              </div>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-sm text-blue-700">New Appointment</div>
+                  <div className="text-xs font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                    Serial No: {successData.serialNumber}
+                  </div>
+                </div>
+                <div className="font-medium text-blue-800">{successData.newDate}</div>
+                <div className="font-medium text-blue-800">{successData.newTime}</div>
+                <div className="text-sm text-blue-600 mt-1">Dr. {successData.doctorName}</div>
+                <div className="text-xs text-blue-500 mt-2 px-3 py-1 bg-blue-100 rounded-full inline-block">
+                  Status: Confirmed ✓
+                </div>
+              </div>
+              
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => router.push('/staff/appointments')}
+                  className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition font-medium"
+                >
+                  Back to Appointments
+                </button>
+                <button
+                  onClick={() => {
+                    setShowSuccessModal(false);
+                    setSuccessData(null);
+                  }}
+                  className="w-full px-4 py-3 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
               <Link
-                href="/admin/appointments"
+                href="/staff/appointments"
                 className="p-2 bg-white rounded-lg shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"
               >
                 <ArrowLeft className="w-5 h-5 text-slate-700" />
               </Link>
               <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Shield className="w-5 h-5 text-blue-600" />
+                  <span className="text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
+                    Staff Reschedule
+                  </span>
+                </div>
                 <h1 className="text-2xl md:text-3xl font-bold text-slate-800">Reschedule Appointment</h1>
                 <p className="text-slate-600 mt-1">Change date and time for {appointment.patient.fullName}'s appointment</p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-             
-              <div className="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium flex items-center gap-2">
+              
+              <div className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium flex items-center gap-2">
                 <CalendarCheck className="w-4 h-4" />
                 Appointment ID: {appointmentId?.substring(0, 8)}...
               </div>
@@ -572,7 +742,7 @@ const RescheduleAppointmentPage = () => {
           {/* Current Appointment Information */}
           <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
             <h2 className="text-xl font-semibold text-slate-800 border-b pb-3 border-slate-200 mb-6 flex items-center gap-2">
-              <CalendarDays className="w-5 h-5 text-emerald-600" />
+              <CalendarDays className="w-5 h-5 text-blue-600" />
               Current Appointment Details
             </h2>
             
@@ -582,8 +752,8 @@ const RescheduleAppointmentPage = () => {
                 <h3 className="text-lg font-semibold text-slate-800 mb-4">Patient Information</h3>
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
-                    <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
-                      <User className="w-6 h-6 text-emerald-600" />
+                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                      <User className="w-6 h-6 text-blue-600" />
                     </div>
                     <div>
                       <div className="font-medium text-slate-900">{appointment.patient.fullName}</div>
@@ -595,18 +765,18 @@ const RescheduleAppointmentPage = () => {
                   
                   <div className="space-y-3">
                     <div className="flex items-center text-slate-700">
-                      <Mail className="w-4 h-4 text-emerald-500 mr-3 flex-shrink-0" />
+                      <Mail className="w-4 h-4 text-blue-500 mr-3 flex-shrink-0" />
                       <div className="text-sm">{appointment.patient.email}</div>
                     </div>
                     
                     <div className="flex items-center text-slate-700">
-                      <Phone className="w-4 h-4 text-emerald-500 mr-3 flex-shrink-0" />
+                      <Phone className="w-4 h-4 text-blue-500 mr-3 flex-shrink-0" />
                       <div className="text-sm">{appointment.patient.phone}</div>
                     </div>
                     
                     {appointment.patient.address && (
                       <div className="flex items-start text-slate-700">
-                        <MapPin className="w-4 h-4 text-emerald-500 mr-3 flex-shrink-0 mt-0.5" />
+                        <MapPin className="w-4 h-4 text-blue-500 mr-3 flex-shrink-0 mt-0.5" />
                         <div className="text-sm">{appointment.patient.address}</div>
                       </div>
                     )}
@@ -632,7 +802,7 @@ const RescheduleAppointmentPage = () => {
                         <span className="font-medium text-amber-800">Current Date & Time</span>
                       </div>
                       <div className="px-3 py-1 bg-amber-100 text-amber-700 text-sm font-medium rounded-full">
-                        Serial No : {appointment.slotSerialNumber || 'N/A'}
+                       Serial No: {appointment.slotSerialNumber || 'N/A'}
                       </div>
                     </div>
                     
@@ -675,7 +845,7 @@ const RescheduleAppointmentPage = () => {
           <div className="bg-white rounded-xl shadow-lg p-6 border border-slate-200">
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
-                <RotateCcw className="w-5 h-5 text-emerald-600" />
+                <RotateCcw className="w-5 h-5 text-blue-600" />
                 Select New Date & Time
               </h2>
               <div className="mt-2 md:mt-0">
@@ -694,7 +864,7 @@ const RescheduleAppointmentPage = () => {
               <div>
                 <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center justify-between">
                   <span>Select New Date</span>
-                  <span className="text-sm bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">
+                  <span className="text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
                     {availableDates.length} available days
                   </span>
                 </h3>
@@ -706,7 +876,7 @@ const RescheduleAppointmentPage = () => {
                     className="w-full px-4 py-3 border border-slate-300 rounded-lg text-left flex items-center justify-between hover:bg-slate-50 transition"
                   >
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-emerald-500" />
+                      <Calendar className="w-4 h-4 text-blue-500" />
                       <span className={selectedDate ? "text-slate-800" : "text-slate-500"}>
                         {selectedDate ? new Date(selectedDate).toLocaleDateString('en-US', {
                           weekday: 'long',
@@ -762,15 +932,21 @@ const RescheduleAppointmentPage = () => {
                             <button
                               onClick={() => !day.isPast && day.hasSlots && handleDateSelect(day.date)}
                               disabled={day.isPast || !day.hasSlots}
-                              className={`w-full h-10 rounded-md border transition-all flex items-center justify-center text-sm font-medium
+                              className={`w-full h-10 rounded-md border transition-all flex items-center justify-center text-sm font-medium relative
                                 ${getDateColor(day)}
                                 ${day.isWeekend ? 'opacity-75' : ''}
                                 ${(day.isPast || !day.hasSlots) ? 'cursor-not-allowed' : 'cursor-pointer hover:shadow-sm'}`}
-                              title={day.isPast ? "Past date" : !day.hasSlots ? "No available slots" : `Available slots: ${slotsByDate[day.dateString]?.length || 0}`}
+                              title={day.isPast ? "Past date" : 
+                                     day.isOriginalDate ? "Original appointment date" :
+                                     !day.hasSlots ? "No available slots" : 
+                                     `Available slots: ${slotsByDate[day.dateString]?.length || 0}`}
                             >
                               {day.day}
-                              {day.isToday && !day.isSelected && (
+                              {day.isToday && !day.isSelected && !day.isOriginalDate && (
                                 <div className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                              )}
+                              {day.isOriginalDate && (
+                                <div className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-amber-500 rounded-full"></div>
                               )}
                             </button>
                           ) : null}
@@ -782,16 +958,16 @@ const RescheduleAppointmentPage = () => {
                     <div className="mt-4 pt-4 border-t border-slate-200">
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded bg-emerald-500"></div>
+                          <div className="w-3 h-3 rounded bg-gradient-to-r from-blue-600 to-indigo-600"></div>
                           <span className="text-slate-600">Selected</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded bg-emerald-50 border border-emerald-200"></div>
+                          <div className="w-3 h-3 rounded bg-blue-50 border border-blue-200"></div>
                           <span className="text-slate-600">Available</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded bg-red-50 border border-red-200"></div>
-                          <span className="text-slate-600">No slots</span>
+                          <div className="w-3 h-3 rounded bg-amber-100 border border-amber-300"></div>
+                          <span className="text-slate-600">Original Date</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="w-3 h-3 rounded bg-gray-100"></div>
@@ -804,7 +980,7 @@ const RescheduleAppointmentPage = () => {
                     <div className="mt-4 flex justify-end">
                       <button
                         onClick={() => setShowDatePicker(false)}
-                        className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-medium text-sm"
+                        className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition font-medium text-sm"
                       >
                         Done
                       </button>
@@ -818,7 +994,7 @@ const RescheduleAppointmentPage = () => {
                 <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center justify-between">
                   <span>Select New Time</span>
                   {selectedDate && (
-                    <span className="text-sm bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">
+                    <span className="text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
                       {slotsForSelectedDate.length} slots available
                     </span>
                   )}
@@ -836,7 +1012,7 @@ const RescheduleAppointmentPage = () => {
                       }`}
                   >
                     <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-emerald-500" />
+                      <Clock className="w-4 h-4 text-blue-500" />
                       <span className={selectedTime ? "text-slate-800" : "text-slate-500"}>
                         {selectedTime ? 
                           `Sl-${selectedTime.serialNumber || ''}: ${selectedTime.startTime} - ${selectedTime.endTime}` 
@@ -885,15 +1061,15 @@ const RescheduleAppointmentPage = () => {
                               onClick={() => handleTimeSelect(slot)}
                               className={`p-3 border rounded-lg text-left transition-all relative
                                 ${selectedTime?._id === slot._id 
-                                  ? 'bg-emerald-500 text-white border-emerald-600 shadow-md' 
-                                  : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50 hover:border-emerald-300'
+                                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-blue-600 shadow-md' 
+                                  : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50 hover:border-blue-300'
                                 }`}
                             >
                               {/* Serial Number Badge */}
                               <div className="absolute top-1.5 right-1.5">
                                 <div className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold
                                   ${selectedTime?._id === slot._id 
-                                    ? 'bg-emerald-600 text-white' 
+                                    ? 'bg-blue-600 text-white' 
                                     : 'bg-slate-100 text-slate-600'
                                   }`}
                                 >
@@ -919,7 +1095,7 @@ const RescheduleAppointmentPage = () => {
                         <div className="flex justify-end">
                           <button
                             onClick={() => setShowTimePicker(false)}
-                            className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-medium text-sm"
+                            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition font-medium text-sm"
                           >
                             Done
                           </button>
@@ -957,41 +1133,41 @@ const RescheduleAppointmentPage = () => {
           <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
             {/* New Appointment Summary */}
             {selectedSlotInfo && (
-              <div className="p-6 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg">
-                <h4 className="font-semibold text-emerald-800 mb-4 flex items-center gap-2">
-                  <CalendarCheck className="w-5 h-5" />
+              <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+                <h4 className="font-semibold text-blue-800 mb-4 flex items-center gap-2">
+                  <CalendarCheck className="w-5 h-5 text-blue-600" />
                   New Appointment Details
                 </h4>
                 
                 {/* Comparison */}
                 <div className="mb-6 space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-white border border-emerald-200 rounded-lg">
+                  <div className="flex items-center justify-between p-3 bg-white border border-amber-200 rounded-lg">
                     <div className="text-sm text-slate-600">Current Serial</div>
                     <div className="text-lg font-bold text-amber-600">#{appointment.slotSerialNumber || 'N/A'}</div>
                   </div>
                   
-                  <div className="flex items-center justify-between p-3 bg-emerald-100 border border-emerald-300 rounded-lg">
-                    <div className="text-sm text-emerald-700">New Serial</div>
-                    <div className="text-lg font-bold text-emerald-800">#{selectedSlotInfo.serialNumber}</div>
+                  <div className="flex items-center justify-between p-3 bg-blue-100 border border-blue-300 rounded-lg">
+                    <div className="text-sm text-blue-700">New Serial</div>
+                    <div className="text-lg font-bold text-blue-800">#{selectedSlotInfo.serialNumber}</div>
                   </div>
                 </div>
                 
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <Calendar className="w-5 h-5 text-emerald-600" />
+                    <Calendar className="w-5 h-5 text-blue-600" />
                     <div>
-                      <div className="text-xs text-emerald-700 font-medium">Date</div>
-                      <div className="text-sm font-medium text-emerald-800">
+                      <div className="text-xs text-blue-700 font-medium">Date</div>
+                      <div className="text-sm font-medium text-blue-800">
                         {selectedSlotInfo.formattedDate}
                       </div>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-3">
-                    <Clock className="w-5 h-5 text-emerald-600" />
+                    <Clock className="w-5 h-5 text-blue-600" />
                     <div>
-                      <div className="text-xs text-emerald-700 font-medium">Time</div>
-                      <div className="text-sm font-medium text-emerald-800">
+                      <div className="text-xs text-blue-700 font-medium">Time</div>
+                      <div className="text-sm font-medium text-blue-800">
                         {selectedSlotInfo.formattedTime}
                       </div>
                     </div>
@@ -1001,9 +1177,9 @@ const RescheduleAppointmentPage = () => {
                     Duration: {selectedSlotInfo.duration} minutes
                   </div>
                   
-                  <div className="pt-4 border-t border-emerald-200">
-                    <div className="text-xs text-emerald-700 font-medium mb-1">Doctor</div>
-                    <div className="text-sm font-medium text-emerald-800">
+                  <div className="pt-4 border-t border-blue-200">
+                    <div className="text-xs text-blue-700 font-medium mb-1">Doctor</div>
+                    <div className="text-sm font-medium text-blue-800">
                       Dr. {appointment.doctorInfo.name} - {appointment.doctorInfo.speciality}
                     </div>
                   </div>
@@ -1016,7 +1192,7 @@ const RescheduleAppointmentPage = () => {
                     setShowDatePicker(true);
                     setShowTimePicker(false);
                   }}
-                  className="mt-6 w-full px-4 py-2 text-sm border border-emerald-300 text-emerald-700 rounded-lg hover:bg-emerald-100 transition font-medium"
+                  className="mt-6 w-full px-4 py-2 text-sm border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-100 transition font-medium"
                 >
                   Change Selection
                 </button>
@@ -1028,8 +1204,8 @@ const RescheduleAppointmentPage = () => {
               {/* Important Notes */}
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
                 <h4 className="font-semibold text-amber-800 mb-3 flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5" />
-                  Important Notes
+                  <AlertCircle className="w-5 h-5 text-amber-600" />
+                  Important Notes (Staff)
                 </h4>
                 <ul className="text-sm text-amber-700 space-y-2">
                   <li className="flex items-start gap-2">
@@ -1037,16 +1213,20 @@ const RescheduleAppointmentPage = () => {
                     <span>The original appointment slot will be freed up and made available to other patients</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <div className="w-1.5 h-1.5 bg-amber-500 rounded-full mt=1.5 flex-shrink-0"></div>
                     <span>Patient will be notified of the schedule change</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Appointment status will remain as "{appointment.status}"</span>
+                    <span className="font-medium">Staff reschedules automatically confirm appointments</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <div className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-1.5 flex-shrink-0"></div>
                     <span>All appointment history will be preserved</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <span>Staff cannot reschedule cancelled appointments</span>
                   </li>
                 </ul>
               </div>
@@ -1055,21 +1235,12 @@ const RescheduleAppointmentPage = () => {
               <div className="bg-white border border-slate-200 rounded-xl p-6">
                 <div className="space-y-3">
                   <button
-                    onClick={handleReschedule}
-                    disabled={submitting || !selectedDate || !selectedTime}
-                    className="w-full px-6 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 font-medium shadow-md hover:shadow-lg"
+                    onClick={showRescheduleConfirmation}
+                    disabled={!selectedDate || !selectedTime || appointment.status === 'cancelled'}
+                    className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 font-medium shadow-md hover:shadow-lg"
                   >
-                    {submitting ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>Rescheduling...</span>
-                      </>
-                    ) : (
-                      <>
-                        <RotateCcw className="w-5 h-5" />
-                        <span>Confirm Reschedule</span>
-                      </>
-                    )}
+                    <RotateCcw className="w-5 h-5" />
+                    <span>Confirm Reschedule</span>
                   </button>
                   
                   <div className="grid grid-cols-1 gap-3">
@@ -1082,7 +1253,7 @@ const RescheduleAppointmentPage = () => {
                     </button> */}
                     
                     <Link
-                      href="/admin/appointments"
+                      href="/staff/appointments"
                       className="px-4 py-3 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition font-medium flex items-center justify-center gap-2"
                     >
                       <ArrowLeft className="w-4 h-4" />
@@ -1096,10 +1267,15 @@ const RescheduleAppointmentPage = () => {
                   <div className="mt-6 p-4 bg-slate-50 rounded-lg">
                     <div className="text-sm text-slate-600 mb-2">Reschedule Summary</div>
                     <div className="text-sm font-medium text-slate-800">
-                      Changing from <span className="text-amber-600">Slot #{appointment.slotSerialNumber || 'N/A'}</span> 
+                      Changing from <span className="text-amber-600">Sl No: {appointment.slotSerialNumber || 'N/A'}</span> 
                       {' '}to{' '}
-                      <span className="text-emerald-600">Slot #{selectedSlotInfo.serialNumber}</span>
+                      <span className="text-blue-600">Sl No:{selectedSlotInfo.serialNumber}</span>
                     </div>
+                    {appointment.status === 'cancelled' && (
+                      <div className="mt-2 text-xs text-red-600 font-medium">
+                        ⚠️ Cannot reschedule cancelled appointments
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1111,4 +1287,4 @@ const RescheduleAppointmentPage = () => {
   );
 };
 
-export default RescheduleAppointmentPage;
+export default StaffRescheduleAppointmentPage;

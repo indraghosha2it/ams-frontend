@@ -492,7 +492,7 @@ export default function ViewStaffPage() {
         <div className="mb-8 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl p-6 border border-purple-200 dark:border-purple-800/30">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
-              <div className="bg-gradient-to-r from-purple-500 to-blue-500 p-3 rounded-lg mr-4">
+              <div className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white p-3 rounded-lg mr-4">
                 <UserCog className="size-6 text-white" />
               </div>
               <div>
@@ -661,10 +661,10 @@ export default function ViewStaffPage() {
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all flex items-center"
+                className="px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all flex items-center"
               >
                 <Save className="size-4 mr-2" />
-                Update Staff Member
+                Update {editingStaff.role === 'admin' ? 'Admin' : 'Staff'}
               </button>
             </div>
           </form>
