@@ -1347,16 +1347,8 @@ export default function SignInPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="remember"
-                    className="size-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-blue-500"
-                  />
-                  <label htmlFor="remember" className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                    Remember me for 30 days
-                  </label>
-                </div>
+                
+                
 
                 <button
                   type="submit"
@@ -1600,16 +1592,7 @@ export default function SignInPage() {
             )}
 
             {/* Divider */}
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                  {isLogin ? 'Or continue with' : 'Or sign up with'}
-                </span>
-              </div>
-            </div>
+           
 
             {/* Social Login (commented out) */}
             {/* <div className="grid grid-cols-1 gap-3">

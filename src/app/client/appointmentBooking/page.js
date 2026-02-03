@@ -1859,114 +1859,116 @@ const ClientAppointmentBooking = () => {
     return true;
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-    
-  //   if (!validateForm()) return;
-    
-  //   setSubmitting(true);
-    
-  //   try {
-  //     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
-  //     const token = localStorage.getItem('token');
-      
-  //     const appointmentData = {
-  //       doctorId,
-  //       slotId: selectedTime._id,
-  //       patient: patientData,
-  //       appointmentDate: selectedDate,
-  //       appointmentTime: selectedTime.startTime,
-  //       slotSerialNumber: selectedTime.serialNumber || 0, // Add serial number
-  //       status: 'pending'
-  //     };
-      
-  //     console.log('📤 Booking appointment with data:', appointmentData);
-  //     console.log('📝 Slot Serial Number:', selectedTime.serialNumber);
-      
-  //     // For development with mock slots
-  //     if (selectedTime._id.startsWith('mock-')) {
-  //       console.log('🎭 Using mock mode - skipping real API call');
-  //       toast.success(`Appointment #${selectedTime.serialNumber} booked successfully! (Demo Mode)`);
-        
-  //       // Simulate successful booking
-  //       setTimeout(() => {
-  //         toast.success('Confirmation email has been sent to your email address!');
-  //         setTimeout(() => {
-  //           if (userData) {
-  //             router.push('/upcomingApp');
-  //           } else {
-  //             router.push('/bookApp');
-  //           }
-  //         }, 2000);
-  //       }, 1000);
-  //       return;
-  //     }
-      
-  //     // REAL API CALL
-  //     const response = await axios.post(
-  //       `${BACKEND_URL}/api/appointments/client-book`,
-  //       appointmentData,
-  //       {
-  //         headers: token ? { 
-  //           'Authorization': `Bearer ${token}`,
-  //           'Content-Type': 'application/json'
-  //         } : { 'Content-Type': 'application/json' },
-  //         timeout: 10000
-  //       }
-  //     );
-      
-  //     console.log('✅ Appointment response:', response.data);
-      
-  //     if (response.data.success) {
-  //       toast.success(`Appointment #${selectedTime.serialNumber || ''} booked successfully! It is now pending approval.`);
-        
-  //       // Show confirmation and redirect
-  //       setTimeout(() => {
-  //         toast.success('You will receive a confirmation email once approved!');
-  //         setTimeout(() => {
-  //           if (userData) {
-  //             router.push('/upcomingApp');
-  //           } else {
-  //             router.push('/bookApp');
-  //           }
-  //         }, 2000);
-  //       }, 1000);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error booking appointment:', error);
-      
-  //     if (error.response) {
-  //       const status = error.response.status;
-        
-  //       if (status === 400) {
-  //         toast.error(error.response.data.message || 'Invalid appointment data');
-  //       } else if (status === 409) {
-  //         toast.error('This time slot is no longer available. Please select another slot.');
-  //         fetchAvailableSlots(); // Refresh slots
-  //       } else if (status === 401) {
-  //         toast.error('Please login to book an appointment');
-  //         setShowLoginModal(true);
-  //       } else if (status === 403) {
-  //         toast.error('You do not have permission to book appointments');
-  //       } else if (status === 404) {
-  //         toast.error('Doctor or time slot not found');
-  //       } else {
-  //         toast.error('Failed to book appointment. Please try again.');
-  //         console.error('Server error:', error.response.data);
-  //       }
-  //     } else if (error.request) {
-  //       toast.error('Network error. Please check your connection.');
-  //       console.error('Network error:', error.request);
-  //     } else {
-  //       toast.error('An unexpected error occurred.');
-  //       console.error('Error:', error.message);
-  //     }
-  //   } finally {
-  //     setSubmitting(false);
-  //   }
-  // };
 
-  const handleSubmit = async (e) => {
+
+//   const handleSubmit = async (e) => {
+//   e.preventDefault();
+  
+//   if (!validateForm()) return;
+  
+//   setSubmitting(true);
+  
+//   try {
+//     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+//     const token = localStorage.getItem('token');
+    
+//     const appointmentData = {
+//       doctorId,
+//       slotId: selectedTime._id,
+//       patient: patientData,
+//       appointmentDate: selectedDate,
+//       appointmentTime: selectedTime.startTime,
+//       slotSerialNumber: selectedTime.serialNumber || 0, // Get serial number from selectedTime
+//       status: 'pending'
+//     };
+    
+//     console.log('📤 Booking appointment with data:', appointmentData);
+//     console.log('📝 Slot Serial Number from selectedTime:', selectedTime.serialNumber);
+    
+//     // For development with mock slots
+//     if (selectedTime._id.startsWith('mock-')) {
+//       console.log('🎭 Using mock mode - skipping real API call');
+//       toast.success(`Appointment #${selectedTime.serialNumber} booked successfully! (Demo Mode)`);
+      
+//       // Simulate successful booking
+//       setTimeout(() => {
+//         toast.success('Confirmation email has been sent to your email address!');
+//         setTimeout(() => {
+//           if (userData) {
+//             router.push('/client/upcomingApp');
+//           } else {
+//             router.push('/bookApp');
+//           }
+//         }, 2000);
+//       }, 1000);
+//       return;
+//     }
+    
+//     // REAL API CALL
+//     const response = await axios.post(
+//       `${BACKEND_URL}/api/appointments/client-book`,
+//       appointmentData,
+//       {
+//         headers: token ? { 
+//           'Authorization': `Bearer ${token}`,
+//           'Content-Type': 'application/json'
+//         } : { 'Content-Type': 'application/json' },
+//         timeout: 10000
+//       }
+//     );
+    
+//     console.log('✅ Appointment response:', response.data);
+    
+//     if (response.data.success) {
+//       toast.success(`Appointment #${selectedTime.serialNumber || ''} booked successfully! It is now pending approval.`);
+      
+//       // Show confirmation and redirect
+//       setTimeout(() => {
+//         toast.success('You will receive a confirmation email once approved!');
+//         setTimeout(() => {
+//           if (userData) {
+//             router.push('/client/upcomingApp');
+//           } else {
+//             router.push('/bookApp');
+//           }
+//         }, 2000);
+//       }, 1000);
+//     }
+//   } catch (error) {
+//     console.error('Error booking appointment:', error);
+    
+//     if (error.response) {
+//       const status = error.response.status;
+      
+//       if (status === 400) {
+//         toast.error(error.response.data.message || 'Invalid appointment data');
+//       } else if (status === 409) {
+//         toast.error('This time slot is no longer available. Please select another slot.');
+//         fetchAvailableSlots(); // Refresh slots
+//       } else if (status === 401) {
+//         toast.error('Please login to book an appointment');
+//         setShowLoginModal(true);
+//       } else if (status === 403) {
+//         toast.error('You do not have permission to book appointments');
+//       } else if (status === 404) {
+//         toast.error('Doctor or time slot not found');
+//       } else {
+//         toast.error('Failed to book appointment. Please try again.');
+//         console.error('Server error:', error.response.data);
+//       }
+//     } else if (error.request) {
+//       toast.error('Network error. Please check your connection.');
+//       console.error('Network error:', error.request);
+//     } else {
+//       toast.error('An unexpected error occurred.');
+//       console.error('Error:', error.message);
+//     }
+//   } finally {
+//     setSubmitting(false);
+//   }
+// };
+
+const handleSubmit = async (e) => {
   e.preventDefault();
   
   if (!validateForm()) return;
@@ -1983,7 +1985,7 @@ const ClientAppointmentBooking = () => {
       patient: patientData,
       appointmentDate: selectedDate,
       appointmentTime: selectedTime.startTime,
-      slotSerialNumber: selectedTime.serialNumber || 0, // Get serial number from selectedTime
+      slotSerialNumber: selectedTime.serialNumber || 0,
       status: 'pending'
     };
     
@@ -1995,17 +1997,23 @@ const ClientAppointmentBooking = () => {
       console.log('🎭 Using mock mode - skipping real API call');
       toast.success(`Appointment #${selectedTime.serialNumber} booked successfully! (Demo Mode)`);
       
-      // Simulate successful booking
+      // Simulate email sending in demo mode
       setTimeout(() => {
-        toast.success('Confirmation email has been sent to your email address!');
-        setTimeout(() => {
-          if (userData) {
-            router.push('/client/upcomingApp');
-          } else {
-            router.push('/bookApp');
-          }
-        }, 2000);
+        toast.success(`📧 Confirmation email sent to ${patientData.email}`);
+      }, 500);
+      
+      // Simulate sender copy email
+      setTimeout(() => {
+        toast.success('📋 Clinic copy sent to admin');
       }, 1000);
+      
+      setTimeout(() => {
+        if (userData) {
+          router.push('/client/upcomingApp');
+        } else {
+          router.push('/bookApp');
+        }
+      }, 2000);
       return;
     }
     
@@ -2018,18 +2026,49 @@ const ClientAppointmentBooking = () => {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         } : { 'Content-Type': 'application/json' },
-        timeout: 10000
+        timeout: 15000
       }
     );
     
     console.log('✅ Appointment response:', response.data);
     
     if (response.data.success) {
-      toast.success(`Appointment #${selectedTime.serialNumber || ''} booked successfully! It is now pending approval.`);
+      const { emailStatus } = response.data.data || {};
       
-      // Show confirmation and redirect
+      // Show appointment success message
+      toast.success(`Appointment #${selectedTime.serialNumber || ''} booked successfully! It is now pending approval.`, {
+        duration: 4000
+      });
+      
+      // Show email status if available
+      if (emailStatus && emailStatus.sent) {
+        toast.success(`📧 Confirmation email sent to ${patientData.email}`, {
+          duration: 4000
+        });
+        
+        // Show additional info about sender copy
+        if (emailStatus.recipients && emailStatus.recipients.sender) {
+          toast.success('📋 Clinic copy has been sent for record keeping', {
+            duration: 4000
+          });
+        }
+      } else if (emailStatus && !emailStatus.sent) {
+        toast.warning('⚠️ Appointment booked but email not sent. You\'ll be contacted for confirmation.', {
+          duration: 4000
+        });
+        console.log('Email error:', emailStatus?.error);
+      } else {
+        // If emailStatus is not in response (for backward compatibility)
+        toast.success('📧 You will receive confirmation email once approved', {
+          duration: 4000
+        });
+      }
+      
+      // Show success message and redirect
       setTimeout(() => {
-        toast.success('You will receive a confirmation email once approved!');
+        toast.success('✅ Your appointment is pending approval. You\'ll be notified via email.', {
+          duration: 3000
+        });
         setTimeout(() => {
           if (userData) {
             router.push('/client/upcomingApp');
@@ -2057,6 +2096,14 @@ const ClientAppointmentBooking = () => {
         toast.error('You do not have permission to book appointments');
       } else if (status === 404) {
         toast.error('Doctor or time slot not found');
+      } else if (status === 500) {
+        // Check if it's an email error
+        const errorData = error.response.data;
+        if (errorData.message && errorData.message.includes('email')) {
+          toast.success('Appointment booked but email service is currently unavailable.');
+        } else {
+          toast.error('Server error. Please try again.');
+        }
       } else {
         toast.error('Failed to book appointment. Please try again.');
         console.error('Server error:', error.response.data);

@@ -55,9 +55,9 @@ export default function ClientDashboardPage() {
   // Client-specific quick actions
   const quickActions = [
     { title: 'Book New Appointment', icon: <Calendar />, color: 'from-blue-500 to-cyan-600', href: '/client/bookApp' },
-    { title: 'Upcoming Appointments', icon: <CalendarRange />, color: 'from-emerald-500 to-teal-600', href: '/client/upcomingAppointments' },
-    { title: 'Past Appointments', icon: <History />, color: 'from-purple-500 to-indigo-600', href: '/client/pastAppointments' },
-    { title: 'View Doctors', icon: <Stethoscope />, color: 'from-amber-500 to-orange-600', href: '/client/doctors' },
+    { title: 'Upcoming Appointments', icon: <CalendarRange />, color: 'from-emerald-500 to-teal-600', href: '/client/upcomingApp' },
+    { title: 'Past Appointments', icon: <History />, color: 'from-purple-500 to-indigo-600', href: '/client/pastApp' },
+
   ];
 
   useEffect(() => {
@@ -731,7 +731,7 @@ export default function ClientDashboardPage() {
           <h2 className="text-xl font-bold text-slate-900">Quick Actions</h2>
           <span className="text-sm text-emerald-600 font-medium">Most used features</span>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {quickActions.map((action, index) => (
             <Link
               key={index}
@@ -752,61 +752,7 @@ export default function ClientDashboardPage() {
         </div>
       </div>
 
-      {/* Summary Section */}
-      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-6 mt-8">
-        <h3 className="font-semibold text-emerald-800 mb-4 flex items-center gap-2">
-          <UserCheck className="size-4" />
-          Your Health Summary
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg p-4 border border-slate-200">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-emerald-100 rounded-lg">
-                <Calendar className="size-5 text-emerald-600" />
-              </div>
-              <div>
-                <div className="font-medium text-slate-800">Appointment Frequency</div>
-                <div className="text-2xl font-bold text-emerald-600 mt-1">
-                  {stats.totalAppointments > 0 ? Math.round(stats.totalAppointments / 6) : 0}
-                </div>
-                <div className="text-sm text-slate-600">Appointments per month</div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg p-4 border border-slate-200">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <CheckCircle className="size-5 text-blue-600" />
-              </div>
-              <div>
-                <div className="font-medium text-slate-800">Completion Rate</div>
-                <div className="text-2xl font-bold text-blue-600 mt-1">
-                  {stats.totalAppointments > 0 
-                    ? Math.round((stats.completedAppointments / stats.totalAppointments) * 100) 
-                    : 0}%
-                </div>
-                <div className="text-sm text-slate-600">Appointments completed</div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg p-4 border border-slate-200">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-100 rounded-lg">
-                <Clock className="size-5 text-amber-600" />
-              </div>
-              <div>
-                <div className="font-medium text-slate-800">Average Response</div>
-                <div className="text-2xl font-bold text-amber-600 mt-1">
-                  {stats.pendingAppointments > 0 ? '24h' : 'Immediate'}
-                </div>
-                <div className="text-sm text-slate-600">Appointment approval time</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+     
     </>
   );
 }

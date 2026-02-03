@@ -2196,95 +2196,175 @@ const BookAppointmentPage = () => {
     return true;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
     
-    if (!validateForm()) return;
+  //   if (!validateForm()) return;
     
-    setSubmitting(true);
+  //   setSubmitting(true);
     
-    try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
-      const token = localStorage.getItem('token');
+  //   try {
+  //     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+  //     const token = localStorage.getItem('token');
       
-      const appointmentData = {
-        doctorId,
-        slotId: selectedTime._id,
-        patient: patientData,
-        appointmentDate: selectedDate,
-        appointmentTime: selectedTime.startTime,
-        slotSerialNumber: selectedTime.serialNumber,
-        status: 'confirmed'
-      };
+  //     const appointmentData = {
+  //       doctorId,
+  //       slotId: selectedTime._id,
+  //       patient: patientData,
+  //       appointmentDate: selectedDate,
+  //       appointmentTime: selectedTime.startTime,
+  //       slotSerialNumber: selectedTime.serialNumber,
+  //       status: 'confirmed'
+  //     };
       
-      console.log('📤 Booking appointment with data:', appointmentData);
-      console.log('🎯 Calling endpoint:', `${BACKEND_URL}/api/appointments`);
-      console.log('📝 Slot Serial:', selectedTime.serialNumber);
-      console.log('🔑 Token exists:', !!token);
+  //     console.log('📤 Booking appointment with data:', appointmentData);
+  //     console.log('🎯 Calling endpoint:', `${BACKEND_URL}/api/appointments`);
+  //     console.log('📝 Slot Serial:', selectedTime.serialNumber);
+  //     console.log('🔑 Token exists:', !!token);
       
-      // For development with mock slots
-      if (selectedTime._id.startsWith('mock-')) {
-        console.log('🎭 Using mock mode - skipping real API call');
-        toast.success('Appointment booked successfully! (Demo Mode)');
-        setTimeout(() => {
-          router.push('/admin/doctors');
-        }, 1500);
-        return;
-      }
+  //     // For development with mock slots
+  //     if (selectedTime._id.startsWith('mock-')) {
+  //       console.log('🎭 Using mock mode - skipping real API call');
+  //       toast.success('Appointment booked successfully! (Demo Mode)');
+  //       setTimeout(() => {
+  //         router.push('/admin/doctors');
+  //       }, 1500);
+  //       return;
+  //     }
       
-      const response = await axios.post(
-        `${BACKEND_URL}/api/appointments`,
-        appointmentData,
-        {
-          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-          timeout: 10000
-        }
-      );
+  //     const response = await axios.post(
+  //       `${BACKEND_URL}/api/appointments`,
+  //       appointmentData,
+  //       {
+  //         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+  //         timeout: 10000
+  //       }
+  //     );
       
-      console.log('✅ Appointment response:', response.data);
+  //     console.log('✅ Appointment response:', response.data);
       
-      if (response.data.success) {
-        toast.success(`Appointment #${selectedTime.serialNumber} booked and confirmed successfully!`);
+  //     if (response.data.success) {
+  //       toast.success(`Appointment #${selectedTime.serialNumber} booked and confirmed successfully!`);
         
-        // Redirect back to doctors
-        setTimeout(() => {
-          router.push('/admin/doctors');
-        }, 1500);
-      }
-    } catch (error) {
-      console.error('Error booking appointment:', error);
+  //       // Redirect back to doctors
+  //       setTimeout(() => {
+  //         router.push('/admin/doctors');
+  //       }, 1500);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error booking appointment:', error);
       
-      if (error.response) {
-        const status = error.response.status;
+  //     if (error.response) {
+  //       const status = error.response.status;
         
-        if (status === 400) {
-          toast.error(error.response.data.message || 'Invalid appointment data');
-        } else if (status === 409) {
-          toast.error('This time slot is no longer available. Please select another slot.');
-          fetchAvailableSlots(); // Refresh slots
-        } else if (status === 401) {
-          toast.error('Please login to book an appointment');
-          router.push('/login');
-        } else if (status === 403) {
-          toast.error('You do not have permission to book appointments');
-        } else if (status === 404) {
-          toast.error('Doctor or time slot not found');
-        } else {
-          toast.error('Failed to book appointment. Please try again.');
-          console.error('Server error:', error.response.data);
-        }
-      } else if (error.request) {
-        toast.error('Network error. Please check your connection.');
-        console.error('Network error:', error.request);
-      } else {
-        toast.error('An unexpected error occurred.');
-        console.error('Error:', error.message);
-      }
-    } finally {
-      setSubmitting(false);
+  //       if (status === 400) {
+  //         toast.error(error.response.data.message || 'Invalid appointment data');
+  //       } else if (status === 409) {
+  //         toast.error('This time slot is no longer available. Please select another slot.');
+  //         fetchAvailableSlots(); // Refresh slots
+  //       } else if (status === 401) {
+  //         toast.error('Please login to book an appointment');
+  //         router.push('/login');
+  //       } else if (status === 403) {
+  //         toast.error('You do not have permission to book appointments');
+  //       } else if (status === 404) {
+  //         toast.error('Doctor or time slot not found');
+  //       } else {
+  //         toast.error('Failed to book appointment. Please try again.');
+  //         console.error('Server error:', error.response.data);
+  //       }
+  //     } else if (error.request) {
+  //       toast.error('Network error. Please check your connection.');
+  //       console.error('Network error:', error.request);
+  //     } else {
+  //       toast.error('An unexpected error occurred.');
+  //       console.error('Error:', error.message);
+  //     }
+  //   } finally {
+  //     setSubmitting(false);
+  //   }
+  // };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  if (!validateForm()) return;
+  
+  setSubmitting(true);
+  
+  try {
+    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+    const token = localStorage.getItem('token');
+    
+    const appointmentData = {
+      doctorId,
+      slotId: selectedTime._id,
+      patient: patientData,
+      appointmentDate: selectedDate,
+      appointmentTime: selectedTime.startTime,
+      slotSerialNumber: selectedTime.serialNumber,
+      status: 'confirmed'
+    };
+    
+    console.log('📤 Booking appointment with data:', appointmentData);
+    
+    // For development with mock slots
+    if (selectedTime._id.startsWith('mock-')) {
+      console.log('🎭 Using mock mode - skipping real API call');
+      toast.success('Appointment booked successfully! (Demo Mode)');
+      
+      // Simulate email sending in demo mode
+      setTimeout(() => {
+        toast.success('📧 Confirmation email sent to ' + patientData.email);
+      }, 500);
+      
+      setTimeout(() => {
+        router.push('/admin/doctors');
+      }, 1500);
+      return;
     }
-  };
-
+    
+    const response = await axios.post(
+      `${BACKEND_URL}/api/appointments`,
+      appointmentData,
+      {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        timeout: 15000
+      }
+    );
+    
+    console.log('✅ Appointment response:', response.data);
+    
+    if (response.data.success) {
+      const { emailStatus } = response.data.data;
+      
+      // Show appointment success message
+      toast.success(`Appointment #${selectedTime.serialNumber} booked successfully!`, {
+        duration: 4000
+      });
+      
+      // Show email status
+      if (emailStatus && emailStatus.sent) {
+        toast.success(`📧 Confirmation email sent to ${patientData.email}`, {
+          duration: 4000
+        });
+      } else {
+        toast.warning('⚠️ Appointment booked but email not sent. We\'ll contact you soon.', {
+          duration: 4000
+        });
+        console.log('Email error:', emailStatus?.error);
+      }
+      
+      // Redirect back to doctors
+      setTimeout(() => {
+        router.push('/admin/doctors');
+      }, 2000);
+    }
+  } catch (error) {
+    // ... your existing error handling code ...
+  } finally {
+    setSubmitting(false);
+  }
+};
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
