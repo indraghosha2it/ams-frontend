@@ -1,7 +1,8 @@
+
 // // src/app/signin/page.js
 // 'use client';
 
-// import { useState, useEffect } from 'react';
+// import { useState, useEffect, useRef } from 'react';
 // import { useRouter, useSearchParams } from 'next/navigation';
 // import axios from 'axios';
 // import toast from 'react-hot-toast';
@@ -23,8 +24,10 @@
 //   const searchParams = useSearchParams();
 //   const [isLogin, setIsLogin] = useState(true);
 //   const [showPassword, setShowPassword] = useState(false);
+//   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 //   const [loading, setLoading] = useState(false);
 //   const [justRegistered, setJustRegistered] = useState(false);
+//   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
   
 //   useEffect(() => {
 //     const mode = searchParams.get('mode');
@@ -75,7 +78,81 @@
 //     });
 //   };
 
- 
+//   const handlePasswordChange = (password) => {
+//     setRegisterData({ ...registerData, password });
+//     checkPasswordStrength(password);
+    
+//     // Hide requirements if all criteria are met
+//     const allChecksPass = checkAllPasswordRequirements(password);
+//     if (allChecksPass) {
+//       setShowPasswordRequirements(false);
+//     }
+//   };
+
+//   const checkAllPasswordRequirements = (password) => {
+//     return (
+//       password.length >= 8 &&
+//       /[A-Z]/.test(password) &&
+//       /[a-z]/.test(password) &&
+//       /[0-9]/.test(password) &&
+//       /[^A-Za-z0-9]/.test(password)
+//     );
+//   };
+
+//   const handlePasswordBlur = () => {
+//     if (registerData.password && !checkAllPasswordRequirements(registerData.password)) {
+//       setShowPasswordRequirements(true);
+//     }
+//   };
+
+//   const handlePasswordFocus = () => {
+//     // Hide requirements when user focuses back on the field
+//     setShowPasswordRequirements(false);
+//   };
+
+//   // const handleLogin = async (e) => {
+//   //   e.preventDefault();
+//   //   setLoading(true);
+    
+//   //   try {
+//   //     const response = await axios.post('http://localhost:5000/api/auth/login', loginData);
+      
+//   //     if (response.data.success) {
+//   //       toast.success('Welcome back!');
+        
+//   //       // Store token and user data
+//   //       localStorage.setItem('token', response.data.token);
+//   //       localStorage.setItem('user', JSON.stringify(response.data.user));
+        
+//   //       // Redirect based on role
+//   //       const role = response.data.user?.role || response.data.role;
+        
+//   //       console.log('Login successful, role:', role);
+        
+//   //       switch (role) {
+//   //         case 'admin':
+//   //           toast.success('Welcome Admin!');
+//   //           router.push('/admin/dashboard');
+//   //           break;
+//   //         case 'staff':
+//   //           toast.success('Welcome Staff!');
+//   //           router.push('/staff/dashboard');
+//   //           break;
+//   //         case 'client':
+//   //         default:
+//   //           toast.success('Welcome!');
+//   //           router.push('/client/dashboard');
+//   //           break;
+//   //       }
+//   //     }
+//   //   } catch (error) {
+//   //     const errorMessage = error.response?.data?.message || 'Invalid credentials. Please try again.';
+//   //     toast.error(errorMessage);
+//   //   } finally {
+//   //     setLoading(false);
+//   //   }
+//   // };
+
 
 // const handleLogin = async (e) => {
 //   e.preventDefault();
@@ -85,37 +162,90 @@
 //     const response = await axios.post('http://localhost:5000/api/auth/login', loginData);
     
 //     if (response.data.success) {
-//       toast.success('Welcome back!');
+//       // Show success toast
+//       toast.success('Welcome back!', {
+//         duration: 3000,
+//         position: 'top-right',
+//       });
       
 //       // Store token and user data
 //       localStorage.setItem('token', response.data.token);
 //       localStorage.setItem('user', JSON.stringify(response.data.user));
       
-//       // Redirect based on role
+//       // Get role
 //       const role = response.data.user?.role || response.data.role;
-      
 //       console.log('Login successful, role:', role);
       
-//       switch (role) {
-//         case 'admin':
-//           toast.success('Welcome Admin!');
-//           router.push('/admin/dashboard');
-//           break;
-//         case 'staff':
-//           toast.success('Welcome Staff!');
-//           router.push('/staff/dashboard');
-//           break;
-//         case 'client':
-//         default:
-//           toast.success('Welcome!');
-//           router.push('/client/dashboard');
-//           break;
-//       }
+//       // Show role-specific welcome toast after a short delay
+//       setTimeout(() => {
+//         switch (role) {
+//           case 'admin':
+//             toast.success('Welcome Admin!', { 
+//               duration: 2000,
+//               position: 'top-right',
+//             });
+//             break;
+//           case 'staff':
+//             toast.success('Welcome Staff!', { 
+//               duration: 2000,
+//               position: 'top-right',
+//             });
+//             break;
+//           case 'client':
+//           default:
+//             toast.success('Welcome!', { 
+//               duration: 2000,
+//               position: 'top-right',
+//             });
+//             break;
+//         }
+//       }, 500);
+      
+//       // Redirect after showing the first toast
+//       setTimeout(() => {
+//         switch (role) {
+//           case 'admin':
+//             router.push('/admin/dashboard');
+//             break;
+//           case 'staff':
+//             router.push('/staff/dashboard');
+//             break;
+//           case 'client':
+//           default:
+//             router.push('/client/dashboard');
+//             break;
+//         }
+//       }, 1500); // Give user time to see the toast
 //     }
 //   } catch (error) {
-//     // Just show toast without console error
-//     const errorMessage = error.response?.data?.message || 'Invalid credentials. Please try again.';
-//     toast.error(errorMessage);
+//     // Catch the error to prevent it from appearing in console as uncaught
+//     console.log('Login error caught:', error.response?.status, error.response?.data);
+    
+//     // Show appropriate error message
+//     let errorMessage = 'Invalid credentials. Please try again.';
+    
+//     if (error.response) {
+//       if (error.response.status === 401) {
+//         errorMessage = 'Invalid email or password';
+//       } else if (error.response.status === 400) {
+//         errorMessage = error.response.data?.message || 'Please check your input';
+//       } else if (error.response.status === 404) {
+//         errorMessage = 'User not found. Please sign up first';
+//       } else {
+//         errorMessage = error.response.data?.message || 'Login failed. Please try again.';
+//       }
+//     } else if (error.request) {
+//       errorMessage = 'Network error. Please check your connection';
+//     } else {
+//       errorMessage = 'An error occurred. Please try again.';
+//     }
+    
+//     // Show error toast
+//     toast.error(errorMessage, {
+//       duration: 4000,
+//       position: 'top-right',
+//     });
+    
 //   } finally {
 //     setLoading(false);
 //   }
@@ -129,6 +259,14 @@
 //       return;
 //     }
     
+//     // Check password requirements
+//     const allChecksPass = Object.values(passwordStrength).every(v => v);
+//     if (!allChecksPass) {
+//       toast.error('Please meet all password requirements');
+//       setShowPasswordRequirements(true);
+//       return;
+//     }
+    
 //     if (registerData.password !== registerData.confirmPassword) {
 //       toast.error('Passwords do not match');
 //       return;
@@ -136,12 +274,6 @@
     
 //     if (!registerData.acceptTerms) {
 //       toast.error('Please accept the terms and conditions');
-//       return;
-//     }
-    
-//     const allChecksPass = Object.values(passwordStrength).every(v => v);
-//     if (!allChecksPass) {
-//       toast.error('Please meet all password requirements');
 //       return;
 //     }
     
@@ -163,7 +295,6 @@
 //       });
       
 //       if (response.data.success) {
-//         // Show success toast
 //         toast.success('Account created successfully! Please sign in to continue.');
 //         setJustRegistered(true);
         
@@ -177,7 +308,7 @@
 //           acceptTerms: false,
 //         });
         
-//         // Reset password strength
+//         // Reset password strength and hide requirements
 //         setPasswordStrength({
 //           length: false,
 //           uppercase: false,
@@ -185,6 +316,7 @@
 //           number: false,
 //           special: false,
 //         });
+//         setShowPasswordRequirements(false);
         
 //         // Pre-fill email in login form for convenience
 //         setLoginData({
@@ -196,9 +328,9 @@
 //         setIsLogin(true);
 //       }
 //     } catch (error) {
-//       console.error('Registration error:', error.response?.data || error.message);
-//       toast.error(error.response?.data?.message || 'Registration failed. Please try again.');
-//     } finally {
+//   const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
+//   toast.error(errorMessage);
+// } finally {
 //       setLoading(false);
 //     }
 //   };
@@ -220,7 +352,7 @@
 //       ) : (
 //         <X className="size-4 text-red-400" />
 //       )}
-//       <span className={`text-sm ${met ? 'text-green-600' : 'text-gray-500'}`}>
+//       <span className={`text-sm ${met ? 'text-green-600' : 'text-red-600'}`}>
 //         {label}
 //       </span>
 //     </div>
@@ -295,6 +427,7 @@
 //                 onClick={() => {
 //                   setIsLogin(false);
 //                   setJustRegistered(false);
+//                   setShowPasswordRequirements(false);
 //                 }}
 //                 className={`flex-1 py-3 text-center font-semibold rounded-lg transition-all duration-300 ${
 //                   !isLogin
@@ -509,10 +642,9 @@
 //                     <input
 //                       type={showPassword ? 'text' : 'password'}
 //                       value={registerData.password}
-//                       onChange={(e) => {
-//                         setRegisterData({ ...registerData, password: e.target.value });
-//                         checkPasswordStrength(e.target.value);
-//                       }}
+//                       onChange={(e) => handlePasswordChange(e.target.value)}
+//                       onFocus={handlePasswordFocus}
+//                       onBlur={handlePasswordBlur}
 //                       className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
 //                       placeholder="••••••••"
 //                       required
@@ -530,14 +662,19 @@
 //                     </button>
 //                   </div>
                   
-//                   {/* Password Requirements */}
-//                   <div className="mt-3 space-y-2">
-//                     <PasswordRequirement label="At least 8 characters" met={passwordStrength.length} />
-//                     <PasswordRequirement label="At least one uppercase letter" met={passwordStrength.uppercase} />
-//                     <PasswordRequirement label="At least one lowercase letter" met={passwordStrength.lowercase} />
-//                     <PasswordRequirement label="At least one number" met={passwordStrength.number} />
-//                     <PasswordRequirement label="At least one special character" met={passwordStrength.special} />
-//                   </div>
+//                   {/* Password Requirements - Only show when user leaves field without meeting criteria */}
+//                   {showPasswordRequirements && registerData.password && (
+//                     <div className="mt-3 space-y-2 p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg animate-fadeIn">
+//                       <p className="text-sm font-medium text-red-600 dark:text-red-400 mb-2">
+//                         Password must contain:
+//                       </p>
+//                       <PasswordRequirement label="At least 8 characters" met={passwordStrength.length} />
+//                       <PasswordRequirement label="At least one uppercase letter" met={passwordStrength.uppercase} />
+//                       <PasswordRequirement label="At least one lowercase letter" met={passwordStrength.lowercase} />
+//                       <PasswordRequirement label="At least one number" met={passwordStrength.number} />
+//                       <PasswordRequirement label="At least one special character" met={passwordStrength.special} />
+//                     </div>
+//                   )}
 //                 </div>
 
 //                 <div>
@@ -547,13 +684,24 @@
 //                   <div className="relative">
 //                     <Lock className="absolute left-3 top-3 size-5 text-gray-400" />
 //                     <input
-//                       type={showPassword ? 'text' : 'password'}
+//                       type={showConfirmPassword ? 'text' : 'password'}
 //                       value={registerData.confirmPassword}
 //                       onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
-//                       className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+//                       className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
 //                       placeholder="••••••••"
 //                       required
 //                     />
+//                     <button
+//                       type="button"
+//                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+//                       className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+//                     >
+//                       {showConfirmPassword ? (
+//                         <EyeOff className="size-5" />
+//                       ) : (
+//                         <Eye className="size-5" />
+//                       )}
+//                     </button>
 //                   </div>
 //                   {registerData.confirmPassword && registerData.password !== registerData.confirmPassword && (
 //                     <p className="mt-1 text-xs text-red-600 dark:text-red-400">
@@ -636,7 +784,7 @@
 //               </div>
 //             </div>
 
-//             {/* Social Login */}
+//             {/* Social Login (commented out) */}
 //             {/* <div className="grid grid-cols-1 gap-3">
 //               <button
 //                 type="button"
@@ -651,10 +799,7 @@
 //                 </svg>
 //                 Google
 //               </button>
-             
 //             </div> */}
-
-//             {/* Remove Demo Accounts Info Section */}
 //           </div>
 //         </div>
 //       </div>
@@ -666,7 +811,7 @@
 //           to { opacity: 1; transform: translateY(0); }
 //         }
 //         .animate-fadeIn {
-//           animation: fadeIn 0.5s ease-out;
+//           animation: fadeIn 0.3s ease-out;
 //         }
 //       `}</style>
 //     </div>
@@ -703,6 +848,8 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [justRegistered, setJustRegistered] = useState(false);
   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
   
   useEffect(() => {
     const mode = searchParams.get('mode');
@@ -742,6 +889,54 @@ export default function SignInPage() {
     number: false,
     special: false,
   });
+
+  // Validate email format
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      setEmailError('');
+      return false;
+    }
+    
+    if (!emailRegex.test(email)) {
+      setEmailError('Please enter a valid email address (e.g., user@example.com)');
+      return false;
+    }
+    
+    setEmailError('');
+    return true;
+  };
+
+  // Validate phone number (minimum 10 digits)
+  const validatePhone = (phone) => {
+    // Remove all non-digit characters
+    const digitsOnly = phone.replace(/\D/g, '');
+    
+    if (!phone) {
+      setPhoneError('');
+      return false; // Phone is optional
+    }
+    
+    if (digitsOnly.length < 10) {
+      setPhoneError('Phone number must be at least 10 digits');
+      return false;
+    }
+    
+    // Optional: You can add a maximum limit if needed
+    // if (digitsOnly.length > 15) {
+    //   setPhoneError('Phone number is too long');
+    //   return false;
+    // }
+    
+    setPhoneError('');
+    return true;
+  };
+
+  // Format phone number for display (digits only, no formatting)
+  const formatPhoneDisplay = (value) => {
+    // Remove all non-digit characters
+    return value.replace(/\D/g, '');
+  };
 
   const checkPasswordStrength = (password) => {
     setPasswordStrength({
@@ -785,148 +980,110 @@ export default function SignInPage() {
     setShowPasswordRequirements(false);
   };
 
-  // const handleLogin = async (e) => {
-  //   e.preventDefault();
-  //   setLoading(true);
+  // Handle email change with validation
+  const handleEmailChange = (email) => {
+    setRegisterData({ ...registerData, email });
+    if (email) {
+      validateEmail(email);
+    } else {
+      setEmailError('');
+    }
+  };
+
+  // Handle phone change with validation
+  const handlePhoneChange = (phone) => {
+    const formattedPhone = formatPhoneDisplay(phone);
+    setRegisterData({ ...registerData, phone: formattedPhone });
+    if (phone) {
+      validatePhone(formattedPhone);
+    } else {
+      setPhoneError('');
+    }
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
     
-  //   try {
-  //     const response = await axios.post('http://localhost:5000/api/auth/login', loginData);
+    try {
+      const response = await axios.post('http://localhost:5000/api/auth/login', loginData);
       
-  //     if (response.data.success) {
-  //       toast.success('Welcome back!');
+      if (response.data.success) {
+        // Show success toast that disappears after 3 seconds
+        toast.success('Welcome back!', {
+          duration: 3000,
+          position: 'top-right',
+        });
         
-  //       // Store token and user data
-  //       localStorage.setItem('token', response.data.token);
-  //       localStorage.setItem('user', JSON.stringify(response.data.user));
+        // Store token and user data
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
         
-  //       // Redirect based on role
-  //       const role = response.data.user?.role || response.data.role;
+        // Get role
+        const role = response.data.user?.role || response.data.role;
+        console.log('Login successful, role:', role);
         
-  //       console.log('Login successful, role:', role);
-        
-  //       switch (role) {
-  //         case 'admin':
-  //           toast.success('Welcome Admin!');
-  //           router.push('/admin/dashboard');
-  //           break;
-  //         case 'staff':
-  //           toast.success('Welcome Staff!');
-  //           router.push('/staff/dashboard');
-  //           break;
-  //         case 'client':
-  //         default:
-  //           toast.success('Welcome!');
-  //           router.push('/client/dashboard');
-  //           break;
-  //       }
-  //     }
-  //   } catch (error) {
-  //     const errorMessage = error.response?.data?.message || 'Invalid credentials. Please try again.';
-  //     toast.error(errorMessage);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-
-const handleLogin = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  
-  try {
-    const response = await axios.post('http://localhost:5000/api/auth/login', loginData);
-    
-    if (response.data.success) {
-      // Show success toast
-      toast.success('Welcome back!', {
-        duration: 3000,
+        // Redirect after showing the first toast
+        setTimeout(() => {
+          switch (role) {
+            case 'admin':
+              router.push('/admin/dashboard');
+              break;
+            case 'staff':
+              router.push('/staff/dashboard');
+              break;
+            case 'client':
+            default:
+              router.push('/client/dashboard');
+              break;
+          }
+        }, 1000);
+      }
+    } catch (error) {
+      console.log('Login error caught:', error.response?.status, error.response?.data);
+      
+      let errorMessage = 'Invalid credentials. Please try again.';
+      
+      if (error.response) {
+        if (error.response.status === 401) {
+          errorMessage = 'Invalid email or password';
+        } else if (error.response.status === 400) {
+          errorMessage = error.response.data?.message || 'Please check your input';
+        } else if (error.response.status === 404) {
+          errorMessage = 'User not found. Please sign up first';
+        } else {
+          errorMessage = error.response.data?.message || 'Login failed. Please try again.';
+        }
+      } else if (error.request) {
+        errorMessage = 'Network error. Please check your connection';
+      } else {
+        errorMessage = 'An error occurred. Please try again.';
+      }
+      
+      toast.error(errorMessage, {
+        duration: 4000,
         position: 'top-right',
       });
       
-      // Store token and user data
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      
-      // Get role
-      const role = response.data.user?.role || response.data.role;
-      console.log('Login successful, role:', role);
-      
-      // Show role-specific welcome toast after a short delay
-      setTimeout(() => {
-        switch (role) {
-          case 'admin':
-            toast.success('Welcome Admin!', { 
-              duration: 2000,
-              position: 'top-right',
-            });
-            break;
-          case 'staff':
-            toast.success('Welcome Staff!', { 
-              duration: 2000,
-              position: 'top-right',
-            });
-            break;
-          case 'client':
-          default:
-            toast.success('Welcome!', { 
-              duration: 2000,
-              position: 'top-right',
-            });
-            break;
-        }
-      }, 500);
-      
-      // Redirect after showing the first toast
-      setTimeout(() => {
-        switch (role) {
-          case 'admin':
-            router.push('/admin/dashboard');
-            break;
-          case 'staff':
-            router.push('/staff/dashboard');
-            break;
-          case 'client':
-          default:
-            router.push('/client/dashboard');
-            break;
-        }
-      }, 1500); // Give user time to see the toast
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    // Catch the error to prevent it from appearing in console as uncaught
-    console.log('Login error caught:', error.response?.status, error.response?.data);
-    
-    // Show appropriate error message
-    let errorMessage = 'Invalid credentials. Please try again.';
-    
-    if (error.response) {
-      if (error.response.status === 401) {
-        errorMessage = 'Invalid email or password';
-      } else if (error.response.status === 400) {
-        errorMessage = error.response.data?.message || 'Please check your input';
-      } else if (error.response.status === 404) {
-        errorMessage = 'User not found. Please sign up first';
-      } else {
-        errorMessage = error.response.data?.message || 'Login failed. Please try again.';
-      }
-    } else if (error.request) {
-      errorMessage = 'Network error. Please check your connection';
-    } else {
-      errorMessage = 'An error occurred. Please try again.';
-    }
-    
-    // Show error toast
-    toast.error(errorMessage, {
-      duration: 4000,
-      position: 'top-right',
-    });
-    
-  } finally {
-    setLoading(false);
-  }
-};
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
+    
+    // Validate email before proceeding
+    if (!validateEmail(registerData.email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+    
+    // Validate phone if provided (minimum 10 digits)
+    if (registerData.phone && !validatePhone(registerData.phone)) {
+      toast.error('Please enter a valid phone number (minimum 10 digits)');
+      return;
+    }
     
     // Validation
     if (!registerData.name || !registerData.email || !registerData.password) {
@@ -952,25 +1109,20 @@ const handleLogin = async (e) => {
       return;
     }
     
-    // Validate phone number (optional)
-    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-    if (registerData.phone && !phoneRegex.test(registerData.phone.replace(/\D/g, ''))) {
-      toast.error('Please enter a valid phone number');
-      return;
-    }
-    
     setLoading(true);
     
     try {
       const response = await axios.post('http://localhost:5000/api/auth/register/client', {
         name: registerData.name,
         email: registerData.email,
-        phone: registerData.phone ? registerData.phone.replace(/\D/g, '') : '',
+        phone: registerData.phone ? registerData.phone : '',
         password: registerData.password,
       });
       
       if (response.data.success) {
-        toast.success('Account created successfully! Please sign in to continue.');
+        toast.success('Account created successfully! Please sign in to continue.', {
+          duration: 3000,
+        });
         setJustRegistered(true);
         
         // Clear the registration form
@@ -993,6 +1145,10 @@ const handleLogin = async (e) => {
         });
         setShowPasswordRequirements(false);
         
+        // Clear validation errors
+        setEmailError('');
+        setPhoneError('');
+        
         // Pre-fill email in login form for convenience
         setLoginData({
           email: response.data.user?.email || registerData.email,
@@ -1003,21 +1159,13 @@ const handleLogin = async (e) => {
         setIsLogin(true);
       }
     } catch (error) {
-  const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
-  toast.error(errorMessage);
-} finally {
+      const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
+      toast.error(errorMessage, {
+        duration: 4000,
+      });
+    } finally {
       setLoading(false);
     }
-  };
-
-  const formatPhoneNumber = (value) => {
-    const phoneNumber = value.replace(/\D/g, '');
-    
-    if (phoneNumber.length === 0) return '';
-    if (phoneNumber.length <= 3) return `(${phoneNumber}`;
-    if (phoneNumber.length <= 6) return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
-    if (phoneNumber.length <= 10) return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
-    return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)} x${phoneNumber.slice(10)}`;
   };
 
   const PasswordRequirement = ({ label, met }) => (
@@ -1273,19 +1421,23 @@ const handleLogin = async (e) => {
                     <input
                       type="email"
                       value={registerData.email}
-                      onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                      onChange={(e) => handleEmailChange(e.target.value)}
+                      onBlur={() => validateEmail(registerData.email)}
+                      className={`w-full pl-10 pr-4 py-3 rounded-xl border ${emailError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all`}
                       placeholder="you@example.com"
                       required
                     />
                   </div>
+                  {emailError && (
+                    <p className="mt-1 text-xs text-red-600 dark:text-red-400">{emailError}</p>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Phone Number (Optional)
                     <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
-                      For appointment reminders
+                      Minimum 10 digits
                     </span>
                   </label>
                   <div className="relative">
@@ -1293,17 +1445,17 @@ const handleLogin = async (e) => {
                     <input
                       type="tel"
                       value={registerData.phone}
-                      onChange={(e) => setRegisterData({ 
-                        ...registerData, 
-                        phone: formatPhoneNumber(e.target.value) 
-                      })}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                      placeholder="(123) 456-7890"
+                      onChange={(e) => handlePhoneChange(e.target.value)}
+                      onBlur={() => validatePhone(registerData.phone)}
+                      className={`w-full pl-10 pr-4 py-3 rounded-xl border ${phoneError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all`}
+                      placeholder="1234567890"
                     />
                   </div>
-                  {registerData.phone && (
+                  {phoneError ? (
+                    <p className="mt-1 text-xs text-red-600 dark:text-red-400">{phoneError}</p>
+                  ) : registerData.phone && (
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      Format: (123) 456-7890
+                      Enter at least 10 digits (digits only, no formatting)
                     </p>
                   )}
                 </div>
@@ -1337,7 +1489,7 @@ const handleLogin = async (e) => {
                     </button>
                   </div>
                   
-                  {/* Password Requirements - Only show when user leaves field without meeting criteria */}
+                  {/* Password Requirements */}
                   {showPasswordRequirements && registerData.password && (
                     <div className="mt-3 space-y-2 p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg animate-fadeIn">
                       <p className="text-sm font-medium text-red-600 dark:text-red-400 mb-2">
@@ -1416,7 +1568,7 @@ const handleLogin = async (e) => {
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || emailError || phoneError}
                   className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
