@@ -1,4 +1,6 @@
 
+
+
 // "use client";
 
 // import { useState, useEffect, useMemo } from 'react';
@@ -36,7 +38,9 @@
 //   Lock,
 //   ChevronsUpDown,
 //   CalendarDays,
-//   Hash // Added for serial number icon
+//   Hash,
+//   CalendarRange, // Added for calendar range icon
+//   TrendingUp // Added for upcoming icon
 // } from 'lucide-react';
 
 // const AllAppointments = () => {
@@ -59,14 +63,22 @@
 //     cancelled: 0
 //   });
 //   const [statusDropdownOpen, setStatusDropdownOpen] = useState(null);
-//   const [appointmentToDelete, setAppointmentToDelete] = useState(null); // Added for delete modal
-//     const router = useRouter();
+//   const [appointmentToDelete, setAppointmentToDelete] = useState(null);
+//   const [activeTab, setActiveTab] = useState('all'); // 'all', 'today', 'upcoming', 'past'
+//   const router = useRouter();
 
 //   const statusOptions = [
 //     { value: 'all', label: 'All Status', color: 'bg-gray-100 text-gray-800' },
 //     { value: 'pending', label: 'Pending', color: 'bg-amber-100 text-amber-800' },
 //     { value: 'confirmed', label: 'Confirmed', color: 'bg-emerald-100 text-emerald-800' },
 //     { value: 'cancelled', label: 'Cancelled', color: 'bg-red-100 text-red-800' }
+//   ];
+
+//   const tabs = [
+//     { id: 'all', label: 'All Appointments', icon: CalendarRange },
+//     { id: 'today', label: "Today's", icon: Calendar },
+//     { id: 'upcoming', label: 'Upcoming', icon: TrendingUp },
+//     { id: 'past', label: 'Past', icon: ClockIcon }
 //   ];
 
 //   useEffect(() => {
@@ -76,7 +88,7 @@
 
 //   useEffect(() => {
 //     filterAndSortAppointments();
-//   }, [appointments, searchTerm, selectedStatus, selectedDoctor, selectedDate, sortConfig]);
+//   }, [appointments, searchTerm, selectedStatus, selectedDoctor, selectedDate, sortConfig, activeTab]);
 
 //   // Close status dropdown when clicking outside
 //   useEffect(() => {
@@ -136,81 +148,118 @@
 //   };
 
 //   const calculateStats = (appointmentsList) => {
+//     const today = new Date();
+//     today.setHours(0, 0, 0, 0);
+    
+//     const todayAppointments = appointmentsList.filter(app => {
+//       const appDate = new Date(app.appointmentDate);
+//       appDate.setHours(0, 0, 0, 0);
+//       return appDate.getTime() === today.getTime();
+//     });
+
 //     const stats = {
 //       total: appointmentsList.length,
 //       pending: appointmentsList.filter(a => a.status === 'pending').length,
 //       confirmed: appointmentsList.filter(a => a.status === 'confirmed').length,
-//       cancelled: appointmentsList.filter(a => a.status === 'cancelled').length
+//       cancelled: appointmentsList.filter(a => a.status === 'cancelled').length,
+//       today: todayAppointments.length,
+//       todayPending: todayAppointments.filter(a => a.status === 'pending').length,
+//       todayConfirmed: todayAppointments.filter(a => a.status === 'confirmed').length,
+//       todayCancelled: todayAppointments.filter(a => a.status === 'cancelled').length
 //     };
 //     setStats(stats);
 //   };
 
-//   const filterAndSortAppointments = () => {
-//     let filtered = [...appointments];
+//  const filterAndSortAppointments = () => {
+//   let filtered = [...appointments];
+//   const today = new Date();
+//   today.setHours(0, 0, 0, 0); // Set to start of day (midnight)
 
-//     // Filter by search term
-//     if (searchTerm) {
-//       const term = searchTerm.toLowerCase();
-//       filtered = filtered.filter(appointment =>
-//         appointment.patient.fullName.toLowerCase().includes(term) ||
-//         appointment.patient.email.toLowerCase().includes(term) ||
-//         appointment.patient.phone.includes(term) ||
-//         appointment.doctorInfo.name.toLowerCase().includes(term) ||
-//         appointment.doctorInfo.speciality.toLowerCase().includes(term)
-//       );
-//     }
-
-//     // Filter by status
-//     if (selectedStatus !== 'all') {
-//       filtered = filtered.filter(appointment => appointment.status === selectedStatus);
-//     }
-
-//     // Filter by doctor
-//     if (selectedDoctor !== 'all') {
-//       filtered = filtered.filter(appointment => appointment.doctorId._id === selectedDoctor);
-//     }
-
-//     // Filter by date
-//     if (selectedDate) {
-//       const filterDate = new Date(selectedDate);
-//       filtered = filtered.filter(appointment => {
-//         const appointmentDate = new Date(appointment.appointmentDate);
-//         return appointmentDate.toDateString() === filterDate.toDateString();
-//       });
-//     }
-
-//     // Sort appointments
-//     filtered.sort((a, b) => {
-//       if (sortConfig.key === 'appointmentDate') {
-//         const dateA = new Date(a.appointmentDate);
-//         const dateB = new Date(b.appointmentDate);
-//         return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
-//       }
-      
-//       if (sortConfig.key === 'patientName') {
-//         return sortConfig.direction === 'asc' 
-//           ? a.patient.fullName.localeCompare(b.patient.fullName)
-//           : b.patient.fullName.localeCompare(a.patient.fullName);
-//       }
-      
-//       if (sortConfig.key === 'doctorName') {
-//         return sortConfig.direction === 'asc'
-//           ? a.doctorInfo.name.localeCompare(b.doctorInfo.name)
-//           : b.doctorInfo.name.localeCompare(a.doctorInfo.name);
-//       }
-      
-//       if (sortConfig.key === 'status') {
-//         const statusOrder = { 'pending': 0, 'confirmed': 1, 'cancelled': 2 };
-//         return sortConfig.direction === 'asc'
-//           ? statusOrder[a.status] - statusOrder[b.status]
-//           : statusOrder[b.status] - statusOrder[a.status];
-//       }
-      
-//       return 0;
+//   // Filter by active tab
+//   if (activeTab === 'today') {
+//     filtered = filtered.filter(appointment => {
+//       const appointmentDate = new Date(appointment.appointmentDate);
+//       appointmentDate.setHours(0, 0, 0, 0);
+//       return appointmentDate.getTime() === today.getTime();
 //     });
+//   } else if (activeTab === 'upcoming') {
+//     filtered = filtered.filter(appointment => {
+//       const appointmentDate = new Date(appointment.appointmentDate);
+//       // Only include appointments after today (not including today)
+//       return appointmentDate > new Date(today.getTime() + 24 * 60 * 60 * 1000); // Tomorrow onwards
+//     });
+//   } else if (activeTab === 'past') {
+//     filtered = filtered.filter(appointment => {
+//       const appointmentDate = new Date(appointment.appointmentDate);
+//       appointmentDate.setHours(0, 0, 0, 0);
+//       return appointmentDate.getTime() < today.getTime(); // Before today
+//     });
+//   }
 
-//     setFilteredAppointments(filtered);
-//   };
+//   // Rest of the filtering logic remains the same...
+//   // Filter by search term
+//   if (searchTerm) {
+//     const term = searchTerm.toLowerCase();
+//     filtered = filtered.filter(appointment =>
+//       appointment.patient.fullName.toLowerCase().includes(term) ||
+//       appointment.patient.email.toLowerCase().includes(term) ||
+//       appointment.patient.phone.includes(term) ||
+//       appointment.doctorInfo.name.toLowerCase().includes(term) ||
+//       appointment.doctorInfo.speciality.toLowerCase().includes(term)
+//     );
+//   }
+
+//   // Filter by status
+//   if (selectedStatus !== 'all') {
+//     filtered = filtered.filter(appointment => appointment.status === selectedStatus);
+//   }
+
+//   // Filter by doctor
+//   if (selectedDoctor !== 'all') {
+//     filtered = filtered.filter(appointment => appointment.doctorId._id === selectedDoctor);
+//   }
+
+//   // Filter by date
+//   if (selectedDate) {
+//     const filterDate = new Date(selectedDate);
+//     filtered = filtered.filter(appointment => {
+//       const appointmentDate = new Date(appointment.appointmentDate);
+//       return appointmentDate.toDateString() === filterDate.toDateString();
+//     });
+//   }
+
+//   // Sort appointments
+//   filtered.sort((a, b) => {
+//     if (sortConfig.key === 'appointmentDate') {
+//       const dateA = new Date(a.appointmentDate);
+//       const dateB = new Date(b.appointmentDate);
+//       return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
+//     }
+    
+//     if (sortConfig.key === 'patientName') {
+//       return sortConfig.direction === 'asc' 
+//         ? a.patient.fullName.localeCompare(b.patient.fullName)
+//         : b.patient.fullName.localeCompare(a.patient.fullName);
+//     }
+    
+//     if (sortConfig.key === 'doctorName') {
+//       return sortConfig.direction === 'asc'
+//         ? a.doctorInfo.name.localeCompare(b.doctorInfo.name)
+//         : b.doctorInfo.name.localeCompare(a.doctorInfo.name);
+//     }
+    
+//     if (sortConfig.key === 'status') {
+//       const statusOrder = { 'pending': 0, 'confirmed': 1, 'cancelled': 2 };
+//       return sortConfig.direction === 'asc'
+//         ? statusOrder[a.status] - statusOrder[b.status]
+//         : statusOrder[b.status] - statusOrder[a.status];
+//     }
+    
+//     return 0;
+//   });
+
+//   setFilteredAppointments(filtered);
+// };
 
 //   const handleSort = (key) => {
 //     setSortConfig(prevConfig => ({
@@ -276,12 +325,6 @@
 //       console.error('Error deleting appointment:', error);
 //       toast.error('Failed to delete appointment');
 //     }
-//   };
-
-//   // Handle reschedule - placeholder function
-//   const handleReschedule = (appointmentId) => {
-//     toast.success('Reschedule feature coming soon!');
-//     // You can implement reschedule functionality here
 //   };
 
 //   // Get row color based on status
@@ -414,7 +457,7 @@
 //       'Doctor Speciality',
 //       'Appointment Date',
 //       'Appointment Time',
-//       'Slot Serial Number', // Added serial number
+//       'Slot Serial Number',
 //       'Status',
 //       'Reason'
 //     ];
@@ -429,7 +472,7 @@
 //         `"${app.doctorInfo.speciality}"`,
 //         `"${formatDate(app.appointmentDate)}"`,
 //         `"${app.appointmentTime}"`,
-//         `"${app.slotSerialNumber || app.serialNumber || ''}"`, // Added serial number
+//         `"${app.slotSerialNumber || app.serialNumber || ''}"`,
 //         `"${app.status}"`,
 //         `"${app.patient.reason}"`
 //       ].join(','))
@@ -442,6 +485,38 @@
 //     a.download = `appointments_${new Date().toISOString().split('T')[0]}.csv`;
 //     a.click();
 //   };
+
+//   // Get tab badge count
+// // Get tab badge count
+// const getTabBadgeCount = (tabId) => {
+//   const today = new Date();
+//   today.setHours(0, 0, 0, 0);
+  
+//   switch (tabId) {
+//     case 'all':
+//       return appointments.length;
+//     case 'today':
+//       return appointments.filter(app => {
+//         const appDate = new Date(app.appointmentDate);
+//         appDate.setHours(0, 0, 0, 0);
+//         return appDate.getTime() === today.getTime();
+//       }).length;
+//     case 'upcoming':
+//       return appointments.filter(app => {
+//         const appDate = new Date(app.appointmentDate);
+//         // Only count appointments after today (not including today)
+//         return appDate > new Date(today.getTime() + 24 * 60 * 60 * 1000);
+//       }).length;
+//     case 'past':
+//       return appointments.filter(app => {
+//         const appDate = new Date(app.appointmentDate);
+//         appDate.setHours(0, 0, 0, 0);
+//         return appDate.getTime() < today.getTime();
+//       }).length;
+//     default:
+//       return 0;
+//   }
+// };
 
 //   if (loading) {
 //     return (
@@ -527,23 +602,55 @@
 //           </div>
 //         </div>
 
+       
+
 //         {/* Stats Dashboard */}
 //         <div className="mb-8">
 //           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-//             <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-200">
-//               <div className="flex items-center justify-between">
-//                 <div>
-//                   <div className="text-2xl font-bold text-slate-900">{stats.total}</div>
-//                   <div className="text-slate-600 text-sm font-medium">Total Appointments</div>
-//                 </div>
-//                 <div className="text-emerald-500 text-2xl bg-emerald-100 p-3 rounded-lg">📅</div>
-//               </div>
-//             </div>
+//            <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-200">
+//   <div className="flex items-center justify-between">
+//     <div>
+//       <div className="text-2xl font-bold text-slate-900">
+//         {activeTab === 'today' ? stats.today : 
+//          activeTab === 'upcoming' ? appointments.filter(a => {
+//            const today = new Date();
+//            today.setHours(0, 0, 0, 0);
+//            const appointmentDate = new Date(a.appointmentDate);
+//            // Only count appointments after today (not including today)
+//            return appointmentDate > new Date(today.getTime() + 24 * 60 * 60 * 1000);
+//          }).length :
+//          activeTab === 'past' ? appointments.filter(a => {
+//            const appDate = new Date(a.appointmentDate);
+//            appDate.setHours(0, 0, 0, 0);
+//            return appDate.getTime() < new Date().setHours(0, 0, 0, 0);
+//          }).length :
+//          stats.total}
+//       </div>
+//       <div className="text-slate-600 text-sm font-medium">
+//         {activeTab === 'all' ? 'Total Appointments' :
+//          activeTab === 'today' ? "Today's Appointments" :
+//          activeTab === 'upcoming' ? 'Upcoming Appointments' :
+//          'Past Appointments'}
+//       </div>
+//     </div>
+//     <div className={`text-2xl p-3 rounded-lg ${
+//       activeTab === 'today' ? 'bg-emerald-100 text-emerald-500' :
+//       activeTab === 'upcoming' ? 'bg-blue-100 text-blue-500' :
+//       activeTab === 'past' ? 'bg-amber-100 text-amber-500' :
+//       'bg-slate-100 text-slate-500'
+//     }`}>
+//       📅
+//     </div>
+//   </div>
+// </div>
             
 //             <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-200">
 //               <div className="flex items-center justify-between">
 //                 <div>
-//                   <div className="text-2xl font-bold text-amber-700">{stats.pending}</div>
+//                   <div className="text-2xl font-bold text-amber-700">
+//                     {activeTab === 'today' ? stats.todayPending :
+//                      filteredAppointments.filter(a => a.status === 'pending').length}
+//                   </div>
 //                   <div className="text-slate-600 text-sm font-medium">Pending</div>
 //                 </div>
 //                 <div className="text-amber-500 text-2xl bg-amber-100 p-3 rounded-lg">⏳</div>
@@ -553,7 +660,10 @@
 //             <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-200">
 //               <div className="flex items-center justify-between">
 //                 <div>
-//                   <div className="text-2xl font-bold text-emerald-700">{stats.confirmed}</div>
+//                   <div className="text-2xl font-bold text-emerald-700">
+//                     {activeTab === 'today' ? stats.todayConfirmed :
+//                      filteredAppointments.filter(a => a.status === 'confirmed').length}
+//                   </div>
 //                   <div className="text-slate-600 text-sm font-medium">Confirmed</div>
 //                 </div>
 //                 <div className="text-emerald-500 text-2xl bg-emerald-100 p-3 rounded-lg">✅</div>
@@ -563,7 +673,10 @@
 //             <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-200">
 //               <div className="flex items-center justify-between">
 //                 <div>
-//                   <div className="text-2xl font-bold text-red-700">{stats.cancelled}</div>
+//                   <div className="text-2xl font-bold text-red-700">
+//                     {activeTab === 'today' ? stats.todayCancelled :
+//                      filteredAppointments.filter(a => a.status === 'cancelled').length}
+//                   </div>
 //                   <div className="text-slate-600 text-sm font-medium">Cancelled</div>
 //                 </div>
 //                 <div className="text-red-500 text-2xl bg-red-100 p-3 rounded-lg">❌</div>
@@ -673,10 +786,84 @@
 //             </div>
 //           )}
 //         </div>
+        
+//          {/* Tabs Section */}
+//       <div className="mb-8 w-full">
+//   <div className="flex w-full p-1.5 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl shadow-inner">
+//     {tabs.map((tab) => {
+//       const Icon = tab.icon;
+//       const badgeCount = getTabBadgeCount(tab.id);
+//       const isActive = activeTab === tab.id;
+      
+//       return (
+//         <button
+//           key={tab.id}
+//           onClick={() => {
+//             setActiveTab(tab.id);
+//             setCurrentPage(1);
+//           }}
+//           className={`relative flex-1 px-4 py-3.5 rounded-xl flex items-center justify-center gap-3 transition-all duration-400 ease-out
+//             ${isActive
+//               ? 'bg-white text-slate-900 shadow-lg shadow-slate-300/50 transform scale-[1.02]'
+//               : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+//             }`}
+//         >
+//           {/* Glow effect for active tab */}
+//           {isActive && (
+//             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-blue-500/10 rounded-xl -z-10"></div>
+//           )}
+          
+//           {/* Icon with floating effect */}
+//           <div className={`relative transition-transform duration-300
+//             ${isActive ? 'translate-y-[-2px]' : ''}`}
+//           >
+//             <Icon className={`w-5 h-5 transition-colors duration-300
+//               ${isActive 
+//                 ? 'text-emerald-600' 
+//                 : 'text-slate-500'
+//               }`}
+//             />
+//           </div>
+          
+//           {/* Label with bold effect */}
+//           <span className={`font-semibold text-sm whitespace-nowrap transition-all duration-300
+//             ${isActive ? 'text-slate-900 font-bold tracking-wide' : 'text-slate-700'}`}
+//           >
+//             {tab.label}
+//           </span>
+          
+//           {/* Floating badge */}
+//           <div className={`transition-all duration-300
+//             ${isActive 
+//               ? 'translate-y-[-1px] scale-105' 
+//               : ''
+//             }`}
+//           >
+//             <span className={`text-xs font-bold px-2 py-1 rounded-full shadow-sm
+//               ${isActive
+//                 ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white'
+//                 : 'bg-slate-300 text-slate-700'
+//               }`}
+//             >
+//               {badgeCount}
+//             </span>
+//           </div>
+          
+//           {/* Active indicator dot */}
+//           {isActive && (
+//             <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
+//               <div className="w-1.5 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full animate-pulse"></div>
+//             </div>
+//           )}
+//         </button>
+//       );
+//     })}
+//   </div>
+// </div>
 
 //         {/* Appointments Table */}
 //         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-//           {/* Table Header - Updated to 13 columns */}
+//           {/* Table Header */}
 //           <div className="border-b border-slate-200">
 //             <div className="grid grid-cols-13 gap-4 px-6 py-4 bg-slate-50">
 //               <div 
@@ -724,12 +911,24 @@
 //           <div className="divide-y divide-slate-200/50">
 //             {currentAppointments.length === 0 ? (
 //               <div className="p-12 text-center">
-//                 <div className="text-slate-400 text-6xl mb-4">📅</div>
-//                 <h3 className="text-lg font-semibold text-slate-700 mb-2">No appointments found</h3>
+//                 <div className="text-slate-400 text-6xl mb-4">
+//                   {activeTab === 'today' ? '📅' :
+//                    activeTab === 'upcoming' ? '🚀' :
+//                    activeTab === 'past' ? '⏰' : '📅'}
+//                 </div>
+//                 <h3 className="text-lg font-semibold text-slate-700 mb-2">
+//                   {activeTab === 'today' ? "No appointments today" :
+//                    activeTab === 'upcoming' ? "No upcoming appointments" :
+//                    activeTab === 'past' ? "No past appointments" :
+//                    "No appointments found"}
+//                 </h3>
 //                 <p className="text-slate-500">
 //                   {searchTerm || selectedStatus !== 'all' || selectedDoctor !== 'all' || selectedDate
 //                     ? 'Try adjusting your filters'
-//                     : 'No appointments have been booked yet'}
+//                     : activeTab === 'today' ? "No appointments scheduled for today" :
+//                       activeTab === 'upcoming' ? "All appointments are either past or today" :
+//                       activeTab === 'past' ? "No past appointments found" :
+//                       'No appointments have been booked yet'}
 //                 </p>
 //               </div>
 //             ) : (
@@ -797,16 +996,13 @@
 //                         </div>
                         
 //                         {/* Serial Number Display */}
-//                         <div className="  items-center gap-2">
-                             
-//                           <div className="text-xs font-semibold  py-1  text-gray-600 rounded-full flex items-center gap-1">
-                           
+//                         <div className="items-center gap-2">
+//                           <div className="text-xs font-semibold py-1 text-gray-600 rounded-full flex items-center gap-1">
 //                             Sl No-{appointment.slotSerialNumber || appointment.serialNumber || 'N/A'}
 //                           </div>
-//                            <div className="text-xs text-slate-500">
+//                           <div className="text-xs text-slate-500">
 //                             Duration: {appointment.doctorInfo.perPatientTime} min
 //                           </div>
-                        
 //                         </div>
 //                       </div>
 
@@ -840,17 +1036,10 @@
 //                         )}
 //                       </div>
 
-//                       {/* Actions - Updated with Reschedule icon */}
+//                       {/* Actions */}
 //                       <div className="col-span-1">
 //                         <div className="flex justify-center gap-2">
 //                           {/* Reschedule Button */}
-//                           {/* <button
-//                             onClick={() => handleReschedule(appointment._id)}
-//                             className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition"
-//                             title="Reschedule Appointment"
-//                           >
-//                             <CalendarDays className="w-4 h-4" />
-//                           </button> */}
 //                           <button
 //                             onClick={() => router.push(`/admin/rescheduleApp?id=${appointment._id}`)}
 //                             className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition"
@@ -967,14 +1156,14 @@
 //               </div>
 //             </div>
 //             <div>
-//               <div className="text-slate-600">This Week</div>
+//               <div className="text-slate-600">Upcoming (Next 7 days)</div>
 //               <div className="font-semibold text-slate-900">
 //                 {appointments.filter(a => {
 //                   const today = new Date();
 //                   const appDate = new Date(a.appointmentDate);
-//                   const oneWeekAgo = new Date(today);
-//                   oneWeekAgo.setDate(today.getDate() - 7);
-//                   return appDate >= oneWeekAgo && appDate <= today;
+//                   const nextWeek = new Date(today);
+//                   nextWeek.setDate(today.getDate() + 7);
+//                   return appDate > today && appDate <= nextWeek;
 //                 }).length}
 //               </div>
 //             </div>
@@ -1188,96 +1377,96 @@ const AllAppointments = () => {
     setStats(stats);
   };
 
- const filterAndSortAppointments = () => {
-  let filtered = [...appointments];
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Set to start of day (midnight)
+  const filterAndSortAppointments = () => {
+    let filtered = [...appointments];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of day (midnight)
 
-  // Filter by active tab
-  if (activeTab === 'today') {
-    filtered = filtered.filter(appointment => {
-      const appointmentDate = new Date(appointment.appointmentDate);
-      appointmentDate.setHours(0, 0, 0, 0);
-      return appointmentDate.getTime() === today.getTime();
-    });
-  } else if (activeTab === 'upcoming') {
-    filtered = filtered.filter(appointment => {
-      const appointmentDate = new Date(appointment.appointmentDate);
-      // Only include appointments after today (not including today)
-      return appointmentDate > new Date(today.getTime() + 24 * 60 * 60 * 1000); // Tomorrow onwards
-    });
-  } else if (activeTab === 'past') {
-    filtered = filtered.filter(appointment => {
-      const appointmentDate = new Date(appointment.appointmentDate);
-      appointmentDate.setHours(0, 0, 0, 0);
-      return appointmentDate.getTime() < today.getTime(); // Before today
-    });
-  }
-
-  // Rest of the filtering logic remains the same...
-  // Filter by search term
-  if (searchTerm) {
-    const term = searchTerm.toLowerCase();
-    filtered = filtered.filter(appointment =>
-      appointment.patient.fullName.toLowerCase().includes(term) ||
-      appointment.patient.email.toLowerCase().includes(term) ||
-      appointment.patient.phone.includes(term) ||
-      appointment.doctorInfo.name.toLowerCase().includes(term) ||
-      appointment.doctorInfo.speciality.toLowerCase().includes(term)
-    );
-  }
-
-  // Filter by status
-  if (selectedStatus !== 'all') {
-    filtered = filtered.filter(appointment => appointment.status === selectedStatus);
-  }
-
-  // Filter by doctor
-  if (selectedDoctor !== 'all') {
-    filtered = filtered.filter(appointment => appointment.doctorId._id === selectedDoctor);
-  }
-
-  // Filter by date
-  if (selectedDate) {
-    const filterDate = new Date(selectedDate);
-    filtered = filtered.filter(appointment => {
-      const appointmentDate = new Date(appointment.appointmentDate);
-      return appointmentDate.toDateString() === filterDate.toDateString();
-    });
-  }
-
-  // Sort appointments
-  filtered.sort((a, b) => {
-    if (sortConfig.key === 'appointmentDate') {
-      const dateA = new Date(a.appointmentDate);
-      const dateB = new Date(b.appointmentDate);
-      return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
+    // Filter by active tab
+    if (activeTab === 'today') {
+      filtered = filtered.filter(appointment => {
+        const appointmentDate = new Date(appointment.appointmentDate);
+        appointmentDate.setHours(0, 0, 0, 0);
+        return appointmentDate.getTime() === today.getTime();
+      });
+    } else if (activeTab === 'upcoming') {
+      filtered = filtered.filter(appointment => {
+        const appointmentDate = new Date(appointment.appointmentDate);
+        // Only include appointments after today (not including today)
+        return appointmentDate > new Date(today.getTime() + 24 * 60 * 60 * 1000); // Tomorrow onwards
+      });
+    } else if (activeTab === 'past') {
+      filtered = filtered.filter(appointment => {
+        const appointmentDate = new Date(appointment.appointmentDate);
+        appointmentDate.setHours(0, 0, 0, 0);
+        return appointmentDate.getTime() < today.getTime(); // Before today
+      });
     }
-    
-    if (sortConfig.key === 'patientName') {
-      return sortConfig.direction === 'asc' 
-        ? a.patient.fullName.localeCompare(b.patient.fullName)
-        : b.patient.fullName.localeCompare(a.patient.fullName);
-    }
-    
-    if (sortConfig.key === 'doctorName') {
-      return sortConfig.direction === 'asc'
-        ? a.doctorInfo.name.localeCompare(b.doctorInfo.name)
-        : b.doctorInfo.name.localeCompare(a.doctorInfo.name);
-    }
-    
-    if (sortConfig.key === 'status') {
-      const statusOrder = { 'pending': 0, 'confirmed': 1, 'cancelled': 2 };
-      return sortConfig.direction === 'asc'
-        ? statusOrder[a.status] - statusOrder[b.status]
-        : statusOrder[b.status] - statusOrder[a.status];
-    }
-    
-    return 0;
-  });
 
-  setFilteredAppointments(filtered);
-};
+    // Rest of the filtering logic remains the same...
+    // Filter by search term
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(appointment =>
+        appointment.patient.fullName.toLowerCase().includes(term) ||
+        appointment.patient.email.toLowerCase().includes(term) ||
+        appointment.patient.phone.includes(term) ||
+        appointment.doctorInfo.name.toLowerCase().includes(term) ||
+        appointment.doctorInfo.speciality.toLowerCase().includes(term)
+      );
+    }
+
+    // Filter by status
+    if (selectedStatus !== 'all') {
+      filtered = filtered.filter(appointment => appointment.status === selectedStatus);
+    }
+
+    // Filter by doctor
+    if (selectedDoctor !== 'all') {
+      filtered = filtered.filter(appointment => appointment.doctorId._id === selectedDoctor);
+    }
+
+    // Filter by date
+    if (selectedDate) {
+      const filterDate = new Date(selectedDate);
+      filtered = filtered.filter(appointment => {
+        const appointmentDate = new Date(appointment.appointmentDate);
+        return appointmentDate.toDateString() === filterDate.toDateString();
+      });
+    }
+
+    // Sort appointments
+    filtered.sort((a, b) => {
+      if (sortConfig.key === 'appointmentDate') {
+        const dateA = new Date(a.appointmentDate);
+        const dateB = new Date(b.appointmentDate);
+        return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
+      }
+      
+      if (sortConfig.key === 'patientName') {
+        return sortConfig.direction === 'asc' 
+          ? a.patient.fullName.localeCompare(b.patient.fullName)
+          : b.patient.fullName.localeCompare(a.patient.fullName);
+      }
+      
+      if (sortConfig.key === 'doctorName') {
+        return sortConfig.direction === 'asc'
+          ? a.doctorInfo.name.localeCompare(b.doctorInfo.name)
+          : b.doctorInfo.name.localeCompare(a.doctorInfo.name);
+      }
+      
+      if (sortConfig.key === 'status') {
+        const statusOrder = { 'pending': 0, 'confirmed': 1, 'cancelled': 2 };
+        return sortConfig.direction === 'asc'
+          ? statusOrder[a.status] - statusOrder[b.status]
+          : statusOrder[b.status] - statusOrder[a.status];
+      }
+      
+      return 0;
+    });
+
+    setFilteredAppointments(filtered);
+  };
 
   const handleSort = (key) => {
     setSortConfig(prevConfig => ({
@@ -1310,6 +1499,66 @@ const AllAppointments = () => {
       console.error('Error updating status:', error);
       toast.error('Failed to update status');
     }
+  };
+
+  // Check if appointment can be rescheduled (cancelled appointments and all expired appointments cannot be rescheduled)
+  const canReschedule = (status, appointmentDate, appointmentTime) => {
+    // Block rescheduling for all cancelled appointments
+    if (status === 'cancelled') return false;
+    
+    // Check if appointment is in the past (including expired time slots today)
+    if (appointmentDate && appointmentTime) {
+      const now = new Date();
+      const appointmentDateObj = new Date(appointmentDate);
+      
+      // Parse appointment time (e.g., "14:30" -> 14 hours, 30 minutes)
+      const [hours, minutes] = appointmentTime.split(':').map(Number);
+      const appointmentDateTime = new Date(appointmentDateObj);
+      appointmentDateTime.setHours(hours, minutes, 0, 0);
+      
+      // If appointment date/time is in the past, block rescheduling
+      return appointmentDateTime > now;
+    }
+    
+    // If no time info, check just the date
+    if (appointmentDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const appointmentDateObj = new Date(appointmentDate);
+      appointmentDateObj.setHours(0, 0, 0, 0);
+      
+      // If appointment date is today or in the future, allow rescheduling
+      return appointmentDateObj >= today;
+    }
+    
+    // For appointments without date info, allow rescheduling
+    return true;
+  };
+
+  // Check if appointment time has passed
+  const hasAppointmentTimePassed = (appointmentDate, appointmentTime) => {
+    if (!appointmentDate) return false;
+    
+    const now = new Date();
+    
+    if (appointmentTime) {
+      // Parse appointment time
+      const [hours, minutes] = appointmentTime.split(':').map(Number);
+      const appointmentDateTime = new Date(appointmentDate);
+      appointmentDateTime.setHours(hours, minutes, 0, 0);
+      
+      return appointmentDateTime < now;
+    }
+    
+    // If no time, check just the date
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const appointmentDateObj = new Date(appointmentDate);
+    appointmentDateObj.setHours(0, 0, 0, 0);
+    
+    return appointmentDateObj < today;
   };
 
   // Show delete confirmation modal
@@ -1505,36 +1754,35 @@ const AllAppointments = () => {
   };
 
   // Get tab badge count
-// Get tab badge count
-const getTabBadgeCount = (tabId) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  switch (tabId) {
-    case 'all':
-      return appointments.length;
-    case 'today':
-      return appointments.filter(app => {
-        const appDate = new Date(app.appointmentDate);
-        appDate.setHours(0, 0, 0, 0);
-        return appDate.getTime() === today.getTime();
-      }).length;
-    case 'upcoming':
-      return appointments.filter(app => {
-        const appDate = new Date(app.appointmentDate);
-        // Only count appointments after today (not including today)
-        return appDate > new Date(today.getTime() + 24 * 60 * 60 * 1000);
-      }).length;
-    case 'past':
-      return appointments.filter(app => {
-        const appDate = new Date(app.appointmentDate);
-        appDate.setHours(0, 0, 0, 0);
-        return appDate.getTime() < today.getTime();
-      }).length;
-    default:
-      return 0;
-  }
-};
+  const getTabBadgeCount = (tabId) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    switch (tabId) {
+      case 'all':
+        return appointments.length;
+      case 'today':
+        return appointments.filter(app => {
+          const appDate = new Date(app.appointmentDate);
+          appDate.setHours(0, 0, 0, 0);
+          return appDate.getTime() === today.getTime();
+        }).length;
+      case 'upcoming':
+        return appointments.filter(app => {
+          const appDate = new Date(app.appointmentDate);
+          // Only count appointments after today (not including today)
+          return appDate > new Date(today.getTime() + 24 * 60 * 60 * 1000);
+        }).length;
+      case 'past':
+        return appointments.filter(app => {
+          const appDate = new Date(app.appointmentDate);
+          appDate.setHours(0, 0, 0, 0);
+          return appDate.getTime() < today.getTime();
+        }).length;
+      default:
+        return 0;
+    }
+  };
 
   if (loading) {
     return (
@@ -1952,6 +2200,8 @@ const getTabBadgeCount = (tabId) => {
             ) : (
               currentAppointments.map((appointment) => {
                 const canChange = canChangeStatus(appointment.status);
+                const canRescheduleAppointment = canReschedule(appointment.status, appointment.appointmentDate, appointment.appointmentTime);
+                const timePassed = hasAppointmentTimePassed(appointment.appointmentDate, appointment.appointmentTime);
                 
                 return (
                   <div 
@@ -2002,6 +2252,11 @@ const getTabBadgeCount = (tabId) => {
                             'text-slate-500'
                           }`} />
                           <span className="font-medium">{formatDate(appointment.appointmentDate)}</span>
+                          {timePassed && (
+                            <span className="text-xs px-2 py-0.5 rounded bg-red-100 text-red-800 font-medium">
+                              Time Expired
+                            </span>
+                          )}
                         </div>
                         <div className="flex items-center gap-2 text-slate-600 mt-1">
                           <Clock className={`w-4 h-4 ${
@@ -2014,11 +2269,12 @@ const getTabBadgeCount = (tabId) => {
                         </div>
                         
                         {/* Serial Number Display */}
-                        <div className="items-center gap-2">
-                          <div className="text-xs font-semibold py-1 text-gray-600 rounded-full flex items-center gap-1">
+                        <div className="mt-2">
+                          <div className="text-xs font-semibold px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full flex items-center gap-1 w-fit">
+                            <Hash className="w-3 h-3" />
                             Sl No-{appointment.slotSerialNumber || appointment.serialNumber || 'N/A'}
                           </div>
-                          <div className="text-xs text-slate-500">
+                          <div className="text-xs text-slate-500 mt-1">
                             Duration: {appointment.doctorInfo.perPatientTime} min
                           </div>
                         </div>
@@ -2059,9 +2315,22 @@ const getTabBadgeCount = (tabId) => {
                         <div className="flex justify-center gap-2">
                           {/* Reschedule Button */}
                           <button
-                            onClick={() => router.push(`/admin/rescheduleApp?id=${appointment._id}`)}
-                            className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition"
-                            title="Reschedule Appointment"
+                            onClick={() => canRescheduleAppointment && router.push(`/admin/rescheduleApp?id=${appointment._id}`)}
+                            className={`p-1.5 rounded-lg transition ${
+                              canRescheduleAppointment
+                                ? 'text-blue-600 hover:text-blue-800 hover:bg-blue-50 cursor-pointer'
+                                : 'text-gray-400 cursor-not-allowed'
+                            }`}
+                            title={
+                              canRescheduleAppointment
+                                ? "Reschedule Appointment"
+                                : appointment.status === 'cancelled'
+                                ? "Cancelled appointments cannot be rescheduled"
+                                : timePassed
+                                ? "Appointment time has expired. Cannot reschedule"
+                                : "Cannot reschedule"
+                            }
+                            disabled={!canRescheduleAppointment}
                           >
                             <CalendarDays className="w-4 h-4" />
                           </button>
@@ -2075,6 +2344,16 @@ const getTabBadgeCount = (tabId) => {
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
+                        {!canRescheduleAppointment && (
+                          <div className="mt-1 text-xs text-red-600 text-center">
+                            {appointment.status === 'cancelled' 
+                              ? 'Cancelled'
+                              : timePassed
+                              ? 'Time Expired'
+                              : 'N/A'
+                            }
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

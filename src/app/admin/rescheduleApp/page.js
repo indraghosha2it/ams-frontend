@@ -94,7 +94,7 @@ const RescheduleAppointmentPage = () => {
     } catch (error) {
       console.error('Error fetching appointment:', error);
       toast.error('Failed to load appointment details');
-      router.push('/admin/appointments');
+      router.push('/admin/allAppointments');
     } finally {
       setLoading(false);
     }
@@ -301,129 +301,288 @@ const RescheduleAppointmentPage = () => {
   };
 
   // Handle reschedule submission
-  const handleReschedule = async (e) => {
-    e.preventDefault();
+  // const handleReschedule = async (e) => {
+  //   e.preventDefault();
     
-    if (!selectedDate || !selectedTime) {
-      toast.error('Please select a new date and time slot');
-      return;
-    }
+  //   if (!selectedDate || !selectedTime) {
+  //     toast.error('Please select a new date and time slot');
+  //     return;
+  //   }
     
-    if (!appointment) {
-      toast.error('Appointment data not found');
-      return;
-    }
+  //   if (!appointment) {
+  //     toast.error('Appointment data not found');
+  //     return;
+  //   }
     
-    // Confirm with user before rescheduling
-    if (!window.confirm(`Are you sure you want to reschedule ${appointment.patient.fullName}'s appointment?\n\nFrom: ${new Date(appointment.appointmentDate).toLocaleDateString()} ${appointment.appointmentTime}\nTo: ${selectedSlotInfo?.formattedDate} ${selectedTime.startTime}`)) {
-      return;
-    }
+  //   // Confirm with user before rescheduling
+  //   if (!window.confirm(`Are you sure you want to reschedule ${appointment.patient.fullName}'s appointment?\n\nFrom: ${new Date(appointment.appointmentDate).toLocaleDateString()} ${appointment.appointmentTime}\nTo: ${selectedSlotInfo?.formattedDate} ${selectedTime.startTime}`)) {
+  //     return;
+  //   }
     
-    setSubmitting(true);
+  //   setSubmitting(true);
     
-    try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
-      const token = localStorage.getItem('token');
-      const doctorId = appointment.doctorId._id || appointment.doctorId;
+  //   try {
+  //     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+  //     const token = localStorage.getItem('token');
+  //     const doctorId = appointment.doctorId._id || appointment.doctorId;
       
-      console.log('🔄 Starting reschedule process...');
+  //     console.log('🔄 Starting reschedule process...');
       
-      // 1. Free up the old slot (set to available)
-      console.log('📝 Freeing old slot:', appointment.slotId);
-      await axios.put(
-        `${BACKEND_URL}/api/doctors/${doctorId}/slots/${appointment.slotId}/status`,
-        { 
-          status: 'available',
-          patientInfo: null 
-        },
-        { 
-          headers: { 'Authorization': `Bearer ${token}` } 
-        }
-      );
+  //     // 1. Free up the old slot (set to available)
+  //     console.log('📝 Freeing old slot:', appointment.slotId);
+  //     await axios.put(
+  //       `${BACKEND_URL}/api/doctors/${doctorId}/slots/${appointment.slotId}/status`,
+  //       { 
+  //         status: 'available',
+  //         patientInfo: null 
+  //       },
+  //       { 
+  //         headers: { 'Authorization': `Bearer ${token}` } 
+  //       }
+  //     );
       
-      // 2. Book the new slot
-      console.log('📝 Booking new slot:', selectedTime._id);
-      await axios.put(
-        `${BACKEND_URL}/api/doctors/${doctorId}/slots/${selectedTime._id}/status`,
-        { 
-          status: 'booked',
-          patientInfo: {
-            name: appointment.patient.fullName,
-            phone: appointment.patient.phone,
-            email: appointment.patient.email,
-            appointmentId: appointment._id,
-            serialNumber: selectedTime.serialNumber || 0
-          }
-        },
-        { 
-          headers: { 'Authorization': `Bearer ${token}` } 
-        }
-      );
+  //     // 2. Book the new slot
+  //     console.log('📝 Booking new slot:', selectedTime._id);
+  //     await axios.put(
+  //       `${BACKEND_URL}/api/doctors/${doctorId}/slots/${selectedTime._id}/status`,
+  //       { 
+  //         status: 'booked',
+  //         patientInfo: {
+  //           name: appointment.patient.fullName,
+  //           phone: appointment.patient.phone,
+  //           email: appointment.patient.email,
+  //           appointmentId: appointment._id,
+  //           serialNumber: selectedTime.serialNumber || 0
+  //         }
+  //       },
+  //       { 
+  //         headers: { 'Authorization': `Bearer ${token}` } 
+  //       }
+  //     );
       
-      // 3. Update the appointment record
-      console.log('📝 Updating appointment record');
-      const updateData = {
-        appointmentDate: selectedDate,
-        appointmentTime: selectedTime.startTime,
-        endTime: selectedTime.endTime,
-        slotId: selectedTime._id,
-        slotSerialNumber: selectedTime.serialNumber || 0,
-        status: appointment.status // Keep existing status
-      };
+  //     // 3. Update the appointment record
+  //     console.log('📝 Updating appointment record');
+  //     const updateData = {
+  //       appointmentDate: selectedDate,
+  //       appointmentTime: selectedTime.startTime,
+  //       endTime: selectedTime.endTime,
+  //       slotId: selectedTime._id,
+  //       slotSerialNumber: selectedTime.serialNumber || 0,
+  //       status: appointment.status // Keep existing status
+  //     };
       
-      const response = await axios.put(
-        `${BACKEND_URL}/api/appointments/${appointmentId}`,
-        updateData,
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
+  //     const response = await axios.put(
+  //       `${BACKEND_URL}/api/appointments/${appointmentId}`,
+  //       updateData,
+  //       { headers: { 'Authorization': `Bearer ${token}` } }
+  //     );
       
-      if (response.data.success) {
-        toast.success(`Appointment #${selectedTime.serialNumber} rescheduled successfully!`);
+  //     if (response.data.success) {
+  //       toast.success(`Appointment #${selectedTime.serialNumber} rescheduled successfully!`);
         
-        // Update local appointment state
-        setAppointment(prev => ({
-          ...prev,
-          ...updateData
-        }));
+  //       // Update local appointment state
+  //       setAppointment(prev => ({
+  //         ...prev,
+  //         ...updateData
+  //       }));
         
-        // Refresh slots to reflect changes
-        fetchAvailableSlots(doctorId);
+  //       // Refresh slots to reflect changes
+  //       fetchAvailableSlots(doctorId);
         
-        // Show success message and redirect
-        setTimeout(() => {
-          router.push('/admin/appointments');
-        }, 2000);
+  //       // Show success message and redirect
+  //       setTimeout(() => {
+  //         router.push('/admin/allAppointments');
+  //       }, 2000);
+  //     }
+  //   } catch (error) {
+  //     console.error('❌ Error rescheduling appointment:', error);
+      
+  //     // Provide specific error messages
+  //     if (error.response) {
+  //       const status = error.response.status;
+  //       const data = error.response.data;
+        
+  //       if (status === 400) {
+  //         toast.error(data.message || 'Invalid data provided');
+  //       } else if (status === 404) {
+  //         toast.error(data.message || 'Slot or appointment not found');
+  //       } else if (status === 409) {
+  //         toast.error('This time slot is no longer available. Please select another slot.');
+  //         // Refresh slots
+  //         if (doctor) {
+  //           fetchAvailableSlots(doctor._id);
+  //         }
+  //       } else {
+  //         toast.error('Failed to reschedule appointment. Please try again.');
+  //       }
+  //     } else if (error.request) {
+  //       toast.error('Network error. Please check your connection.');
+  //     } else {
+  //       toast.error('An unexpected error occurred.');
+  //     }
+  //   } finally {
+  //     setSubmitting(false);
+  //   }
+  // };
+  // Update the handleReschedule function in your frontend component
+const handleReschedule = async (e) => {
+  e.preventDefault();
+  
+  if (!selectedDate || !selectedTime) {
+    toast.error('Please select a new date and time slot');
+    return;
+  }
+  
+  if (!appointment) {
+    toast.error('Appointment data not found');
+    return;
+  }
+  
+  // Confirm with user before rescheduling
+  if (!window.confirm(`Are you sure you want to reschedule ${appointment.patient.fullName}'s appointment?\n\nFrom: ${new Date(appointment.appointmentDate).toLocaleDateString()} ${appointment.appointmentTime}\nTo: ${selectedSlotInfo?.formattedDate} ${selectedTime.startTime}`)) {
+    return;
+  }
+  
+  setSubmitting(true);
+  
+  try {
+    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+    const token = localStorage.getItem('token');
+    const doctorId = appointment.doctorId._id || appointment.doctorId;
+    
+    console.log('🔄 Starting reschedule process...');
+    
+    // 1. Free up the old slot (set to available)
+    console.log('📝 Freeing old slot:', appointment.slotId);
+    await axios.put(
+      `${BACKEND_URL}/api/doctors/${doctorId}/slots/${appointment.slotId}/status`,
+      { 
+        status: 'available',
+        patientInfo: null 
+      },
+      { 
+        headers: { 'Authorization': `Bearer ${token}` } 
       }
-    } catch (error) {
-      console.error('❌ Error rescheduling appointment:', error);
+    );
+    
+    // 2. Book the new slot
+    console.log('📝 Booking new slot:', selectedTime._id);
+    await axios.put(
+      `${BACKEND_URL}/api/doctors/${doctorId}/slots/${selectedTime._id}/status`,
+      { 
+        status: 'booked',
+        patientInfo: {
+          name: appointment.patient.fullName,
+          phone: appointment.patient.phone,
+          email: appointment.patient.email,
+          appointmentId: appointment._id,
+          serialNumber: selectedTime.serialNumber || 0
+        }
+      },
+      { 
+        headers: { 'Authorization': `Bearer ${token}` } 
+      }
+    );
+    
+    // 3. Update the appointment record
+    console.log('📝 Updating appointment record');
+    const updateData = {
+      appointmentDate: selectedDate,
+      appointmentTime: selectedTime.startTime,
+      endTime: selectedTime.endTime,
+      slotId: selectedTime._id,
+      slotSerialNumber: selectedTime.serialNumber || 0,
+      status:  'confirmed'  
+    };
+    
+    const response = await axios.put(
+      `${BACKEND_URL}/api/appointments/${appointmentId}`,
+      updateData,
+      { headers: { 'Authorization': `Bearer ${token}` } }
+    );
+    
+    if (response.data.success) {
+      console.log('✅ Appointment rescheduled successfully!');
       
-      // Provide specific error messages
-      if (error.response) {
-        const status = error.response.status;
-        const data = error.response.data;
+      // 4. Send reschedule email to patient
+      try {
+        console.log('📧 Preparing to send reschedule email...');
         
-        if (status === 400) {
-          toast.error(data.message || 'Invalid data provided');
-        } else if (status === 404) {
-          toast.error(data.message || 'Slot or appointment not found');
-        } else if (status === 409) {
-          toast.error('This time slot is no longer available. Please select another slot.');
-          // Refresh slots
-          if (doctor) {
-            fetchAvailableSlots(doctor._id);
-          }
+        const emailData = {
+          patient: appointment.patient,
+          doctor: appointment.doctorInfo,
+          oldAppointmentDate: appointment.appointmentDate,
+          oldAppointmentTime: appointment.appointmentTime,
+          newAppointmentDate: selectedDate,
+          newAppointmentTime: selectedTime.startTime,
+          slotSerialNumber: selectedTime.serialNumber || 0,
+          appointmentId: appointment._id,
+          remarks: `Appointment rescheduled by clinic staff. New serial number: #${selectedTime.serialNumber || 0}`
+        };
+        
+        // Send reschedule email
+        const emailResponse = await axios.post(
+          `${BACKEND_URL}/api/appointments/${appointmentId}/send-reschedule-email`,
+          emailData,
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        );
+        
+        if (emailResponse.data.success) {
+          console.log('✅ Reschedule email sent successfully!');
+          toast.success(`Appointment #${selectedTime.serialNumber} rescheduled and email sent to patient!`);
         } else {
-          toast.error('Failed to reschedule appointment. Please try again.');
+          console.log('⚠️ Email sending failed:', emailResponse.data.error);
+          toast.success(`Appointment #${selectedTime.serialNumber} rescheduled successfully! (Email not sent)`);
         }
-      } else if (error.request) {
-        toast.error('Network error. Please check your connection.');
-      } else {
-        toast.error('An unexpected error occurred.');
+      } catch (emailError) {
+        console.error('❌ Email sending error:', emailError);
+        toast.success(`Appointment #${selectedTime.serialNumber} rescheduled successfully!`);
       }
-    } finally {
-      setSubmitting(false);
+      
+      // Update local appointment state
+      setAppointment(prev => ({
+        ...prev,
+        ...updateData
+      }));
+      
+      // Refresh slots to reflect changes
+      fetchAvailableSlots(doctorId);
+      
+      // Show success message and redirect
+      setTimeout(() => {
+        router.push('/admin/allAppointments');
+      }, 2000);
     }
-  };
+  } catch (error) {
+    console.error('❌ Error rescheduling appointment:', error);
+    
+    // Provide specific error messages
+    if (error.response) {
+      const status = error.response.status;
+      const data = error.response.data;
+      
+      if (status === 400) {
+        toast.error(data.message || 'Invalid data provided');
+      } else if (status === 404) {
+        toast.error(data.message || 'Slot or appointment not found');
+      } else if (status === 409) {
+        toast.error('This time slot is no longer available. Please select another slot.');
+        // Refresh slots
+        if (doctor) {
+          fetchAvailableSlots(doctor._id);
+        }
+      } else {
+        toast.error('Failed to reschedule appointment. Please try again.');
+      }
+    } else if (error.request) {
+      toast.error('Network error. Please check your connection.');
+    } else {
+      toast.error('An unexpected error occurred.');
+    }
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   // Refresh available slots
   const refreshSlots = async () => {
@@ -493,7 +652,7 @@ const RescheduleAppointmentPage = () => {
             <h2 className="text-2xl font-bold text-slate-800 mb-2">Appointment Not Found</h2>
             <p className="text-slate-600 mb-6">The appointment you're looking for might not be available.</p>
             <Link
-              href="/admin/appointments"
+              href="/admin/allAppointments"
               className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition-all shadow-md hover:shadow-lg"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -515,7 +674,7 @@ const RescheduleAppointmentPage = () => {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
               <Link
-                href="/admin/appointments"
+                href="/admin/allAppointments"
                 className="p-2 bg-white rounded-lg shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"
               >
                 <ArrowLeft className="w-5 h-5 text-slate-700" />
@@ -1082,7 +1241,7 @@ const RescheduleAppointmentPage = () => {
                     </button> */}
                     
                     <Link
-                      href="/admin/appointments"
+                      href="/admin/allAppointments"
                       className="px-4 py-3 text-sm border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition font-medium flex items-center justify-center gap-2"
                     >
                       <ArrowLeft className="w-4 h-4" />
