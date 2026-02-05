@@ -867,6 +867,8 @@ export default function SignInPage() {
       window.history.replaceState({}, '', newUrl);
     }
   }, [searchParams]);
+
+  
   
   const [loginData, setLoginData] = useState({
     email: '',
@@ -1010,10 +1012,12 @@ export default function SignInPage() {
       
       if (response.data.success) {
         // Show success toast that disappears after 3 seconds
-        toast.success('Welcome back!', {
+        toast.success('Welcome back!',
+           {
           duration: 3000,
           position: 'top-right',
-        });
+        }
+      );
         
         // Store token and user data
         localStorage.setItem('token', response.data.token);

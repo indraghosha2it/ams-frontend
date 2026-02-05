@@ -347,46 +347,118 @@ const UpcomingAppointments = () => {
   };
 
   // Perform the actual cancellation
+  // const performCancellation = async (appointmentId) => {
+  //   try {
+  //     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+  //     const token = localStorage.getItem('token');
+      
+  //     console.log('📱 Frontend: Cancelling appointment ID:', appointmentId);
+      
+  //     const response = await axios({
+  //       method: 'put',
+  //       url: `${BACKEND_URL}/api/appointments/${appointmentId}/cancel`,
+  //       headers: {
+  //         'Authorization': `Bearer ${token}`
+  //       }
+  //     });
+      
+  //     console.log('✅ Cancel response:', response.data);
+      
+  //     if (response.data.success) {
+  //       toast.success('Appointment cancelled successfully');
+  //       fetchAppointments(); // Refresh the list
+  //       closeCancelConfirmation();
+  //     }
+  //   } catch (error) {
+  //     console.error('❌ Error cancelling appointment:', error);
+      
+  //     if (error.response) {
+  //       if (error.response.status === 403) {
+  //         toast.error('You do not have permission to cancel this appointment');
+  //       } else if (error.response.status === 404) {
+  //         toast.error('Appointment not found');
+  //       } else if (error.response.status === 400) {
+  //         toast.error(error.response.data.message || 'Cannot cancel this appointment');
+  //       } else {
+  //         toast.error('Failed to cancel appointment');
+  //       }
+  //     } else {
+  //       toast.error('Failed to cancel appointment');
+  //     }
+  //   }
+  // };
   const performCancellation = async (appointmentId) => {
-    try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
-      const token = localStorage.getItem('token');
-      
-      console.log('📱 Frontend: Cancelling appointment ID:', appointmentId);
-      
-      const response = await axios({
-        method: 'put',
-        url: `${BACKEND_URL}/api/appointments/${appointmentId}/cancel`,
-        headers: {
-          'Authorization': `Bearer ${token}`
+  try {
+    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+    const token = localStorage.getItem('token');
+    
+    console.log('📱 Frontend: Cancelling appointment ID:', appointmentId);
+    console.log('🔑 Token:', token ? 'Exists' : 'Missing');
+    
+    // Decode token to debug
+    if (token) {
+      try {
+        const parts = token.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1]));
+          console.log('👤 Token payload:', payload);
         }
-      });
-      
-      console.log('✅ Cancel response:', response.data);
-      
-      if (response.data.success) {
-        toast.success('Appointment cancelled successfully');
-        fetchAppointments(); // Refresh the list
-        closeCancelConfirmation();
-      }
-    } catch (error) {
-      console.error('❌ Error cancelling appointment:', error);
-      
-      if (error.response) {
-        if (error.response.status === 403) {
-          toast.error('You do not have permission to cancel this appointment');
-        } else if (error.response.status === 404) {
-          toast.error('Appointment not found');
-        } else if (error.response.status === 400) {
-          toast.error(error.response.data.message || 'Cannot cancel this appointment');
-        } else {
-          toast.error('Failed to cancel appointment');
-        }
-      } else {
-        toast.error('Failed to cancel appointment');
+      } catch (e) {
+        console.log('❌ Could not decode token:', e.message);
       }
     }
-  };
+    
+    const response = await axios({
+      method: 'put',
+      url: `${BACKEND_URL}/api/appointments/${appointmentId}/cancel`,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('✅ Cancel response:', response.data);
+    
+    if (response.data.success) {
+      toast.success('Appointment cancelled successfully');
+      fetchAppointments(); // Refresh the list
+      closeCancelConfirmation();
+    }
+  } catch (error) {
+    console.error('❌ Full error object:', error);
+    console.error('❌ Error message:', error.message);
+    console.error('❌ Error config:', error.config);
+    
+    if (error.response) {
+      console.error('❌ Error response status:', error.response.status);
+      console.error('❌ Error response data:', error.response.data);
+      console.error('❌ Error response headers:', error.response.headers);
+      
+      if (error.response.status === 401) {
+        toast.error('Authentication failed. Please login again.');
+        // Optionally redirect to login
+        // router.push('/login');
+      } else if (error.response.status === 403) {
+        toast.error('You do not have permission to cancel this appointment');
+      } else if (error.response.status === 404) {
+        toast.error('Appointment not found');
+      } else if (error.response.status === 400) {
+        toast.error(error.response.data.message || 'Cannot cancel this appointment');
+      } else if (error.response.status === 500) {
+        toast.error('Server error occurred. Please try again.');
+        console.error('❌ Server error details:', error.response.data);
+      } else {
+        toast.error(`Failed to cancel appointment (Status: ${error.response.status})`);
+      }
+    } else if (error.request) {
+      console.error('❌ No response received:', error.request);
+      toast.error('No response from server. Please check your connection.');
+    } else {
+      console.error('❌ Request setup error:', error.message);
+      toast.error('Failed to cancel appointment');
+    }
+  }
+};
 
   // Handle cancel button click
   const handleCancelClick = (appointment) => {
