@@ -401,7 +401,7 @@ const fetchClients = async () => {
                       <tr key={client._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                         <td className="px-6 py-4">
                           <div className="flex items-center">
-                            <div className="size-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold mr-3">
+                            <div className="size-10 rounded-full bg-gradient-to-r from-teal-600 to-emerald-600 flex items-center justify-center text-white font-semibold mr-3">
                               {client.name.charAt(0)}
                             </div>
                             <div>
@@ -506,7 +506,7 @@ const fetchClients = async () => {
                             onClick={() => setCurrentPage(pageNum)}
                             className={`px-3 py-1 rounded-lg ${
                               currentPage === pageNum
-                                ? 'bg-blue-600 text-white'
+                                ? 'bg-teal-600 text-white'
                                 : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                             }`}
                           >

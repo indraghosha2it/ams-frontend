@@ -319,7 +319,7 @@ const handleSubmit = async (e) => {
             </div>
           </div>
           <div className="hidden md:flex items-center space-x-2">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-500 size-12 rounded-xl flex items-center justify-center">
+            <div className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white size-12 rounded-xl flex items-center justify-center">
               <PlusCircle className="size-6 text-white" />
             </div>
           </div>
@@ -342,12 +342,12 @@ const handleSubmit = async (e) => {
                     type="button"
                     onClick={() => handleRoleChange('admin')}
                     className={`p-4 rounded-xl border-2 transition-all ${formData.role === 'admin' 
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
+                      ? 'border-teal-600  bg-blue-50 dark:bg-blue-900/20' 
                       : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}`}
                   >
                     <div className="flex items-center space-x-3">
                       <div className={`p-3 rounded-lg ${formData.role === 'admin' 
-                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' 
+                        ? 'bg-blue-100 dark:bg-blue-900/30 text-teal-600 dark:text-blue-400' 
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
                         <Shield className="size-5" />
                       </div>
@@ -364,12 +364,12 @@ const handleSubmit = async (e) => {
                     type="button"
                     onClick={() => handleRoleChange('staff')}
                     className={`p-4 rounded-xl border-2 transition-all ${formData.role === 'staff' 
-                      ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20' 
+                      ? 'border-emerald-600 bg-purple-50 dark:bg-purple-900/20' 
                       : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}`}
                   >
                     <div className="flex items-center space-x-3">
                       <div className={`p-3 rounded-lg ${formData.role === 'staff' 
-                        ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' 
+                        ? 'bg-purple-100 dark:bg-purple-900/30 text-emerald-600 dark:text-purple-400' 
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
                         <Briefcase className="size-5" />
                       </div>
@@ -482,12 +482,12 @@ const handleSubmit = async (e) => {
 
               {/* Admin Warning Message */}
               {formData.role === 'admin' && (
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-800/30 rounded-lg p-4">
+                <div className="bg-gradient-to-r from-teal-50 to-teal-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200 dark:border-blue-800/30 rounded-lg p-4">
                   <div className="flex items-start">
-                    <Shield className="size-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
+                    <Shield className="size-5 text-emerald-600 dark:text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
                     <div>
-                      <h4 className="font-semibold text-blue-800 dark:text-blue-300">Administrator Privileges</h4>
-                      <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
+                      <h4 className="font-semibold text-emerald-800 dark:text-blue-300">Administrator Privileges</h4>
+                      <p className="text-sm text-emerald-700 dark:text-blue-400 mt-1">
                         This user will have full system access including user management, settings, and all data.
                         Only create admin accounts for trusted team members.
                       </p>
@@ -498,12 +498,12 @@ const handleSubmit = async (e) => {
 
               {/* Staff Note */}
               {formData.role === 'staff' && (
-                <div className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border border-purple-200 dark:border-purple-800/30 rounded-lg p-4">
+                <div className="bg-gradient-to-r from-teal-50 to-teal-100 dark:from-purple-900/20 dark:to-purple-800/20 border border-purple-200 dark:border-purple-800/30 rounded-lg p-4">
                   <div className="flex items-start">
-                    <Briefcase className="size-5 text-purple-600 dark:text-purple-400 mt-0.5 mr-3 flex-shrink-0" />
+                    <Briefcase className="size-5 text-emerald-600 dark:text-purple-400 mt-0.5 mr-3 flex-shrink-0" />
                     <div>
-                      <h4 className="font-semibold text-purple-800 dark:text-purple-300">Staff Access</h4>
-                      <p className="text-sm text-purple-700 dark:text-purple-400 mt-1">
+                      <h4 className="font-semibold text-emerald-600 dark:text-purple-300">Staff Access</h4>
+                      <p className="text-sm text-emerald-600 dark:text-purple-400 mt-1">
                         Staff members will have access to manage appointments, view client information, 
                         and handle assigned services based on their role assignments.
                       </p>
@@ -517,7 +517,7 @@ const handleSubmit = async (e) => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-md hover:shadow-lg"
+                  className="w-full py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-md hover:shadow-lg"
                 >
                   {loading ? (
                     <>
@@ -555,15 +555,12 @@ const handleSubmit = async (e) => {
               </li>
               <li className="flex items-start">
                 <div className="size-1.5 rounded-full bg-purple-500 mt-1.5 mr-3 flex-shrink-0"></div>
-                <span><strong>Staff accounts</strong> can manage appointments, view clients, and handle services.</span>
+                <span><strong>Staff accounts</strong> can manage appointments, change appointment status and view clients</span>
               </li>
-              <li className="flex items-start">
-                <div className="size-1.5 rounded-full bg-green-500 mt-1.5 mr-3 flex-shrink-0"></div>
-                <span>Users will be able to reset their password after their first login.</span>
-              </li>
+          
               <li className="flex items-start">
                 <div className="size-1.5 rounded-full bg-orange-500 mt-1.5 mr-3 flex-shrink-0"></div>
-                <span>All accounts are managed under <strong>ScheduleFlow</strong> system</span>
+                <span>All accounts are managed under <strong>MediFlow</strong> system</span>
               </li>
             </ul>
           </div>
@@ -606,49 +603,7 @@ const handleSubmit = async (e) => {
             </div>
           </div>
 
-          {/* Recent Created Users */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
-              Recently Created Users
-            </h3>
-            <div className="space-y-3">
-              {[
-                { name: 'Sarah Johnson', role: 'Admin', email: 'sarah@business.com', date: 'Today' },
-                { name: 'Mike Chen', role: 'Staff', email: 'mike@business.com', date: 'Yesterday' },
-                { name: 'Emma Davis', role: 'Staff', email: 'emma@business.com', date: '2 days ago' }
-              ].map((user, index) => (
-                <div key={index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                  <div className={`size-10 rounded-full flex items-center justify-center ${user.role === 'Admin' 
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' 
-                    : 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'}`}
-                  >
-                    {user.role === 'Admin' ? <Shield className="size-5" /> : <Briefcase className="size-5" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-gray-900 dark:text-white truncate">{user.name}</h4>
-                    <div className="flex items-center justify-between mt-1">
-                      <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{user.email}</p>
-                      <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${user.role === 'Admin' 
-                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' 
-                        : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400'}`}
-                      >
-                        {user.role}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <Link
-              href="/admin/staff"
-              className="mt-4 inline-flex items-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-            >
-              View all users
-              <svg className="size-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
+         
         </div>
       </div>
     </div>

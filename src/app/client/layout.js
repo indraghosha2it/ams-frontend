@@ -296,7 +296,7 @@ export default function ClientLayout({ children }) {
                       {/* Menu Items */}
                       <div className="py-2">
                         <Link
-                          href="/client/profile"
+                          href="/client/settings"
                           className="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                           onClick={() => setUserMenuOpen(false)}
                         >
@@ -311,22 +311,8 @@ export default function ClientLayout({ children }) {
                           <Settings className="size-5 mr-3 text-gray-400" />
                           Account Settings
                         </Link>
-                        <Link
-                          href="/client/reviews"
-                          className="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
-                          <Star className="size-5 mr-3 text-gray-400" />
-                          My Reviews
-                        </Link>
-                        <Link
-                          href="/help"
-                          className="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
-                          <HelpCircle className="size-5 mr-3 text-gray-400" />
-                          Help & Support
-                        </Link>
+                      
+                      
                       </div>
 
                       {/* Logout Button */}

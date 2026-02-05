@@ -209,13 +209,13 @@ export default function StaffLayout({ children }) {
             <div className="flex items-center justify-between">
               {/* Search */}
               <div className="flex-1 max-w-xl">
-                <div className="relative">
-      <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-  Welcome back, {user.name}
-</h1>
-<p className="text-sm text-gray-500 dark:text-gray-400">
-  Ready to manage Appointments!!
-</p>
+               <div className="relative">
+                    <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                Welcome back, {user.name}
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Ready to manage Appointments!!
+              </p>
             
                 </div>
               </div>
@@ -273,7 +273,7 @@ export default function StaffLayout({ children }) {
                       {/* Menu Items */}
                       <div className="py-2">
                         <Link
-                          href="/staff/profile"
+                          href="/staff/settings"
                           className="flex items-center px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                           onClick={() => setUserMenuOpen(false)}
                         >
@@ -316,21 +316,11 @@ export default function StaffLayout({ children }) {
 
         {/* Footer */}
         <footer className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-4">
-          <div className="flex items-center justify-between">
+          <div className="justify-items-center items-center justify-between">
             <p className="text-sm text-gray-600 dark:text-gray-400">
               © {new Date().getFullYear()} ScheduleFlow Staff Portal. All rights reserved.
             </p>
-            <div className="flex items-center space-x-6">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                Logged in as: <span className="font-medium">{user.name}</span>
-              </span>
-              <button
-                onClick={() => router.push('/staff/schedule')}
-                className="text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
-              >
-                View Today's Schedule
-              </button>
-            </div>
+         
           </div>
         </footer>
       </main>

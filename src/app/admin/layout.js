@@ -645,7 +645,7 @@ export default function AdminLayout({ children }) {
                       {/* Menu Items */}
                       <div className="py-2">
                         <Link
-                          href="/admin/profile"
+                          href="/admin/settings"
                           className="flex items-center px-4 py-3 text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700 hover:text-emerald-600 dark:hover:text-emerald-400"
                           onClick={() => setUserMenuOpen(false)}
                         >
@@ -660,14 +660,7 @@ export default function AdminLayout({ children }) {
                           <Settings className="size-5 mr-3 text-emerald-500" />
                           Account Settings
                         </Link>
-                        <Link
-                          href="/help"
-                          className="flex items-center px-4 py-3 text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700 hover:text-emerald-600 dark:hover:text-emerald-400"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
-                          <HelpCircle className="size-5 mr-3 text-emerald-500" />
-                          Help & Support
-                        </Link>
+                    
                       </div>
 
                       {/* Logout Button */}
