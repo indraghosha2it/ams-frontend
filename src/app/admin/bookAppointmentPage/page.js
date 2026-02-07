@@ -1733,7 +1733,10 @@ const BookAppointmentPage = () => {
       const token = localStorage.getItem('token');
       
       const response = await axios.get(`${BACKEND_URL}/api/admin/users`, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+            params: {
+        includeProfile: true // Add parameter to include full profile
+      }
       });
       
       if (response.data.success) {
@@ -1814,6 +1817,29 @@ const BookAppointmentPage = () => {
       setLoadingClients(false);
     }
   };
+  // Add helper function to format date for input field
+const formatDateForInput = (dateString) => {
+  if (!dateString) return '';
+  
+  try {
+    const date = new Date(dateString);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return '';
+    }
+    
+    // Format as YYYY-MM-DD for date input
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return '';
+  }
+};
 
   // Filter clients based on search
   useEffect(() => {
@@ -1836,14 +1862,22 @@ const BookAppointmentPage = () => {
       fullName: client.name,
       email: client.email,
       phone: client.phone || '',
-      dateOfBirth: patientData.dateOfBirth, // Keep existing DOB
-      gender: patientData.gender, // Keep existing gender
-      address: patientData.address, // Keep existing address
-      reason: patientData.reason // Keep existing reason
+      dateOfBirth:  formatDateForInput(client.dateOfBirth) || '', // Keep existing DOB
+     gender: client.gender || '', // Auto-fill gender
+    address: client.address || '', // Auto-fill address
+    reason: patientData.reason  // Keep existing reason
     });
     setShowClientDropdown(false);
     setSearchClientEmail('');
     toast.success(`Selected client: ${client.name}`);
+      // Show notification about auto-filled fields
+if (client.dateOfBirth || client.gender || client.address) {
+  setTimeout(() => {
+    toast.success(`Auto-filled: ${client.dateOfBirth ? 'DOB, ' : ''}${client.gender ? 'Gender, ' : ''}${client.address ? 'Address' : ''}`, {
+      duration: 3000
+    });
+  }, 500);
+}
   };
 
   // Clear selected client

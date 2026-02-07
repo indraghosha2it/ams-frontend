@@ -1366,6 +1366,9 @@ const ClientAppointmentBooking = () => {
           fullName: user.name || '',
           email: user.email || '',
           phone: user.phone || '',
+           dateOfBirth: user.dateOfBirth ? formatDateForInput(user.dateOfBirth) : '',
+        gender: user.gender || '',
+        address: user.address || 'N/A' // Set to N/A if no address
           // Add other fields if available in user object
         }));
       }
@@ -1373,6 +1376,29 @@ const ClientAppointmentBooking = () => {
       console.error('Error fetching user data:', error);
     }
   };
+  // Add helper function to format date for input field
+const formatDateForInput = (dateString) => {
+  if (!dateString) return '';
+  
+  try {
+    const date = new Date(dateString);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return '';
+    }
+    
+    // Format as YYYY-MM-DD for date input
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return '';
+  }
+};
 
   const fetchDoctorDetails = async () => {
     try {
@@ -2164,7 +2190,7 @@ const handleSubmit = async (e) => {
       <Toaster position="top-right" />
       
       {/* Login Modal */}
-      {showLoginModal && (
+      {/* {showLoginModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all">
             <div className="p-6 border-b border-slate-200">
@@ -2208,7 +2234,66 @@ const handleSubmit = async (e) => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
+      {showLoginModal && (
+  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all">
+      <div className="p-6 border-b border-slate-200">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+            <LogIn className="w-5 h-5 text-emerald-600" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-slate-900">Login Required</h3>
+            <p className="text-slate-600 text-sm">Login to autofill your information</p>
+          </div>
+        </div>
+      </div>
+      
+      <div className="p-6">
+        <p className="text-slate-700 mb-4">
+          Login to automatically fill your personal information including:
+          <ul className="mt-2 text-sm text-slate-600 space-y-1">
+            <li className="flex items-center gap-2">
+              <Calendar className="w-3 h-3" /> Date of Birth
+            </li>
+            <li className="flex items-center gap-2">
+              <User className="w-3 h-3" /> Gender
+            </li>
+            <li className="flex items-center gap-2">
+              <MapPin className="w-3 h-3" /> Address
+            </li>
+          </ul>
+        </p>
+        <div className="space-y-3">
+          <Link
+            href="/login"
+            className="block w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 transition text-center font-medium"
+            onClick={() => {
+              setShowLoginModal(false);
+              // After login, the page will refresh and data will be auto-filled
+            }}
+          >
+            Login Now
+          </Link>
+          <Link
+            href="/register"
+            className="block w-full px-4 py-3 border border-emerald-600 text-emerald-600 rounded-lg hover:bg-emerald-50 transition text-center font-medium"
+            onClick={() => setShowLoginModal(false)}
+          >
+            Create Account
+          </Link>
+          <button
+            onClick={() => setShowLoginModal(false)}
+            className="block w-full px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-lg transition text-center font-medium"
+          >
+            Continue without auto-fill
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
       
       <div className="max-w-6xl mx-auto">
         {/* Header */}

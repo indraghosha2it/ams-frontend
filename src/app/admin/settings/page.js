@@ -717,76 +717,7 @@ const handlePasswordSubmit = async (e) => {
                   </div>
                 </div>
 
-                {/* Permissions Section */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-                    <Settings className="size-5 mr-2 text-teal-600 dark:text-teal-400" />
-                    Admin Permissions
-                  </h3>
-                  <div className="bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-900/10 dark:to-emerald-900/10 rounded-lg p-6 border border-teal-100 dark:border-teal-800/30">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center mb-2">
-                          <div className="bg-emerald-100 dark:bg-emerald-900/20 p-2 rounded-lg mr-3">
-                            <CheckCircle className="size-4 text-emerald-600 dark:text-emerald-400" />
-                          </div>
-                          <div className="font-medium text-gray-900 dark:text-white">Manage Services</div>
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 ml-14">
-                          Can create, edit, and delete services
-                        </p>
-                      </div>
-                      
-                      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center mb-2">
-                          <div className="bg-emerald-100 dark:bg-emerald-900/20 p-2 rounded-lg mr-3">
-                            <CheckCircle className="size-4 text-emerald-600 dark:text-emerald-400" />
-                          </div>
-                          <div className="font-medium text-gray-900 dark:text-white">Manage Appointments</div>
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 ml-14">
-                          Can manage all appointments
-                        </p>
-                      </div>
-                      
-                      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center mb-2">
-                          <div className="bg-emerald-100 dark:bg-emerald-900/20 p-2 rounded-lg mr-3">
-                            <CheckCircle className="size-4 text-emerald-600 dark:text-emerald-400" />
-                          </div>
-                          <div className="font-medium text-gray-900 dark:text-white">Manage Clients</div>
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 ml-14">
-                          Can view, edit, and delete clients
-                        </p>
-                      </div>
-                      
-                      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center mb-2">
-                          <div className="bg-emerald-100 dark:bg-emerald-900/20 p-2 rounded-lg mr-3">
-                            <CheckCircle className="size-4 text-emerald-600 dark:text-emerald-400" />
-                          </div>
-                          <div className="font-medium text-gray-900 dark:text-white">Manage Staff</div>
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 ml-14">
-                          Can add, edit, and remove staff members
-                        </p>
-                      </div>
-                      
-                      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center mb-2">
-                          <div className="bg-emerald-100 dark:bg-emerald-900/20 p-2 rounded-lg mr-3">
-                            <CheckCircle className="size-4 text-emerald-600 dark:text-emerald-400" />
-                          </div>
-                          <div className="font-medium text-gray-900 dark:text-white">View Reports</div>
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 ml-14">
-                          Can access system analytics and reports
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              
 
                 {/* Contact Information */}
                 <div>

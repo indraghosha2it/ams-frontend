@@ -28,6 +28,8 @@
 //   const [loading, setLoading] = useState(false);
 //   const [justRegistered, setJustRegistered] = useState(false);
 //   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
+//   const [emailError, setEmailError] = useState('');
+//   const [phoneError, setPhoneError] = useState('');
   
 //   useEffect(() => {
 //     const mode = searchParams.get('mode');
@@ -45,6 +47,8 @@
 //       window.history.replaceState({}, '', newUrl);
 //     }
 //   }, [searchParams]);
+
+  
   
 //   const [loginData, setLoginData] = useState({
 //     email: '',
@@ -67,6 +71,54 @@
 //     number: false,
 //     special: false,
 //   });
+
+//   // Validate email format
+//   const validateEmail = (email) => {
+//     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+//     if (!email) {
+//       setEmailError('');
+//       return false;
+//     }
+    
+//     if (!emailRegex.test(email)) {
+//       setEmailError('Please enter a valid email address (e.g., user@example.com)');
+//       return false;
+//     }
+    
+//     setEmailError('');
+//     return true;
+//   };
+
+//   // Validate phone number (minimum 10 digits)
+//   const validatePhone = (phone) => {
+//     // Remove all non-digit characters
+//     const digitsOnly = phone.replace(/\D/g, '');
+    
+//     if (!phone) {
+//       setPhoneError('');
+//       return false; // Phone is optional
+//     }
+    
+//     if (digitsOnly.length < 10) {
+//       setPhoneError('Phone number must be at least 10 digits');
+//       return false;
+//     }
+    
+//     // Optional: You can add a maximum limit if needed
+//     // if (digitsOnly.length > 15) {
+//     //   setPhoneError('Phone number is too long');
+//     //   return false;
+//     // }
+    
+//     setPhoneError('');
+//     return true;
+//   };
+
+//   // Format phone number for display (digits only, no formatting)
+//   const formatPhoneDisplay = (value) => {
+//     // Remove all non-digit characters
+//     return value.replace(/\D/g, '');
+//   };
 
 //   const checkPasswordStrength = (password) => {
 //     setPasswordStrength({
@@ -110,148 +162,112 @@
 //     setShowPasswordRequirements(false);
 //   };
 
-//   // const handleLogin = async (e) => {
-//   //   e.preventDefault();
-//   //   setLoading(true);
+//   // Handle email change with validation
+//   const handleEmailChange = (email) => {
+//     setRegisterData({ ...registerData, email });
+//     if (email) {
+//       validateEmail(email);
+//     } else {
+//       setEmailError('');
+//     }
+//   };
+
+//   // Handle phone change with validation
+//   const handlePhoneChange = (phone) => {
+//     const formattedPhone = formatPhoneDisplay(phone);
+//     setRegisterData({ ...registerData, phone: formattedPhone });
+//     if (phone) {
+//       validatePhone(formattedPhone);
+//     } else {
+//       setPhoneError('');
+//     }
+//   };
+
+//   const handleLogin = async (e) => {
+//     e.preventDefault();
+//     setLoading(true);
     
-//   //   try {
-//   //     const response = await axios.post('http://localhost:5000/api/auth/login', loginData);
+//     try {
+//       const response = await axios.post('http://localhost:5000/api/auth/login', loginData);
       
-//   //     if (response.data.success) {
-//   //       toast.success('Welcome back!');
+//       if (response.data.success) {
+//         // Show success toast that disappears after 3 seconds
+//         toast.success('Welcome back!',
+//            {
+//           duration: 3000,
+//           position: 'top-right',
+//         }
+//       );
         
-//   //       // Store token and user data
-//   //       localStorage.setItem('token', response.data.token);
-//   //       localStorage.setItem('user', JSON.stringify(response.data.user));
+//         // Store token and user data
+//         localStorage.setItem('token', response.data.token);
+//         localStorage.setItem('user', JSON.stringify(response.data.user));
         
-//   //       // Redirect based on role
-//   //       const role = response.data.user?.role || response.data.role;
+//         // Get role
+//         const role = response.data.user?.role || response.data.role;
+//         console.log('Login successful, role:', role);
         
-//   //       console.log('Login successful, role:', role);
-        
-//   //       switch (role) {
-//   //         case 'admin':
-//   //           toast.success('Welcome Admin!');
-//   //           router.push('/admin/dashboard');
-//   //           break;
-//   //         case 'staff':
-//   //           toast.success('Welcome Staff!');
-//   //           router.push('/staff/dashboard');
-//   //           break;
-//   //         case 'client':
-//   //         default:
-//   //           toast.success('Welcome!');
-//   //           router.push('/client/dashboard');
-//   //           break;
-//   //       }
-//   //     }
-//   //   } catch (error) {
-//   //     const errorMessage = error.response?.data?.message || 'Invalid credentials. Please try again.';
-//   //     toast.error(errorMessage);
-//   //   } finally {
-//   //     setLoading(false);
-//   //   }
-//   // };
-
-
-// const handleLogin = async (e) => {
-//   e.preventDefault();
-//   setLoading(true);
-  
-//   try {
-//     const response = await axios.post('http://localhost:5000/api/auth/login', loginData);
-    
-//     if (response.data.success) {
-//       // Show success toast
-//       toast.success('Welcome back!', {
-//         duration: 3000,
+//         // Redirect after showing the first toast
+//         setTimeout(() => {
+//           switch (role) {
+//             case 'admin':
+//               router.push('/admin/dashboard');
+//               break;
+//             case 'staff':
+//               router.push('/staff/dashboard');
+//               break;
+//             case 'client':
+//             default:
+//               router.push('/client/dashboard');
+//               break;
+//           }
+//         }, 1000);
+//       }
+//     } catch (error) {
+//       console.log('Login error caught:', error.response?.status, error.response?.data);
+      
+//       let errorMessage = 'Invalid credentials. Please try again.';
+      
+//       if (error.response) {
+//         if (error.response.status === 401) {
+//           errorMessage = 'Invalid email or password';
+//         } else if (error.response.status === 400) {
+//           errorMessage = error.response.data?.message || 'Please check your input';
+//         } else if (error.response.status === 404) {
+//           errorMessage = 'User not found. Please sign up first';
+//         } else {
+//           errorMessage = error.response.data?.message || 'Login failed. Please try again.';
+//         }
+//       } else if (error.request) {
+//         errorMessage = 'Network error. Please check your connection';
+//       } else {
+//         errorMessage = 'An error occurred. Please try again.';
+//       }
+      
+//       toast.error(errorMessage, {
+//         duration: 4000,
 //         position: 'top-right',
 //       });
       
-//       // Store token and user data
-//       localStorage.setItem('token', response.data.token);
-//       localStorage.setItem('user', JSON.stringify(response.data.user));
-      
-//       // Get role
-//       const role = response.data.user?.role || response.data.role;
-//       console.log('Login successful, role:', role);
-      
-//       // Show role-specific welcome toast after a short delay
-//       setTimeout(() => {
-//         switch (role) {
-//           case 'admin':
-//             toast.success('Welcome Admin!', { 
-//               duration: 2000,
-//               position: 'top-right',
-//             });
-//             break;
-//           case 'staff':
-//             toast.success('Welcome Staff!', { 
-//               duration: 2000,
-//               position: 'top-right',
-//             });
-//             break;
-//           case 'client':
-//           default:
-//             toast.success('Welcome!', { 
-//               duration: 2000,
-//               position: 'top-right',
-//             });
-//             break;
-//         }
-//       }, 500);
-      
-//       // Redirect after showing the first toast
-//       setTimeout(() => {
-//         switch (role) {
-//           case 'admin':
-//             router.push('/admin/dashboard');
-//             break;
-//           case 'staff':
-//             router.push('/staff/dashboard');
-//             break;
-//           case 'client':
-//           default:
-//             router.push('/client/dashboard');
-//             break;
-//         }
-//       }, 1500); // Give user time to see the toast
+//     } finally {
+//       setLoading(false);
 //     }
-//   } catch (error) {
-//     // Catch the error to prevent it from appearing in console as uncaught
-//     console.log('Login error caught:', error.response?.status, error.response?.data);
-    
-//     // Show appropriate error message
-//     let errorMessage = 'Invalid credentials. Please try again.';
-    
-//     if (error.response) {
-//       if (error.response.status === 401) {
-//         errorMessage = 'Invalid email or password';
-//       } else if (error.response.status === 400) {
-//         errorMessage = error.response.data?.message || 'Please check your input';
-//       } else if (error.response.status === 404) {
-//         errorMessage = 'User not found. Please sign up first';
-//       } else {
-//         errorMessage = error.response.data?.message || 'Login failed. Please try again.';
-//       }
-//     } else if (error.request) {
-//       errorMessage = 'Network error. Please check your connection';
-//     } else {
-//       errorMessage = 'An error occurred. Please try again.';
-//     }
-    
-//     // Show error toast
-//     toast.error(errorMessage, {
-//       duration: 4000,
-//       position: 'top-right',
-//     });
-    
-//   } finally {
-//     setLoading(false);
-//   }
-// };
+//   };
+
 //   const handleRegister = async (e) => {
 //     e.preventDefault();
+    
+//     // Validate email before proceeding
+//     if (!validateEmail(registerData.email)) {
+//       toast.error('Please enter a valid email address');
+//       return;
+//     }
+    
+//     // Validate phone if provided (minimum 10 digits)
+//     if (registerData.phone && !validatePhone(registerData.phone)) {
+//       toast.error('Please enter a valid phone number (minimum 10 digits)');
+//       return;
+//     }
     
 //     // Validation
 //     if (!registerData.name || !registerData.email || !registerData.password) {
@@ -277,25 +293,20 @@
 //       return;
 //     }
     
-//     // Validate phone number (optional)
-//     const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-//     if (registerData.phone && !phoneRegex.test(registerData.phone.replace(/\D/g, ''))) {
-//       toast.error('Please enter a valid phone number');
-//       return;
-//     }
-    
 //     setLoading(true);
     
 //     try {
 //       const response = await axios.post('http://localhost:5000/api/auth/register/client', {
 //         name: registerData.name,
 //         email: registerData.email,
-//         phone: registerData.phone ? registerData.phone.replace(/\D/g, '') : '',
+//         phone: registerData.phone ? registerData.phone : '',
 //         password: registerData.password,
 //       });
       
 //       if (response.data.success) {
-//         toast.success('Account created successfully! Please sign in to continue.');
+//         toast.success('Account created successfully! Please sign in to continue.', {
+//           duration: 3000,
+//         });
 //         setJustRegistered(true);
         
 //         // Clear the registration form
@@ -318,6 +329,10 @@
 //         });
 //         setShowPasswordRequirements(false);
         
+//         // Clear validation errors
+//         setEmailError('');
+//         setPhoneError('');
+        
 //         // Pre-fill email in login form for convenience
 //         setLoginData({
 //           email: response.data.user?.email || registerData.email,
@@ -328,21 +343,13 @@
 //         setIsLogin(true);
 //       }
 //     } catch (error) {
-//   const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
-//   toast.error(errorMessage);
-// } finally {
+//       const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
+//       toast.error(errorMessage, {
+//         duration: 4000,
+//       });
+//     } finally {
 //       setLoading(false);
 //     }
-//   };
-
-//   const formatPhoneNumber = (value) => {
-//     const phoneNumber = value.replace(/\D/g, '');
-    
-//     if (phoneNumber.length === 0) return '';
-//     if (phoneNumber.length <= 3) return `(${phoneNumber}`;
-//     if (phoneNumber.length <= 6) return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
-//     if (phoneNumber.length <= 10) return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
-//     return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)} x${phoneNumber.slice(10)}`;
 //   };
 
 //   const PasswordRequirement = ({ label, met }) => (
@@ -402,8 +409,8 @@
 //             {/* Logo in Form */}
 //             <div className="flex justify-center mb-6">
 //               <div className="relative">
-//                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur-lg opacity-60"></div>
-//                 <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 size-16 rounded-xl flex items-center justify-center shadow-lg">
+//                 <div className="absolute inset-0 bg-gradient-to-r from-teal-600 to-emerald-600 rounded-xl blur-lg opacity-60"></div>
+//                 <div className="relative bg-gradient-to-r from-teal-600 to-emerald-600 size-16 rounded-xl flex items-center justify-center shadow-lg">
 //                   <Calendar className="size-8 text-white" />
 //                 </div>
 //               </div>
@@ -492,13 +499,7 @@
 //                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
 //                       Password
 //                     </label>
-//                     <button
-//                       type="button"
-//                       className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-//                       onClick={() => toast.info('Contact support to reset your password')}
-//                     >
-//                       Forgot password?
-//                     </button>
+                  
 //                   </div>
 //                   <div className="relative">
 //                     <Lock className="absolute left-3 top-3 size-5 text-gray-400" />
@@ -524,21 +525,13 @@
 //                   </div>
 //                 </div>
 
-//                 <div className="flex items-center">
-//                   <input
-//                     type="checkbox"
-//                     id="remember"
-//                     className="size-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-blue-500"
-//                   />
-//                   <label htmlFor="remember" className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-//                     Remember me for 30 days
-//                   </label>
-//                 </div>
+                
+                
 
 //                 <button
 //                   type="submit"
 //                   disabled={loading}
-//                   className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+//                   className="w-full py-3.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
 //                 >
 //                   {loading ? (
 //                     <span className="flex items-center justify-center">
@@ -562,7 +555,7 @@
 //                         setIsLogin(false);
 //                         setJustRegistered(false);
 //                       }}
-//                       className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold"
+//                       className="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-semibold"
 //                     >
 //                       Sign up
 //                     </button>
@@ -598,19 +591,23 @@
 //                     <input
 //                       type="email"
 //                       value={registerData.email}
-//                       onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-//                       className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+//                       onChange={(e) => handleEmailChange(e.target.value)}
+//                       onBlur={() => validateEmail(registerData.email)}
+//                       className={`w-full pl-10 pr-4 py-3 rounded-xl border ${emailError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all`}
 //                       placeholder="you@example.com"
 //                       required
 //                     />
 //                   </div>
+//                   {emailError && (
+//                     <p className="mt-1 text-xs text-red-600 dark:text-red-400">{emailError}</p>
+//                   )}
 //                 </div>
 
 //                 <div>
 //                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
 //                     Phone Number (Optional)
 //                     <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
-//                       For appointment reminders
+//                       Minimum 10 digits
 //                     </span>
 //                   </label>
 //                   <div className="relative">
@@ -618,17 +615,17 @@
 //                     <input
 //                       type="tel"
 //                       value={registerData.phone}
-//                       onChange={(e) => setRegisterData({ 
-//                         ...registerData, 
-//                         phone: formatPhoneNumber(e.target.value) 
-//                       })}
-//                       className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-//                       placeholder="(123) 456-7890"
+//                       onChange={(e) => handlePhoneChange(e.target.value)}
+//                       onBlur={() => validatePhone(registerData.phone)}
+//                       className={`w-full pl-10 pr-4 py-3 rounded-xl border ${phoneError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all`}
+//                       placeholder="1234567890"
 //                     />
 //                   </div>
-//                   {registerData.phone && (
+//                   {phoneError ? (
+//                     <p className="mt-1 text-xs text-red-600 dark:text-red-400">{phoneError}</p>
+//                   ) : registerData.phone && (
 //                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-//                       Format: (123) 456-7890
+//                       Enter at least 10 digits (digits only, no formatting)
 //                     </p>
 //                   )}
 //                 </div>
@@ -662,7 +659,7 @@
 //                     </button>
 //                   </div>
                   
-//                   {/* Password Requirements - Only show when user leaves field without meeting criteria */}
+//                   {/* Password Requirements */}
 //                   {showPasswordRequirements && registerData.password && (
 //                     <div className="mt-3 space-y-2 p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg animate-fadeIn">
 //                       <p className="text-sm font-medium text-red-600 dark:text-red-400 mb-2">
@@ -741,8 +738,8 @@
 
 //                 <button
 //                   type="submit"
-//                   disabled={loading}
-//                   className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+//                   disabled={loading || emailError || phoneError}
+//                   className="w-full py-3.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
 //                 >
 //                   {loading ? (
 //                     <span className="flex items-center justify-center">
@@ -763,7 +760,7 @@
 //                     <button
 //                       type="button"
 //                       onClick={() => setIsLogin(true)}
-//                       className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold"
+//                       className="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-semibold"
 //                     >
 //                       Sign in here
 //                     </button>
@@ -773,16 +770,7 @@
 //             )}
 
 //             {/* Divider */}
-//             <div className="relative my-8">
-//               <div className="absolute inset-0 flex items-center">
-//                 <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
-//               </div>
-//               <div className="relative flex justify-center text-sm">
-//                 <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-//                   {isLogin ? 'Or continue with' : 'Or sign up with'}
-//                 </span>
-//               </div>
-//             </div>
+           
 
 //             {/* Social Login (commented out) */}
 //             {/* <div className="grid grid-cols-1 gap-3">
@@ -819,13 +807,14 @@
 // }
 
 
+
 // src/app/signin/page.js
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
-import toast from 'react-hot-toast';
+import { Toaster, toast } from 'sonner';
 import { 
   Calendar, 
   ArrowLeft, 
@@ -836,8 +825,14 @@ import {
   User,
   Phone,
   Check,
-  X
+  X,
+  CalendarDays,
+  MapPin,
+  UserCircle,
+
+  Stethoscope
 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function SignInPage() {
   const router = useRouter();
@@ -855,21 +850,18 @@ export default function SignInPage() {
     const mode = searchParams.get('mode');
     if (mode === 'signup') {
       setIsLogin(false);
+      toast.info('Create your client account');
     }
     
-    // Check if user just registered (from URL params)
     const justRegisteredParam = searchParams.get('registered');
     if (justRegisteredParam === 'true') {
       toast.success('Registration successful! Please sign in to continue.');
       setIsLogin(true);
-      // Clean up URL
       const newUrl = window.location.pathname;
       window.history.replaceState({}, '', newUrl);
     }
   }, [searchParams]);
 
-  
-  
   const [loginData, setLoginData] = useState({
     email: '',
     password: '',
@@ -881,6 +873,9 @@ export default function SignInPage() {
     phone: '',
     password: '',
     confirmPassword: '',
+    dateOfBirth: '',
+    gender: '',
+    address: '',
     acceptTerms: false,
   });
 
@@ -911,12 +906,11 @@ export default function SignInPage() {
 
   // Validate phone number (minimum 10 digits)
   const validatePhone = (phone) => {
-    // Remove all non-digit characters
     const digitsOnly = phone.replace(/\D/g, '');
     
     if (!phone) {
       setPhoneError('');
-      return false; // Phone is optional
+      return false;
     }
     
     if (digitsOnly.length < 10) {
@@ -924,19 +918,12 @@ export default function SignInPage() {
       return false;
     }
     
-    // Optional: You can add a maximum limit if needed
-    // if (digitsOnly.length > 15) {
-    //   setPhoneError('Phone number is too long');
-    //   return false;
-    // }
-    
     setPhoneError('');
     return true;
   };
 
-  // Format phone number for display (digits only, no formatting)
+  // Format phone number for display
   const formatPhoneDisplay = (value) => {
-    // Remove all non-digit characters
     return value.replace(/\D/g, '');
   };
 
@@ -954,7 +941,6 @@ export default function SignInPage() {
     setRegisterData({ ...registerData, password });
     checkPasswordStrength(password);
     
-    // Hide requirements if all criteria are met
     const allChecksPass = checkAllPasswordRequirements(password);
     if (allChecksPass) {
       setShowPasswordRequirements(false);
@@ -978,7 +964,6 @@ export default function SignInPage() {
   };
 
   const handlePasswordFocus = () => {
-    // Hide requirements when user focuses back on the field
     setShowPasswordRequirements(false);
   };
 
@@ -1011,23 +996,13 @@ export default function SignInPage() {
       const response = await axios.post('http://localhost:5000/api/auth/login', loginData);
       
       if (response.data.success) {
-        // Show success toast that disappears after 3 seconds
-        toast.success('Welcome back!',
-           {
-          duration: 3000,
-          position: 'top-right',
-        }
-      );
+        toast.success('Welcome back!');
         
-        // Store token and user data
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
         
-        // Get role
         const role = response.data.user?.role || response.data.role;
-        console.log('Login successful, role:', role);
         
-        // Redirect after showing the first toast
         setTimeout(() => {
           switch (role) {
             case 'admin':
@@ -1044,8 +1019,6 @@ export default function SignInPage() {
         }, 1000);
       }
     } catch (error) {
-      console.log('Login error caught:', error.response?.status, error.response?.data);
-      
       let errorMessage = 'Invalid credentials. Please try again.';
       
       if (error.response) {
@@ -1064,11 +1037,7 @@ export default function SignInPage() {
         errorMessage = 'An error occurred. Please try again.';
       }
       
-      toast.error(errorMessage, {
-        duration: 4000,
-        position: 'top-right',
-      });
-      
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -1077,20 +1046,21 @@ export default function SignInPage() {
   const handleRegister = async (e) => {
     e.preventDefault();
     
-    // Validate email before proceeding
+    // Validate email
     if (!validateEmail(registerData.email)) {
       toast.error('Please enter a valid email address');
       return;
     }
     
-    // Validate phone if provided (minimum 10 digits)
+    // Validate phone if provided
     if (registerData.phone && !validatePhone(registerData.phone)) {
       toast.error('Please enter a valid phone number (minimum 10 digits)');
       return;
     }
     
-    // Validation
-    if (!registerData.name || !registerData.email || !registerData.password) {
+    // Validate required fields
+    if (!registerData.name || !registerData.email || !registerData.password || 
+        !registerData.dateOfBirth || !registerData.gender) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -1121,12 +1091,13 @@ export default function SignInPage() {
         email: registerData.email,
         phone: registerData.phone ? registerData.phone : '',
         password: registerData.password,
+        dateOfBirth: registerData.dateOfBirth,
+        gender: registerData.gender,
+        address: registerData.address || ''
       });
       
       if (response.data.success) {
-        toast.success('Account created successfully! Please sign in to continue.', {
-          duration: 3000,
-        });
+        toast.success('Account created successfully! Please sign in to continue.');
         setJustRegistered(true);
         
         // Clear the registration form
@@ -1136,10 +1107,13 @@ export default function SignInPage() {
           phone: '',
           password: '',
           confirmPassword: '',
+          dateOfBirth: '',
+          gender: '',
+          address: '',
           acceptTerms: false,
         });
         
-        // Reset password strength and hide requirements
+        // Reset password strength
         setPasswordStrength({
           length: false,
           uppercase: false,
@@ -1153,7 +1127,7 @@ export default function SignInPage() {
         setEmailError('');
         setPhoneError('');
         
-        // Pre-fill email in login form for convenience
+        // Pre-fill email in login form
         setLoginData({
           email: response.data.user?.email || registerData.email,
           password: '',
@@ -1164,9 +1138,7 @@ export default function SignInPage() {
       }
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Registration failed. Please try again.';
-      toast.error(errorMessage, {
-        duration: 4000,
-      });
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -1187,8 +1159,21 @@ export default function SignInPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
+      {/* Sonner Toaster */}
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: 'white',
+            color: 'black',
+            border: '1px solid #e5e7eb',
+          },
+          className: 'font-sans',
+        }}
+      />
+
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
@@ -1197,40 +1182,63 @@ export default function SignInPage() {
               onClick={() => router.push('/')}
             >
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur-lg opacity-60"></div>
-                <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 size-10 rounded-xl flex items-center justify-center shadow-lg">
-                  <Calendar className="size-6 text-white" />
+                <div className="absolute inset-0 bg-gradient-to-r from-teal-500 to-emerald-600 rounded-xl blur-lg opacity-60 group-hover:opacity-80 transition-opacity"></div>
+                <div className="relative bg-gradient-to-r from-teal-500 to-emerald-600 size-10 rounded-xl flex items-center justify-center shadow-lg">
+                  <Stethoscope className="size-6 text-white" />
                 </div>
               </div>
               <div>
-                <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  ScheduleFlow
+                <span className="text-xl font-bold bg-gradient-to-r from-teal-600 to-emerald-700 bg-clip-text text-transparent">
+                  DocScheduler
                 </span>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Professional Edition</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Healthcare Edition</p>
               </div>
             </div>
 
-            {/* Back to Home */}
-            <button
-              onClick={() => router.push('/')}
-              className="flex items-center text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
-            >
-              <ArrowLeft className="size-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-              Back to Home
-            </button>
+            {/* Navigation Links */}
+            <div className="hidden md:flex items-center space-x-8">
+             
+             
+              <a 
+                href="/termsOfService" 
+                className="text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors font-medium text-sm"
+              >
+                Terms
+              </a>
+              <a 
+                href="/privacyPolicy" 
+                className="text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition-colors font-medium text-sm"
+              >
+                Privacy Policy
+              </a>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => router.push('/')}
+                className="group relative px-6 py-2.5 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-medium hover:from-teal-700 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+              >
+                <span className="flex items-center">
+               <ArrowLeft className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
+
+                Back to Home
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center p-4">
+      <div className="flex-1 flex items-center justify-center p-4 mt-28">
         <div className="w-full max-w-md">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-100 dark:border-gray-700">
             {/* Logo in Form */}
             <div className="flex justify-center mb-6">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur-lg opacity-60"></div>
-                <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 size-16 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="absolute inset-0 bg-gradient-to-r from-teal-600 to-emerald-600 rounded-xl blur-lg opacity-60"></div>
+                <div className="relative bg-gradient-to-r from-teal-600 to-emerald-600 size-16 rounded-xl flex items-center justify-center shadow-lg">
                   <Calendar className="size-8 text-white" />
                 </div>
               </div>
@@ -1319,13 +1327,6 @@ export default function SignInPage() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Password
                     </label>
-                    <button
-                      type="button"
-                      className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-                      onClick={() => toast.info('Contact support to reset your password')}
-                    >
-                      Forgot password?
-                    </button>
                   </div>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 size-5 text-gray-400" />
@@ -1351,13 +1352,10 @@ export default function SignInPage() {
                   </div>
                 </div>
 
-                
-                
-
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-semibold hover:from-teal-700 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <span className="flex items-center justify-center">
@@ -1381,7 +1379,7 @@ export default function SignInPage() {
                         setIsLogin(false);
                         setJustRegistered(false);
                       }}
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold"
+                      className="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-semibold"
                     >
                       Sign up
                     </button>
@@ -1454,6 +1452,69 @@ export default function SignInPage() {
                       Enter at least 10 digits (digits only, no formatting)
                     </p>
                   )}
+                </div>
+
+                {/* Date of Birth */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Date of Birth *
+                  </label>
+                  <div className="relative">
+                    <CalendarDays className="absolute left-3 top-3 size-5 text-gray-400 z-10" />
+                    <input
+                      type="date"
+                      value={registerData.dateOfBirth}
+                      onChange={(e) => setRegisterData({ ...registerData, dateOfBirth: e.target.value })}
+                      max={new Date().toISOString().split('T')[0]}
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                      required
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Please enter your date of birth
+                  </p>
+                </div>
+
+                {/* Gender */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Gender *
+                  </label>
+                  <div className="relative">
+                    <UserCircle className="absolute left-3 top-3 size-5 text-gray-400 z-10" />
+                    <select
+                      value={registerData.gender}
+                      onChange={(e) => setRegisterData({ ...registerData, gender: e.target.value })}
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all appearance-none"
+                      required
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                      <option value="prefer-not-to-say">Prefer not to say</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Address */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Address (Optional)
+                  </label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-3 size-5 text-gray-400" />
+                    <textarea
+                      value={registerData.address}
+                      onChange={(e) => setRegisterData({ ...registerData, address: e.target.value })}
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all min-h-[80px]"
+                      placeholder="Enter your complete address (House no, Street, City, State, Country)"
+                      rows="3"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Optional: You can add your address later in profile settings
+                  </p>
                 </div>
 
                 <div>
@@ -1544,28 +1605,32 @@ export default function SignInPage() {
                   />
                   <label htmlFor="terms" className="ml-3 text-sm text-gray-600 dark:text-gray-400">
                     I agree to the{' '}
-                    <button
-                      type="button"
-                      onClick={() => window.open('/terms', '_blank')}
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-                    >
-                      Terms of Service
-                    </button>{' '}
+                 
+              <button
+                type="button"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+              >
+                <Link href="/termsOfService" target="_blank" className="block w-full h-full">
+                  Terms of Service
+                </Link>
+              </button>{' '}
                     and{' '}
-                    <button
-                      type="button"
-                      onClick={() => window.open('/privacy', '_blank')}
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-                    >
-                      Privacy Policy
-                    </button>
+                     <button
+                type="button"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+              >
+                <Link href="/privacyPolicy" target="_blank" className="block w-full h-full">
+                    Privacy Policy
+                </Link>
+              </button>
+                   
                   </label>
                 </div>
 
                 <button
                   type="submit"
-                  disabled={loading || emailError || phoneError}
-                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={loading || emailError || phoneError || !registerData.dateOfBirth || !registerData.gender}
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <span className="flex items-center justify-center">
@@ -1586,7 +1651,7 @@ export default function SignInPage() {
                     <button
                       type="button"
                       onClick={() => setIsLogin(true)}
-                      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold"
+                      className="text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-semibold"
                     >
                       Sign in here
                     </button>
@@ -1594,26 +1659,6 @@ export default function SignInPage() {
                 </div>
               </form>
             )}
-
-            {/* Divider */}
-           
-
-            {/* Social Login (commented out) */}
-            {/* <div className="grid grid-cols-1 gap-3">
-              <button
-                type="button"
-                className="flex items-center justify-center py-3 px-4 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                onClick={() => toast.info('Google authentication coming soon!')}
-              >
-                <svg className="size-5 mr-2" viewBox="0 0 24 24">
-                  <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-                Google
-              </button>
-            </div> */}
           </div>
         </div>
       </div>

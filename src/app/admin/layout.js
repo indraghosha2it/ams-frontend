@@ -489,7 +489,7 @@ export default function AdminLayout({ children }) {
               </div>
               {sidebarOpen && (
                 <div>
-                  <h1 className="text-lg font-bold text-slate-900 dark:text-white">MediFlow</h1>
+                  <h1 className="text-lg font-bold text-slate-900 dark:text-white">DocScheduler</h1>
                   <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Healthcare Admin</p>
                 </div>
               )}
@@ -566,45 +566,31 @@ export default function AdminLayout({ children }) {
           <div className="px-6 py-4">
             <div className="flex items-center justify-between">
               {/* Search */}
-              <div className="flex-1 max-w-xl">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-500 size-5" />
-                  <input
-                    type="search"
-                    placeholder="Search doctors, appointments, clients..."
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:focus:border-emerald-500 outline-none transition-all shadow-sm"
-                  />
+               <div className="flex-1 max-w-xl">
+               <div className="relative">
+                    <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                Welcome back, {user.name}
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Ready to manage Appointments!!
+              </p>
+            
                 </div>
               </div>
 
               {/* Right Side Actions */}
               <div className="flex items-center space-x-3">
                 {/* Dark Mode Toggle */}
-                <button
+                {/* <button
                   onClick={toggleDarkMode}
                   className="p-2.5 text-slate-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg hover:bg-slate-100 dark:hover:bg-gray-700 transition-all"
                   aria-label="Toggle dark mode"
                 >
                   {darkMode ? <Sun className="size-5" /> : <Moon className="size-5" />}
-                </button>
+                </button> */}
 
-                {/* Help Button */}
-                <button
-                  className="p-2.5 text-slate-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg hover:bg-slate-100 dark:hover:bg-gray-700 transition-all"
-                  aria-label="Help"
-                >
-                  <HelpCircle className="size-5" />
-                </button>
+              
 
-                {/* Notifications */}
-                <div className="relative">
-                  <button className="relative p-2.5 text-slate-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg hover:bg-slate-100 dark:hover:bg-gray-700 transition-all">
-                    <Bell className="size-5" />
-                    {notifications.filter(n => !n.read).length > 0 && (
-                      <span className="absolute top-2 right-2 size-2.5 bg-red-500 rounded-full border border-white dark:border-gray-800"></span>
-                    )}
-                  </button>
-                </div>
 
                 {/* User Menu */}
                 <div className="relative" ref={userMenuRef}>
@@ -690,7 +676,7 @@ export default function AdminLayout({ children }) {
         <footer className="border-t justify-items-center border-slate-200 dark:border-gray-700 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm px-6 py-4">
         
             <p className="text-sm text-slate-600 dark:text-gray-400">
-              © {new Date().getFullYear()} MediFlow Healthcare. All rights reserved.
+              © {new Date().getFullYear()} DocScheduler Healthcare. All rights reserved.
             </p>
           
        

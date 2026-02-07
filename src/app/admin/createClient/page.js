@@ -1,3 +1,4 @@
+
 // // src/app/admin/createClient/page.js
 // 'use client';
 
@@ -34,6 +35,14 @@
 //     confirmPassword: '',
 //   });
 
+//   const [errors, setErrors] = useState({
+//     name: '',
+//     email: '',
+//     phone: '',
+//     password: '',
+//     confirmPassword: '',
+//   });
+
 //   const [passwordStrength, setPasswordStrength] = useState({
 //     length: false,
 //     uppercase: false,
@@ -55,6 +64,11 @@
 //   const handlePasswordChange = (password) => {
 //     setFormData({ ...formData, password });
 //     checkPasswordStrength(password);
+    
+//     // Clear password error when typing
+//     if (errors.password) {
+//       setErrors({ ...errors, password: '' });
+//     }
     
 //     // Hide requirements if all criteria are met
 //     const allChecksPass = checkAllPasswordRequirements(password);
@@ -83,101 +97,528 @@
 //     setShowPasswordRequirements(false);
 //   };
 
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-    
-//     // Validation
-//     if (!formData.name || !formData.email || !formData.password) {
-//       toast.error('Please fill in all required fields');
-//       return;
+//   const validateForm = () => {
+//     let newErrors = {};
+//     let hasError = false;
+
+//     // Name validation
+//     if (!formData.name.trim()) {
+//       newErrors.name = 'Name is required';
+//       hasError = true;
+//     } else if (formData.name.trim().length < 2) {
+//       newErrors.name = 'Name must be at least 2 characters';
+//       hasError = true;
 //     }
-    
-//     if (formData.password !== formData.confirmPassword) {
-//       toast.error('Passwords do not match');
-//       return;
-//     }
-    
-//     const allChecksPass = Object.values(passwordStrength).every(v => v);
-//     if (!allChecksPass) {
-//       toast.error('Please meet all password requirements');
-//       setShowPasswordRequirements(true);
-//       return;
-//     }
-    
-//     // Validate phone number format
-//     const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-//     if (formData.phone && !phoneRegex.test(formData.phone.replace(/\D/g, ''))) {
-//       toast.error('Please enter a valid phone number');
-//       return;
-//     }
-    
-//     setLoading(true);
-    
-//     try {
-//       const token = localStorage.getItem('token');
-//       const currentUser = JSON.parse(localStorage.getItem('user'));
-      
-//       if (!token || !currentUser) {
-//         toast.error('Please login first');
-//         router.push('/signin');
-//         return;
+
+//     // Email validation
+//     if (!formData.email.trim()) {
+//       newErrors.email = 'Email is required';
+//       hasError = true;
+//     } else {
+//       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+//       if (!emailRegex.test(formData.email)) {
+//         newErrors.email = 'Please enter a valid email address';
+//         hasError = true;
 //       }
-      
-//       if (currentUser.role !== 'admin') {
-//         toast.error('Only admins can create client accounts');
-//         return;
-//       }
-      
-//    const response = await axios.post('http://localhost:5000/api/admin/users', {
-//   name: formData.name,
-//   email: formData.email,
-//   phone: formData.phone ? formData.phone.replace(/\D/g, '') : '',
-//   password: formData.password,
-//   role: 'client' // Add this line - specify role as 'client'
-// }, {
-//   headers: {
-//     'Authorization': `Bearer ${token}`
-//   }
-// });
-      
-//       if (response.data.success) {
-//         toast.success('Client account created successfully!');
-        
-//         // Reset form
-//         setFormData({
-//           name: '',
-//           email: '',
-//           phone: '',
-//           password: '',
-//           confirmPassword: '',
-//         });
-        
-//         // Reset password strength
-//         setPasswordStrength({
-//           length: false,
-//           uppercase: false,
-//           lowercase: false,
-//           number: false,
-//           special: false,
-//         });
-//         setShowPasswordRequirements(false);
-//       }
-//     } catch (error) {
-//       const errorMessage = error.response?.data?.message || 'Failed to create client account. Please try again.';
-//       toast.error(errorMessage);
-//     } finally {
-//       setLoading(false);
 //     }
+
+//     // Phone validation (optional)
+//     if (formData.phone && formData.phone.trim()) {
+//       const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+//       const digitsOnly = formData.phone.replace(/\D/g, '');
+      
+//       if (digitsOnly.length < 10) {
+//         newErrors.phone = 'Phone number must be at least 10 digits';
+//         hasError = true;
+//       } else if (!phoneRegex.test(digitsOnly)) {
+//         newErrors.phone = 'Please enter a valid phone number';
+//         hasError = true;
+//       }
+//     }
+
+//     // Password validation
+//     if (!formData.password) {
+//       newErrors.password = 'Password is required';
+//       hasError = true;
+//     } else {
+//       const allChecksPass = Object.values(passwordStrength).every(v => v);
+//       if (!allChecksPass) {
+//         newErrors.password = 'Password does not meet all requirements';
+//         hasError = true;
+//         setShowPasswordRequirements(true);
+//       }
+//     }
+
+//     // Confirm password validation
+//     if (!formData.confirmPassword) {
+//       newErrors.confirmPassword = 'Please confirm your password';
+//       hasError = true;
+//     } else if (formData.password !== formData.confirmPassword) {
+//       newErrors.confirmPassword = 'Passwords do not match';
+//       hasError = true;
+//     }
+
+//     setErrors(newErrors);
+//     return { isValid: !hasError, errors: newErrors };
 //   };
 
-//   const formatPhoneNumber = (value) => {
-//     const phoneNumber = value.replace(/\D/g, '');
+//   // const handleSubmit = async (e) => {
+//   //   e.preventDefault();
     
-//     if (phoneNumber.length === 0) return '';
-//     if (phoneNumber.length <= 3) return `(${phoneNumber}`;
-//     if (phoneNumber.length <= 6) return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
-//     if (phoneNumber.length <= 10) return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
-//     return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)} x${phoneNumber.slice(10)}`;
+//   //   // Validate form and get validation result
+//   //   const validation = validateForm();
+    
+//   //   if (!validation.isValid) {
+//   //     // Show specific error toasts based on which fields have errors
+//   //     const errorFields = Object.entries(validation.errors).filter(([field, error]) => error !== '');
+      
+//   //     if (errorFields.length > 0) {
+//   //       // Show toast for the first error found
+//   //       const [firstField, firstError] = errorFields[0];
+        
+//   //       // Custom toast messages based on field
+//   //       let toastMessage = '';
+        
+//   //       if (firstField === 'name') {
+//   //         toastMessage = firstError.includes('required') 
+//   //           ? 'Please enter client name' 
+//   //           : 'Name must be at least 2 characters';
+//   //       } else if (firstField === 'email') {
+//   //         toastMessage = firstError.includes('required') 
+//   //           ? 'Please enter email address' 
+//   //           : 'Please enter a valid email address';
+//   //       } else if (firstField === 'phone') {
+//   //         toastMessage = 'Please enter a valid phone number (10+ digits)';
+//   //       } else if (firstField === 'password') {
+//   //         toastMessage = firstError.includes('required') 
+//   //           ? 'Please enter a password' 
+//   //           : 'Password must meet all requirements';
+//   //       } else if (firstField === 'confirmPassword') {
+//   //         toastMessage = firstError.includes('match') 
+//   //           ? 'Passwords do not match' 
+//   //           : 'Please confirm your password';
+//   //       } else {
+//   //         toastMessage = 'Please fix the errors in the form';
+//   //       }
+        
+//   //       toast.error(toastMessage);
+//   //     }
+//   //     return;
+//   //   }
+    
+//   //   setLoading(true);
+    
+//   //   try {
+//   //     const token = localStorage.getItem('token');
+//   //     const currentUser = JSON.parse(localStorage.getItem('user'));
+      
+//   //     if (!token || !currentUser) {
+//   //       toast.error('Please login first');
+//   //       router.push('/signin');
+//   //       setLoading(false);
+//   //       return;
+//   //     }
+      
+//   //     if (currentUser.role !== 'admin') {
+//   //       toast.error('Only admins can create client accounts');
+//   //       setLoading(false);
+//   //       return;
+//   //     }
+      
+//   //     // Clean phone number - remove all non-digits
+//   //     const phoneDigits = formData.phone ? formData.phone.replace(/\D/g, '') : '';
+      
+//   //     const response = await axios.post('http://localhost:5000/api/admin/users', {
+//   //       name: formData.name.trim(),
+//   //       email: formData.email.trim(),
+//   //       phone: phoneDigits,
+//   //       password: formData.password,
+//   //       role: 'client'
+//   //     }, {
+//   //       headers: {
+//   //         'Authorization': `Bearer ${token}`
+//   //       }
+//   //     });
+      
+//   //     if (response.data.success) {
+//   //       toast.success('Client account created successfully!');
+        
+//   //       // Reset form
+//   //       setFormData({
+//   //         name: '',
+//   //         email: '',
+//   //         phone: '',
+//   //         password: '',
+//   //         confirmPassword: '',
+//   //       });
+        
+//   //       // Reset errors
+//   //       setErrors({
+//   //         name: '',
+//   //         email: '',
+//   //         phone: '',
+//   //         password: '',
+//   //         confirmPassword: '',
+//   //       });
+        
+//   //       // Reset password strength
+//   //       setPasswordStrength({
+//   //         length: false,
+//   //         uppercase: false,
+//   //         lowercase: false,
+//   //         number: false,
+//   //         special: false,
+//   //       });
+//   //       setShowPasswordRequirements(false);
+        
+//   //       // Redirect to view clients page after 1.5 seconds
+//   //       setTimeout(() => {
+//   //         router.push('/admin/viewClients');
+//   //       }, 1500);
+//   //     } else {
+//   //       toast.error(response.data.message || 'Failed to create client account');
+//   //     }
+//   //   } catch (error) {
+//   //     console.error('Create client error:', error);
+      
+//   //     // Better error handling with specific messages
+//   //     if (error.response) {
+//   //       const errorMessage = error.response.data?.message || 
+//   //                          error.response.data?.error || 
+//   //                          'Failed to create client account';
+        
+//   //       if (error.response.status === 409) {
+//   //         toast.error('A client with this email already exists');
+//   //         setErrors({ ...errors, email: 'This email is already registered' });
+//   //       } else if (error.response.status === 401) {
+//   //         toast.error('Session expired. Please login again');
+//   //         router.push('/signin');
+//   //       } else if (error.response.status === 403) {
+//   //         toast.error('You do not have permission to create client accounts');
+//   //       } else if (error.response.status === 400) {
+//   //         // Handle validation errors from backend
+//   //         if (error.response.data.errors) {
+//   //           const backendErrors = error.response.data.errors;
+//   //           let newErrors = { ...errors };
+//   //           let backendErrorMsg = '';
+            
+//   //           if (backendErrors.name) {
+//   //             newErrors.name = backendErrors.name;
+//   //             backendErrorMsg = 'Name: ' + backendErrors.name;
+//   //           }
+//   //           if (backendErrors.email) {
+//   //             newErrors.email = backendErrors.email;
+//   //             backendErrorMsg = backendErrorMsg ? backendErrorMsg + ', Email: ' + backendErrors.email : 'Email: ' + backendErrors.email;
+//   //           }
+//   //           if (backendErrors.phone) {
+//   //             newErrors.phone = backendErrors.phone;
+//   //             backendErrorMsg = backendErrorMsg ? backendErrorMsg + ', Phone: ' + backendErrors.phone : 'Phone: ' + backendErrors.phone;
+//   //           }
+//   //           if (backendErrors.password) {
+//   //             newErrors.password = backendErrors.password;
+//   //             backendErrorMsg = backendErrorMsg ? backendErrorMsg + ', Password: ' + backendErrors.password : 'Password: ' + backendErrors.password;
+//   //           }
+            
+//   //           setErrors(newErrors);
+//   //           toast.error(backendErrorMsg || 'Please fix the validation errors');
+//   //         } else {
+//   //           toast.error(errorMessage);
+//   //         }
+//   //       } else {
+//   //         toast.error(errorMessage);
+//   //       }
+//   //     } else if (error.request) {
+//   //       toast.error('No response from server. Please check your connection');
+//   //     } else {
+//   //       toast.error('Error: ' + error.message);
+//   //     }
+//   //   } finally {
+//   //     setLoading(false);
+//   //   }
+//   // };
+
+//   // Clear error when user starts typing in a field
+ 
+
+// const handleSubmit = async (e) => {
+//   e.preventDefault();
+  
+//   console.log('Form submitted - Checking validation');
+//   console.log('Toast function available:', typeof toast !== 'undefined');
+  
+//   // Test toast immediately to verify
+//   toast.success('🔄 Form submission started...', {
+//     duration: 2000,
+//     style: {
+//       background: '#3b82f6',
+//       color: 'white',
+//       padding: '16px',
+//       borderRadius: '8px',
+//       fontSize: '14px',
+//       fontWeight: '500',
+//     },
+//   });
+  
+//   // Validate form and get validation result
+//   const validation = validateForm();
+//   console.log('Validation errors:', validation.errors);
+  
+//   if (!validation.isValid) {
+//     console.log('Form validation failed');
+    
+//     // Show all validation errors as one toast
+//     const errorMessages = Object.entries(validation.errors)
+//       .filter(([_, error]) => error !== '')
+//       .map(([field, error]) => `${field}: ${error}`);
+    
+//     if (errorMessages.length > 0) {
+//       toast.error(`Please fix the following errors:\n• ${errorMessages.join('\n• ')}`, {
+//         duration: 5000,
+//         style: {
+//           background: '#ef4444',
+//           color: 'white',
+//           padding: '16px',
+//           borderRadius: '8px',
+//           fontSize: '14px',
+//           fontWeight: '500',
+//           maxWidth: '500px',
+//           whiteSpace: 'pre-line',
+//         },
+//       });
+//     }
+    
+//     return;
+//   }
+  
+//   setLoading(true);
+  
+//   // Show loading toast
+//   const loadingToastId = toast.loading('Creating client account...', {
+//     style: {
+//       background: '#3b82f6',
+//       color: 'white',
+//       padding: '16px',
+//       borderRadius: '8px',
+//       fontSize: '14px',
+//       fontWeight: '500',
+//     },
+//   });
+  
+//   try {
+//     const token = localStorage.getItem('token');
+//     const currentUser = JSON.parse(localStorage.getItem('user'));
+    
+//     if (!token || !currentUser) {
+//       toast.dismiss(loadingToastId);
+//       toast.error('Please login first to create client accounts', {
+//         duration: 4000,
+//         style: {
+//           background: '#ef4444',
+//           color: 'white',
+//           padding: '16px',
+//           borderRadius: '8px',
+//           fontSize: '14px',
+//           fontWeight: '500',
+//         },
+//       });
+//       router.push('/signin');
+//       setLoading(false);
+//       return;
+//     }
+    
+//     if (currentUser.role !== 'admin') {
+//       toast.dismiss(loadingToastId);
+//       toast.error('Only administrators can create client accounts', {
+//         duration: 4000,
+//         style: {
+//           background: '#ef4444',
+//           color: 'white',
+//           padding: '16px',
+//           borderRadius: '8px',
+//           fontSize: '14px',
+//           fontWeight: '500',
+//         },
+//       });
+//       setLoading(false);
+//       return;
+//     }
+    
+//     // Clean phone number - remove all non-digits
+//     const phoneDigits = formData.phone ? formData.phone.replace(/\D/g, '') : '';
+    
+//     console.log('Sending request to create client...');
+    
+//     const response = await axios.post('http://localhost:5000/api/admin/users', {
+//       name: formData.name.trim(),
+//       email: formData.email.trim(),
+//       phone: phoneDigits,
+//       password: formData.password,
+//       role: 'client'
+//     }, {
+//       headers: {
+//         'Authorization': `Bearer ${token}`
+//       }
+//     });
+    
+//     console.log('Response received:', response.data);
+    
+//     if (response.data.success) {
+//       // Dismiss loading toast and show success
+//       toast.dismiss(loadingToastId);
+//       toast.success('✅ Client account created successfully!', {
+//         duration: 3000,
+//         style: {
+//           background: '#10b981',
+//           color: 'white',
+//           padding: '16px',
+//           borderRadius: '8px',
+//           fontSize: '14px',
+//           fontWeight: '500',
+//         },
+//       });
+      
+//       // Reset form
+//       setFormData({
+//         name: '',
+//         email: '',
+//         phone: '',
+//         password: '',
+//         confirmPassword: '',
+//       });
+      
+//       // Reset errors
+//       setErrors({
+//         name: '',
+//         email: '',
+//         phone: '',
+//         password: '',
+//         confirmPassword: '',
+//       });
+      
+//       // Reset password strength
+//       setPasswordStrength({
+//         length: false,
+//         uppercase: false,
+//         lowercase: false,
+//         number: false,
+//         special: false,
+//       });
+//       setShowPasswordRequirements(false);
+      
+//       // Show redirect toast after 1 second
+//       setTimeout(() => {
+//         toast.success('✅ Redirecting to clients list...', {
+//           duration: 2000,
+//           style: {
+//             background: '#10b981',
+//             color: 'white',
+//             padding: '16px',
+//             borderRadius: '8px',
+//             fontSize: '14px',
+//             fontWeight: '500',
+//           },
+//         });
+//       }, 1000);
+      
+//       // Redirect to view clients page after 2.5 seconds
+//       setTimeout(() => {
+//         router.push('/admin/viewClients');
+//       }, 2500);
+//     } else {
+//       toast.dismiss(loadingToastId);
+//       toast.error(response.data.message || 'Failed to create client account', {
+//         duration: 4000,
+//         style: {
+//           background: '#ef4444',
+//           color: 'white',
+//           padding: '16px',
+//           borderRadius: '8px',
+//           fontSize: '14px',
+//           fontWeight: '500',
+//         },
+//       });
+//     }
+//   } catch (error) {
+//     console.error('Create client error:', error);
+    
+//     // Dismiss loading toast
+//     toast.dismiss(loadingToastId);
+    
+//     let errorMessage = 'An unexpected error occurred';
+    
+//     if (error.response) {
+//       console.log('Error response:', error.response);
+      
+//       if (error.response.status === 409) {
+//         errorMessage = 'A client with this email already exists';
+//         setErrors({ ...errors, email: 'This email is already registered' });
+//       } else if (error.response.status === 401) {
+//         errorMessage = 'Session expired. Please login again';
+//         router.push('/signin');
+//       } else if (error.response.status === 403) {
+//         errorMessage = 'You do not have permission to create client accounts';
+//       } else if (error.response.status === 400) {
+//         if (error.response.data.errors) {
+//           const backendErrors = error.response.data.errors;
+//           let newErrors = { ...errors };
+          
+//           if (backendErrors.name) {
+//             newErrors.name = backendErrors.name;
+//             errorMessage = `Name: ${backendErrors.name}`;
+//           }
+//           if (backendErrors.email) {
+//             newErrors.email = backendErrors.email;
+//             errorMessage = errorMessage.includes('Name:') 
+//               ? `${errorMessage}, Email: ${backendErrors.email}`
+//               : `Email: ${backendErrors.email}`;
+//           }
+//           if (backendErrors.phone) {
+//             newErrors.phone = backendErrors.phone;
+//             errorMessage = errorMessage.includes('Email:') || errorMessage.includes('Name:')
+//               ? `${errorMessage}, Phone: ${backendErrors.phone}`
+//               : `Phone: ${backendErrors.phone}`;
+//           }
+//           if (backendErrors.password) {
+//             newErrors.password = backendErrors.password;
+//             errorMessage = errorMessage.includes('Phone:') || errorMessage.includes('Email:') || errorMessage.includes('Name:')
+//               ? `${errorMessage}, Password: ${backendErrors.password}`
+//               : `Password: ${backendErrors.password}`;
+//           }
+          
+//           setErrors(newErrors);
+//         } else {
+//           errorMessage = error.response.data.message || 'Invalid data provided';
+//         }
+//       } else {
+//         errorMessage = error.response.data?.message || 'Server error occurred';
+//       }
+//     } else if (error.request) {
+//       errorMessage = 'No response from server. Please check your connection';
+//     } else {
+//       errorMessage = error.message;
+//     }
+    
+//     toast.error(`❌ ${errorMessage}`, {
+//       duration: 5000,
+//       style: {
+//         background: '#ef4444',
+//         color: 'white',
+//         padding: '16px',
+//         borderRadius: '8px',
+//         fontSize: '14px',
+//         fontWeight: '500',
+//       },
+//     });
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+ 
+//   const handleInputChange = (field, value) => {
+//     setFormData({ ...formData, [field]: value });
+//     if (errors[field]) {
+//       setErrors({ ...errors, [field]: '' });
+//     }
 //   };
 
 //   const PasswordRequirement = ({ label, met }) => (
@@ -217,7 +658,7 @@
 //             </div>
 //           </div>
 //           <div className="hidden md:flex items-center space-x-2">
-//             <div className="bg-gradient-to-r from-teal-600 to-emerald-600  size-12 rounded-xl flex items-center justify-center">
+//             <div className="bg-gradient-to-r from-teal-600 to-emerald-600 size-12 rounded-xl flex items-center justify-center">
 //               <UserPlus className="size-6 text-white" />
 //             </div>
 //           </div>
@@ -231,6 +672,7 @@
 //             <form onSubmit={handleSubmit} className="space-y-6">
 //               {/* Basic Information */}
 //               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//                 {/* Name Field */}
 //                 <div>
 //                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
 //                     Full Name *
@@ -240,14 +682,23 @@
 //                     <input
 //                       type="text"
 //                       value={formData.name}
-//                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-//                       className="w-full pl-10 pr-3 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
+//                       onChange={(e) => handleInputChange('name', e.target.value)}
+//                       className={`w-full pl-10 pr-3 py-3 rounded-lg border ${
+//                         errors.name 
+//                           ? 'border-red-500 focus:ring-red-500' 
+//                           : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
+//                       } bg-white dark:bg-gray-700 focus:ring-2 focus:border-transparent outline-none text-gray-900 dark:text-white`}
 //                       placeholder="John Doe"
-//                       required
 //                     />
 //                   </div>
+//                   {errors.name && (
+//                     <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+//                       {errors.name}
+//                     </p>
+//                   )}
 //                 </div>
 
+//                 {/* Email Field */}
 //                 <div>
 //                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
 //                     Email Address *
@@ -257,14 +708,23 @@
 //                     <input
 //                       type="email"
 //                       value={formData.email}
-//                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-//                       className="w-full pl-10 pr-3 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
+//                       onChange={(e) => handleInputChange('email', e.target.value)}
+//                       className={`w-full pl-10 pr-3 py-3 rounded-lg border ${
+//                         errors.email 
+//                           ? 'border-red-500 focus:ring-red-500' 
+//                           : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
+//                       } bg-white dark:bg-gray-700 focus:ring-2 focus:border-transparent outline-none text-gray-900 dark:text-white`}
 //                       placeholder="client@example.com"
-//                       required
 //                     />
 //                   </div>
+//                   {errors.email && (
+//                     <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+//                       {errors.email}
+//                     </p>
+//                   )}
 //                 </div>
 
+//                 {/* Phone Field */}
 //                 <div>
 //                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
 //                     Phone Number (Optional)
@@ -274,21 +734,28 @@
 //                     <input
 //                       type="tel"
 //                       value={formData.phone}
-//                       onChange={(e) => setFormData({ 
-//                         ...formData, 
-//                         phone: formatPhoneNumber(e.target.value) 
-//                       })}
-//                       className="w-full pl-10 pr-3 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
-//                       placeholder="(123) 456-7890"
+//                       onChange={(e) => handleInputChange('phone', e.target.value)}
+//                       className={`w-full pl-10 pr-3 py-3 rounded-lg border ${
+//                         errors.phone 
+//                           ? 'border-red-500 focus:ring-red-500' 
+//                           : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
+//                       } bg-white dark:bg-gray-700 focus:ring-2 focus:border-transparent outline-none text-gray-900 dark:text-white`}
+//                       placeholder="1234567890"
 //                     />
 //                   </div>
-//                   {formData.phone && (
+//                   {errors.phone && (
+//                     <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+//                       {errors.phone}
+//                     </p>
+//                   )}
+//                   {!errors.phone && formData.phone && (
 //                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-//                       Format: (123) 456-7890
+//                       Enter numbers only (no spaces or dashes)
 //                     </p>
 //                   )}
 //                 </div>
 
+//                 {/* Password Field */}
 //                 <div>
 //                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
 //                     Password *
@@ -301,9 +768,12 @@
 //                       onChange={(e) => handlePasswordChange(e.target.value)}
 //                       onFocus={handlePasswordFocus}
 //                       onBlur={handlePasswordBlur}
-//                       className="w-full pl-10 pr-10 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
+//                       className={`w-full pl-10 pr-10 py-3 rounded-lg border ${
+//                         errors.password 
+//                           ? 'border-red-500 focus:ring-red-500' 
+//                           : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
+//                       } bg-white dark:bg-gray-700 focus:ring-2 focus:border-transparent outline-none text-gray-900 dark:text-white`}
 //                       placeholder="••••••••"
-//                       required
 //                       minLength="8"
 //                     />
 //                     <button
@@ -314,6 +784,11 @@
 //                       {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
 //                     </button>
 //                   </div>
+//                   {errors.password && (
+//                     <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+//                       {errors.password}
+//                     </p>
+//                   )}
                   
 //                   {/* Password Requirements */}
 //                   {showPasswordRequirements && formData.password && (
@@ -330,6 +805,7 @@
 //                   )}
 //                 </div>
 
+//                 {/* Confirm Password Field */}
 //                 <div>
 //                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
 //                     Confirm Password *
@@ -339,10 +815,13 @@
 //                     <input
 //                       type={showConfirmPassword ? 'text' : 'password'}
 //                       value={formData.confirmPassword}
-//                       onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-//                       className="w-full pl-10 pr-10 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 dark:text-white"
+//                       onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+//                       className={`w-full pl-10 pr-10 py-3 rounded-lg border ${
+//                         errors.confirmPassword 
+//                           ? 'border-red-500 focus:ring-red-500' 
+//                           : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
+//                       } bg-white dark:bg-gray-700 focus:ring-2 focus:border-transparent outline-none text-gray-900 dark:text-white`}
 //                       placeholder="••••••••"
-//                       required
 //                     />
 //                     <button
 //                       type="button"
@@ -352,7 +831,11 @@
 //                       {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
 //                     </button>
 //                   </div>
-//                   {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+//                   {errors.confirmPassword ? (
+//                     <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+//                       {errors.confirmPassword}
+//                     </p>
+//                   ) : formData.confirmPassword && formData.password !== formData.confirmPassword && (
 //                     <p className="mt-1 text-xs text-red-600 dark:text-red-400">
 //                       Passwords do not match
 //                     </p>
@@ -379,6 +862,9 @@
 //                     </>
 //                   )}
 //                 </button>
+               
+
+                
                 
 //                 <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3">
 //                   Client will be able to book appointments immediately
@@ -401,10 +887,7 @@
 //                 <div className="size-1.5 rounded-full bg-blue-500 mt-1.5 mr-3 flex-shrink-0"></div>
 //                 <span><strong>Clients</strong> can book appointments and manage their bookings through the client portal.</span>
 //               </li>
-//               <li className="flex items-start">
-//                 <div className="size-1.5 rounded-full bg-purple-500 mt-1.5 mr-3 flex-shrink-0"></div>
-//                 <span>Clients will receive their login credentials after account creation.</span>
-//               </li>
+             
 //               <li className="flex items-start">
 //                 <div className="size-1.5 rounded-full bg-green-500 mt-1.5 mr-3 flex-shrink-0"></div>
 //                 <span>Clients can update their profile information after logging in.</span>
@@ -441,76 +924,13 @@
 //             </div>
 //           </div>
 
-//           {/* Recent Clients */}
-//           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-//             <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
-//               Recently Added Clients
-//             </h3>
-//             <div className="space-y-3">
-//               {[
-//                 { name: 'Alex Johnson', email: 'alex@example.com', date: 'Today' },
-//                 { name: 'Maria Garcia', email: 'maria@example.com', date: 'Yesterday' },
-//                 { name: 'David Wilson', email: 'david@example.com', date: '2 days ago' }
-//               ].map((client, index) => (
-//                 <div key={index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-//                   <div className="size-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-//                     {client.name.charAt(0)}
-//                   </div>
-//                   <div className="flex-1 min-w-0">
-//                     <h4 className="font-medium text-gray-900 dark:text-white truncate">{client.name}</h4>
-//                     <div className="flex items-center justify-between mt-1">
-//                       <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{client.email}</p>
-//                       <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full whitespace-nowrap">
-//                         {client.date}
-//                       </span>
-//                     </div>
-//                   </div>
-//                 </div>
-//               ))}
-//             </div>
-//             <Link
-//               href="/admin/clients"
-//               className="mt-4 inline-flex items-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-//             >
-//               View all clients
-//               <svg className="size-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-//                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-//               </svg>
-//             </Link>
-//           </div>
+       
 
-//           {/* Help Tips */}
-//           <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl p-6 border border-green-100 dark:border-green-800/30">
-//             <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
-//               💡 Helpful Tips
-//             </h3>
-//             <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-//               <li className="flex items-start">
-//                 <div className="size-1.5 rounded-full bg-green-500 mt-1.5 mr-3 flex-shrink-0"></div>
-//                 <span>Use client's primary email address for communication</span>
-//               </li>
-//               <li className="flex items-start">
-//                 <div className="size-1.5 rounded-full bg-blue-500 mt-1.5 mr-3 flex-shrink-0"></div>
-//                 <span>Phone number is optional but helps with appointment reminders</span>
-//               </li>
-//               <li className="flex items-start">
-//                 <div className="size-1.5 rounded-full bg-purple-500 mt-1.5 mr-3 flex-shrink-0"></div>
-//                 <span>Use strong passwords to ensure account security</span>
-//               </li>
-//               <li className="flex items-start">
-//                 <div className="size-1.5 rounded-full bg-orange-500 mt-1.5 mr-3 flex-shrink-0"></div>
-//                 <span>Clients can reset their password after first login</span>
-//               </li>
-//             </ul>
-//           </div>
 //         </div>
 //       </div>
 //     </div>
 //   );
 // }
-
-
-
 
 
 // src/app/admin/createClient/page.js
@@ -519,7 +939,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import toast from 'react-hot-toast';
+import { Toaster, toast } from 'sonner';
 import { 
   User, 
   Mail, 
@@ -529,8 +949,9 @@ import {
   Phone, 
   UserPlus,
   ArrowLeft,
-  Check,
-  X
+  CalendarDays,
+  MapPin,
+  UserCircle
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -547,6 +968,9 @@ export default function CreateClientPage() {
     phone: '',
     password: '',
     confirmPassword: '',
+    dateOfBirth: '',
+    gender: '',
+    address: '',
   });
 
   const [errors, setErrors] = useState({
@@ -555,6 +979,9 @@ export default function CreateClientPage() {
     phone: '',
     password: '',
     confirmPassword: '',
+    dateOfBirth: '',
+    gender: '',
+    address: '',
   });
 
   const [passwordStrength, setPasswordStrength] = useState({
@@ -638,16 +1065,32 @@ export default function CreateClientPage() {
 
     // Phone validation (optional)
     if (formData.phone && formData.phone.trim()) {
-      const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
       const digitsOnly = formData.phone.replace(/\D/g, '');
       
       if (digitsOnly.length < 10) {
         newErrors.phone = 'Phone number must be at least 10 digits';
         hasError = true;
-      } else if (!phoneRegex.test(digitsOnly)) {
-        newErrors.phone = 'Please enter a valid phone number';
+      }
+    }
+
+    // Date of Birth validation (required)
+    if (!formData.dateOfBirth) {
+      newErrors.dateOfBirth = 'Date of birth is required';
+      hasError = true;
+    } else {
+      const today = new Date();
+      const birthDate = new Date(formData.dateOfBirth);
+      
+      if (birthDate > today) {
+        newErrors.dateOfBirth = 'Date of birth cannot be in the future';
         hasError = true;
       }
+    }
+
+    // Gender validation (required)
+    if (!formData.gender) {
+      newErrors.gender = 'Gender is required';
+      hasError = true;
     }
 
     // Password validation
@@ -676,458 +1119,204 @@ export default function CreateClientPage() {
     return { isValid: !hasError, errors: newErrors };
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     
-  //   // Validate form and get validation result
-  //   const validation = validateForm();
+    // Validate form and get validation result
+    const validation = validateForm();
     
-  //   if (!validation.isValid) {
-  //     // Show specific error toasts based on which fields have errors
-  //     const errorFields = Object.entries(validation.errors).filter(([field, error]) => error !== '');
+    if (!validation.isValid) {
+      // Show specific error toasts based on which fields have errors
+      const errorFields = Object.entries(validation.errors).filter(([field, error]) => error !== '');
       
-  //     if (errorFields.length > 0) {
-  //       // Show toast for the first error found
-  //       const [firstField, firstError] = errorFields[0];
+      if (errorFields.length > 0) {
+        // Show toast for the first error found
+        const [firstField, firstError] = errorFields[0];
         
-  //       // Custom toast messages based on field
-  //       let toastMessage = '';
+        // Custom toast messages based on field
+        let toastMessage = '';
         
-  //       if (firstField === 'name') {
-  //         toastMessage = firstError.includes('required') 
-  //           ? 'Please enter client name' 
-  //           : 'Name must be at least 2 characters';
-  //       } else if (firstField === 'email') {
-  //         toastMessage = firstError.includes('required') 
-  //           ? 'Please enter email address' 
-  //           : 'Please enter a valid email address';
-  //       } else if (firstField === 'phone') {
-  //         toastMessage = 'Please enter a valid phone number (10+ digits)';
-  //       } else if (firstField === 'password') {
-  //         toastMessage = firstError.includes('required') 
-  //           ? 'Please enter a password' 
-  //           : 'Password must meet all requirements';
-  //       } else if (firstField === 'confirmPassword') {
-  //         toastMessage = firstError.includes('match') 
-  //           ? 'Passwords do not match' 
-  //           : 'Please confirm your password';
-  //       } else {
-  //         toastMessage = 'Please fix the errors in the form';
-  //       }
-        
-  //       toast.error(toastMessage);
-  //     }
-  //     return;
-  //   }
-    
-  //   setLoading(true);
-    
-  //   try {
-  //     const token = localStorage.getItem('token');
-  //     const currentUser = JSON.parse(localStorage.getItem('user'));
-      
-  //     if (!token || !currentUser) {
-  //       toast.error('Please login first');
-  //       router.push('/signin');
-  //       setLoading(false);
-  //       return;
-  //     }
-      
-  //     if (currentUser.role !== 'admin') {
-  //       toast.error('Only admins can create client accounts');
-  //       setLoading(false);
-  //       return;
-  //     }
-      
-  //     // Clean phone number - remove all non-digits
-  //     const phoneDigits = formData.phone ? formData.phone.replace(/\D/g, '') : '';
-      
-  //     const response = await axios.post('http://localhost:5000/api/admin/users', {
-  //       name: formData.name.trim(),
-  //       email: formData.email.trim(),
-  //       phone: phoneDigits,
-  //       password: formData.password,
-  //       role: 'client'
-  //     }, {
-  //       headers: {
-  //         'Authorization': `Bearer ${token}`
-  //       }
-  //     });
-      
-  //     if (response.data.success) {
-  //       toast.success('Client account created successfully!');
-        
-  //       // Reset form
-  //       setFormData({
-  //         name: '',
-  //         email: '',
-  //         phone: '',
-  //         password: '',
-  //         confirmPassword: '',
-  //       });
-        
-  //       // Reset errors
-  //       setErrors({
-  //         name: '',
-  //         email: '',
-  //         phone: '',
-  //         password: '',
-  //         confirmPassword: '',
-  //       });
-        
-  //       // Reset password strength
-  //       setPasswordStrength({
-  //         length: false,
-  //         uppercase: false,
-  //         lowercase: false,
-  //         number: false,
-  //         special: false,
-  //       });
-  //       setShowPasswordRequirements(false);
-        
-  //       // Redirect to view clients page after 1.5 seconds
-  //       setTimeout(() => {
-  //         router.push('/admin/viewClients');
-  //       }, 1500);
-  //     } else {
-  //       toast.error(response.data.message || 'Failed to create client account');
-  //     }
-  //   } catch (error) {
-  //     console.error('Create client error:', error);
-      
-  //     // Better error handling with specific messages
-  //     if (error.response) {
-  //       const errorMessage = error.response.data?.message || 
-  //                          error.response.data?.error || 
-  //                          'Failed to create client account';
-        
-  //       if (error.response.status === 409) {
-  //         toast.error('A client with this email already exists');
-  //         setErrors({ ...errors, email: 'This email is already registered' });
-  //       } else if (error.response.status === 401) {
-  //         toast.error('Session expired. Please login again');
-  //         router.push('/signin');
-  //       } else if (error.response.status === 403) {
-  //         toast.error('You do not have permission to create client accounts');
-  //       } else if (error.response.status === 400) {
-  //         // Handle validation errors from backend
-  //         if (error.response.data.errors) {
-  //           const backendErrors = error.response.data.errors;
-  //           let newErrors = { ...errors };
-  //           let backendErrorMsg = '';
-            
-  //           if (backendErrors.name) {
-  //             newErrors.name = backendErrors.name;
-  //             backendErrorMsg = 'Name: ' + backendErrors.name;
-  //           }
-  //           if (backendErrors.email) {
-  //             newErrors.email = backendErrors.email;
-  //             backendErrorMsg = backendErrorMsg ? backendErrorMsg + ', Email: ' + backendErrors.email : 'Email: ' + backendErrors.email;
-  //           }
-  //           if (backendErrors.phone) {
-  //             newErrors.phone = backendErrors.phone;
-  //             backendErrorMsg = backendErrorMsg ? backendErrorMsg + ', Phone: ' + backendErrors.phone : 'Phone: ' + backendErrors.phone;
-  //           }
-  //           if (backendErrors.password) {
-  //             newErrors.password = backendErrors.password;
-  //             backendErrorMsg = backendErrorMsg ? backendErrorMsg + ', Password: ' + backendErrors.password : 'Password: ' + backendErrors.password;
-  //           }
-            
-  //           setErrors(newErrors);
-  //           toast.error(backendErrorMsg || 'Please fix the validation errors');
-  //         } else {
-  //           toast.error(errorMessage);
-  //         }
-  //       } else {
-  //         toast.error(errorMessage);
-  //       }
-  //     } else if (error.request) {
-  //       toast.error('No response from server. Please check your connection');
-  //     } else {
-  //       toast.error('Error: ' + error.message);
-  //     }
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // Clear error when user starts typing in a field
- 
-
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  console.log('Form submitted - Checking validation');
-  console.log('Toast function available:', typeof toast !== 'undefined');
-  
-  // Test toast immediately to verify
-  toast.success('🔄 Form submission started...', {
-    duration: 2000,
-    style: {
-      background: '#3b82f6',
-      color: 'white',
-      padding: '16px',
-      borderRadius: '8px',
-      fontSize: '14px',
-      fontWeight: '500',
-    },
-  });
-  
-  // Validate form and get validation result
-  const validation = validateForm();
-  console.log('Validation errors:', validation.errors);
-  
-  if (!validation.isValid) {
-    console.log('Form validation failed');
-    
-    // Show all validation errors as one toast
-    const errorMessages = Object.entries(validation.errors)
-      .filter(([_, error]) => error !== '')
-      .map(([field, error]) => `${field}: ${error}`);
-    
-    if (errorMessages.length > 0) {
-      toast.error(`Please fix the following errors:\n• ${errorMessages.join('\n• ')}`, {
-        duration: 5000,
-        style: {
-          background: '#ef4444',
-          color: 'white',
-          padding: '16px',
-          borderRadius: '8px',
-          fontSize: '14px',
-          fontWeight: '500',
-          maxWidth: '500px',
-          whiteSpace: 'pre-line',
-        },
-      });
-    }
-    
-    return;
-  }
-  
-  setLoading(true);
-  
-  // Show loading toast
-  const loadingToastId = toast.loading('Creating client account...', {
-    style: {
-      background: '#3b82f6',
-      color: 'white',
-      padding: '16px',
-      borderRadius: '8px',
-      fontSize: '14px',
-      fontWeight: '500',
-    },
-  });
-  
-  try {
-    const token = localStorage.getItem('token');
-    const currentUser = JSON.parse(localStorage.getItem('user'));
-    
-    if (!token || !currentUser) {
-      toast.dismiss(loadingToastId);
-      toast.error('Please login first to create client accounts', {
-        duration: 4000,
-        style: {
-          background: '#ef4444',
-          color: 'white',
-          padding: '16px',
-          borderRadius: '8px',
-          fontSize: '14px',
-          fontWeight: '500',
-        },
-      });
-      router.push('/signin');
-      setLoading(false);
-      return;
-    }
-    
-    if (currentUser.role !== 'admin') {
-      toast.dismiss(loadingToastId);
-      toast.error('Only administrators can create client accounts', {
-        duration: 4000,
-        style: {
-          background: '#ef4444',
-          color: 'white',
-          padding: '16px',
-          borderRadius: '8px',
-          fontSize: '14px',
-          fontWeight: '500',
-        },
-      });
-      setLoading(false);
-      return;
-    }
-    
-    // Clean phone number - remove all non-digits
-    const phoneDigits = formData.phone ? formData.phone.replace(/\D/g, '') : '';
-    
-    console.log('Sending request to create client...');
-    
-    const response = await axios.post('http://localhost:5000/api/admin/users', {
-      name: formData.name.trim(),
-      email: formData.email.trim(),
-      phone: phoneDigits,
-      password: formData.password,
-      role: 'client'
-    }, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    
-    console.log('Response received:', response.data);
-    
-    if (response.data.success) {
-      // Dismiss loading toast and show success
-      toast.dismiss(loadingToastId);
-      toast.success('✅ Client account created successfully!', {
-        duration: 3000,
-        style: {
-          background: '#10b981',
-          color: 'white',
-          padding: '16px',
-          borderRadius: '8px',
-          fontSize: '14px',
-          fontWeight: '500',
-        },
-      });
-      
-      // Reset form
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        password: '',
-        confirmPassword: '',
-      });
-      
-      // Reset errors
-      setErrors({
-        name: '',
-        email: '',
-        phone: '',
-        password: '',
-        confirmPassword: '',
-      });
-      
-      // Reset password strength
-      setPasswordStrength({
-        length: false,
-        uppercase: false,
-        lowercase: false,
-        number: false,
-        special: false,
-      });
-      setShowPasswordRequirements(false);
-      
-      // Show redirect toast after 1 second
-      setTimeout(() => {
-        toast.success('✅ Redirecting to clients list...', {
-          duration: 2000,
-          style: {
-            background: '#10b981',
-            color: 'white',
-            padding: '16px',
-            borderRadius: '8px',
-            fontSize: '14px',
-            fontWeight: '500',
-          },
-        });
-      }, 1000);
-      
-      // Redirect to view clients page after 2.5 seconds
-      setTimeout(() => {
-        router.push('/admin/viewClients');
-      }, 2500);
-    } else {
-      toast.dismiss(loadingToastId);
-      toast.error(response.data.message || 'Failed to create client account', {
-        duration: 4000,
-        style: {
-          background: '#ef4444',
-          color: 'white',
-          padding: '16px',
-          borderRadius: '8px',
-          fontSize: '14px',
-          fontWeight: '500',
-        },
-      });
-    }
-  } catch (error) {
-    console.error('Create client error:', error);
-    
-    // Dismiss loading toast
-    toast.dismiss(loadingToastId);
-    
-    let errorMessage = 'An unexpected error occurred';
-    
-    if (error.response) {
-      console.log('Error response:', error.response);
-      
-      if (error.response.status === 409) {
-        errorMessage = 'A client with this email already exists';
-        setErrors({ ...errors, email: 'This email is already registered' });
-      } else if (error.response.status === 401) {
-        errorMessage = 'Session expired. Please login again';
-        router.push('/signin');
-      } else if (error.response.status === 403) {
-        errorMessage = 'You do not have permission to create client accounts';
-      } else if (error.response.status === 400) {
-        if (error.response.data.errors) {
-          const backendErrors = error.response.data.errors;
-          let newErrors = { ...errors };
-          
-          if (backendErrors.name) {
-            newErrors.name = backendErrors.name;
-            errorMessage = `Name: ${backendErrors.name}`;
-          }
-          if (backendErrors.email) {
-            newErrors.email = backendErrors.email;
-            errorMessage = errorMessage.includes('Name:') 
-              ? `${errorMessage}, Email: ${backendErrors.email}`
-              : `Email: ${backendErrors.email}`;
-          }
-          if (backendErrors.phone) {
-            newErrors.phone = backendErrors.phone;
-            errorMessage = errorMessage.includes('Email:') || errorMessage.includes('Name:')
-              ? `${errorMessage}, Phone: ${backendErrors.phone}`
-              : `Phone: ${backendErrors.phone}`;
-          }
-          if (backendErrors.password) {
-            newErrors.password = backendErrors.password;
-            errorMessage = errorMessage.includes('Phone:') || errorMessage.includes('Email:') || errorMessage.includes('Name:')
-              ? `${errorMessage}, Password: ${backendErrors.password}`
-              : `Password: ${backendErrors.password}`;
-          }
-          
-          setErrors(newErrors);
+        if (firstField === 'name') {
+          toastMessage = firstError.includes('required') 
+            ? 'Please enter client name' 
+            : 'Name must be at least 2 characters';
+        } else if (firstField === 'email') {
+          toastMessage = firstError.includes('required') 
+            ? 'Please enter email address' 
+            : 'Please enter a valid email address';
+        } else if (firstField === 'phone') {
+          toastMessage = 'Please enter a valid phone number (10+ digits)';
+        } else if (firstField === 'dateOfBirth') {
+          toastMessage = firstError.includes('required') 
+            ? 'Please select date of birth' 
+            : 'Date of birth cannot be in the future';
+        } else if (firstField === 'gender') {
+          toastMessage = 'Please select gender';
+        } else if (firstField === 'password') {
+          toastMessage = firstError.includes('required') 
+            ? 'Please enter a password' 
+            : 'Password must meet all requirements';
+        } else if (firstField === 'confirmPassword') {
+          toastMessage = firstError.includes('match') 
+            ? 'Passwords do not match' 
+            : 'Please confirm your password';
         } else {
-          errorMessage = error.response.data.message || 'Invalid data provided';
+          toastMessage = 'Please fix the errors in the form';
         }
-      } else {
-        errorMessage = error.response.data?.message || 'Server error occurred';
+        
+        toast.error(toastMessage);
       }
-    } else if (error.request) {
-      errorMessage = 'No response from server. Please check your connection';
-    } else {
-      errorMessage = error.message;
+      return;
     }
     
-    toast.error(`❌ ${errorMessage}`, {
-      duration: 5000,
-      style: {
-        background: '#ef4444',
-        color: 'white',
-        padding: '16px',
-        borderRadius: '8px',
-        fontSize: '14px',
-        fontWeight: '500',
-      },
-    });
-  } finally {
-    setLoading(false);
-  }
-};
- 
+    setLoading(true);
+    
+    try {
+      const token = localStorage.getItem('token');
+      const currentUser = JSON.parse(localStorage.getItem('user'));
+      
+      if (!token || !currentUser) {
+        toast.error('Please login first');
+        router.push('/signin');
+        setLoading(false);
+        return;
+      }
+      
+      if (currentUser.role !== 'admin') {
+        toast.error('Only admins can create client accounts');
+        setLoading(false);
+        return;
+      }
+      
+      // Clean phone number - remove all non-digits
+      const phoneDigits = formData.phone ? formData.phone.replace(/\D/g, '') : '';
+      
+      const response = await axios.post('http://localhost:5000/api/admin/users', {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: phoneDigits,
+        password: formData.password,
+        dateOfBirth: formData.dateOfBirth,
+        gender: formData.gender,
+        address: formData.address || '',
+        role: 'client'
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.data.success) {
+        toast.success('Client account created successfully!');
+        
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          password: '',
+          confirmPassword: '',
+          dateOfBirth: '',
+          gender: '',
+          address: '',
+        });
+        
+        // Reset errors
+        setErrors({
+          name: '',
+          email: '',
+          phone: '',
+          password: '',
+          confirmPassword: '',
+          dateOfBirth: '',
+          gender: '',
+          address: '',
+        });
+        
+        // Reset password strength
+        setPasswordStrength({
+          length: false,
+          uppercase: false,
+          lowercase: false,
+          number: false,
+          special: false,
+        });
+        setShowPasswordRequirements(false);
+        
+        // Redirect to view clients page after 1.5 seconds
+        setTimeout(() => {
+          router.push('/admin/viewClients');
+        }, 1500);
+      } else {
+        toast.error(response.data.message || 'Failed to create client account');
+      }
+    } catch (error) {
+      console.error('Create client error:', error);
+      
+      // Better error handling with specific messages
+      if (error.response) {
+        const errorMessage = error.response.data?.message || 
+                           error.response.data?.error || 
+                           'Failed to create client account';
+        
+        if (error.response.status === 409) {
+          toast.error('A client with this email already exists');
+          setErrors({ ...errors, email: 'This email is already registered' });
+        } else if (error.response.status === 401) {
+          toast.error('Session expired. Please login again');
+          router.push('/signin');
+        } else if (error.response.status === 403) {
+          toast.error('You do not have permission to create client accounts');
+        } else if (error.response.status === 400) {
+          // Handle validation errors from backend
+          if (error.response.data.errors) {
+            const backendErrors = error.response.data.errors;
+            let newErrors = { ...errors };
+            let backendErrorMsg = '';
+            
+            if (backendErrors.name) {
+              newErrors.name = backendErrors.name;
+              backendErrorMsg = 'Name: ' + backendErrors.name;
+            }
+            if (backendErrors.email) {
+              newErrors.email = backendErrors.email;
+              backendErrorMsg = backendErrorMsg ? backendErrorMsg + ', Email: ' + backendErrors.email : 'Email: ' + backendErrors.email;
+            }
+            if (backendErrors.phone) {
+              newErrors.phone = backendErrors.phone;
+              backendErrorMsg = backendErrorMsg ? backendErrorMsg + ', Phone: ' + backendErrors.phone : 'Phone: ' + backendErrors.phone;
+            }
+            if (backendErrors.dateOfBirth) {
+              newErrors.dateOfBirth = backendErrors.dateOfBirth;
+              backendErrorMsg = backendErrorMsg ? backendErrorMsg + ', Date of Birth: ' + backendErrors.dateOfBirth : 'Date of Birth: ' + backendErrors.dateOfBirth;
+            }
+            if (backendErrors.gender) {
+              newErrors.gender = backendErrors.gender;
+              backendErrorMsg = backendErrorMsg ? backendErrorMsg + ', Gender: ' + backendErrors.gender : 'Gender: ' + backendErrors.gender;
+            }
+            if (backendErrors.password) {
+              newErrors.password = backendErrors.password;
+              backendErrorMsg = backendErrorMsg ? backendErrorMsg + ', Password: ' + backendErrors.password : 'Password: ' + backendErrors.password;
+            }
+            
+            setErrors(newErrors);
+            toast.error(backendErrorMsg || 'Please fix the validation errors');
+          } else {
+            toast.error(errorMessage);
+          }
+        } else {
+          toast.error(errorMessage);
+        }
+      } else if (error.request) {
+        toast.error('No response from server. Please check your connection');
+      } else {
+        toast.error('Error: ' + error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleInputChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
     if (errors[field]) {
@@ -1138,9 +1327,9 @@ const handleSubmit = async (e) => {
   const PasswordRequirement = ({ label, met }) => (
     <div className="flex items-center space-x-2">
       {met ? (
-        <Check className="size-4 text-green-500" />
+        <div className="size-2 rounded-full bg-green-500"></div>
       ) : (
-        <X className="size-4 text-red-400" />
+        <div className="size-2 rounded-full bg-red-500"></div>
       )}
       <span className={`text-sm ${met ? 'text-green-600' : 'text-red-600'}`}>
         {label}
@@ -1150,6 +1339,19 @@ const handleSubmit = async (e) => {
 
   return (
     <div className="p-6">
+      {/* Sonner Toaster */}
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: 'white',
+            color: 'black',
+            border: '1px solid #e5e7eb',
+          },
+          className: 'font-sans',
+        }}
+      />
+
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
@@ -1264,7 +1466,63 @@ const handleSubmit = async (e) => {
                   )}
                   {!errors.phone && formData.phone && (
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      Enter numbers only (no spaces or dashes)
+                      Enter at least 10 digits
+                    </p>
+                  )}
+                </div>
+
+                {/* Date of Birth Field */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Date of Birth *
+                  </label>
+                  <div className="relative">
+                    <CalendarDays className="absolute left-3 top-3 size-5 text-gray-400" />
+                    <input
+                      type="date"
+                      value={formData.dateOfBirth}
+                      onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                      max={new Date().toISOString().split('T')[0]}
+                      className={`w-full pl-10 pr-3 py-3 rounded-lg border ${
+                        errors.dateOfBirth 
+                          ? 'border-red-500 focus:ring-red-500' 
+                          : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
+                      } bg-white dark:bg-gray-700 focus:ring-2 focus:border-transparent outline-none text-gray-900 dark:text-white`}
+                    />
+                  </div>
+                  {errors.dateOfBirth && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                      {errors.dateOfBirth}
+                    </p>
+                  )}
+                </div>
+
+                {/* Gender Field */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Gender *
+                  </label>
+                  <div className="relative">
+                    <UserCircle className="absolute left-3 top-3 size-5 text-gray-400" />
+                    <select
+                      value={formData.gender}
+                      onChange={(e) => handleInputChange('gender', e.target.value)}
+                      className={`w-full pl-10 pr-3 py-3 rounded-lg border ${
+                        errors.gender 
+                          ? 'border-red-500 focus:ring-red-500' 
+                          : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
+                      } bg-white dark:bg-gray-700 focus:ring-2 focus:border-transparent outline-none text-gray-900 dark:text-white`}
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                      <option value="prefer-not-to-say">Prefer not to say</option>
+                    </select>
+                  </div>
+                  {errors.gender && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                      {errors.gender}
                     </p>
                   )}
                 </div>
@@ -1357,6 +1615,32 @@ const handleSubmit = async (e) => {
                 </div>
               </div>
 
+              {/* Address Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Address (Optional)
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 size-5 text-gray-400" />
+                  <textarea
+                    value={formData.address}
+                    onChange={(e) => handleInputChange('address', e.target.value)}
+                    className={`w-full pl-10 pr-3 py-3 rounded-lg border ${
+                      errors.address 
+                        ? 'border-red-500 focus:ring-red-500' 
+                        : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
+                    } bg-white dark:bg-gray-700 focus:ring-2 focus:border-transparent outline-none text-gray-900 dark:text-white min-h-[80px]`}
+                    placeholder="Enter complete address (House no, Street, City, State, Country)"
+                    rows="3"
+                  />
+                </div>
+                {errors.address && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.address}
+                  </p>
+                )}
+              </div>
+
               {/* Submit Button */}
               <div className="pt-4">
                 <button
@@ -1376,9 +1660,6 @@ const handleSubmit = async (e) => {
                     </>
                   )}
                 </button>
-               
-
-                
                 
                 <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3">
                   Client will be able to book appointments immediately
@@ -1403,7 +1684,7 @@ const handleSubmit = async (e) => {
               </li>
               <li className="flex items-start">
                 <div className="size-1.5 rounded-full bg-purple-500 mt-1.5 mr-3 flex-shrink-0"></div>
-                <span>Clients will receive their login credentials after account creation.</span>
+                <span>Date of birth and gender information helps provide better service.</span>
               </li>
               <li className="flex items-start">
                 <div className="size-1.5 rounded-full bg-green-500 mt-1.5 mr-3 flex-shrink-0"></div>
@@ -1416,90 +1697,28 @@ const handleSubmit = async (e) => {
             </ul>
           </div>
 
-          {/* Quick Stats */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
-              📊 Client Statistics
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">142</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Total Clients</div>
-              </div>
-              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">87</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Active Clients</div>
-              </div>
-              <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">24</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">New This Month</div>
-              </div>
-              <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">92%</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Satisfaction Rate</div>
-              </div>
-            </div>
-          </div>
 
-          {/* Recent Clients */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
-              Recently Added Clients
+          {/* Required Fields Note */}
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/30 rounded-xl p-6">
+            <h3 className="font-semibold text-yellow-800 dark:text-yellow-300 mb-2">
+              ⚠️ Required Information
             </h3>
-            <div className="space-y-3">
-              {[
-                { name: 'Alex Johnson', email: 'alex@example.com', date: 'Today' },
-                { name: 'Maria Garcia', email: 'maria@example.com', date: 'Yesterday' },
-                { name: 'David Wilson', email: 'david@example.com', date: '2 days ago' }
-              ].map((client, index) => (
-                <div key={index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                  <div className="size-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-                    {client.name.charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-gray-900 dark:text-white truncate">{client.name}</h4>
-                    <div className="flex items-center justify-between mt-1">
-                      <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{client.email}</p>
-                      <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full whitespace-nowrap">
-                        {client.date}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <Link
-              href="/admin/viewClients"
-              className="mt-4 inline-flex items-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-            >
-              View all clients
-              <svg className="size-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
-
-          {/* Help Tips */}
-          <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl p-6 border border-green-100 dark:border-green-800/30">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
-              💡 Helpful Tips
-            </h3>
-            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <li className="flex items-start">
-                <div className="size-1.5 rounded-full bg-green-500 mt-1.5 mr-3 flex-shrink-0"></div>
-                <span>Use client's primary email address for communication</span>
+            <ul className="space-y-2 text-sm text-yellow-700 dark:text-yellow-400">
+              <li className="flex items-center">
+                <div className="size-1.5 rounded-full bg-yellow-500 mr-2"></div>
+                <span>All fields marked with * are required</span>
               </li>
-              <li className="flex items-start">
-                <div className="size-1.5 rounded-full bg-blue-500 mt-1.5 mr-3 flex-shrink-0"></div>
-                <span>Phone number is optional but helps with appointment reminders</span>
+              <li className="flex items-center">
+                <div className="size-1.5 rounded-full bg-yellow-500 mr-2"></div>
+                <span>Password must meet all security requirements</span>
               </li>
-              <li className="flex items-start">
-                <div className="size-1.5 rounded-full bg-purple-500 mt-1.5 mr-3 flex-shrink-0"></div>
-                <span>Use strong passwords to ensure account security</span>
+              <li className="flex items-center">
+                <div className="size-1.5 rounded-full bg-yellow-500 mr-2"></div>
+                <span>Date of birth must be valid and not in the future</span>
               </li>
-              <li className="flex items-start">
-                <div className="size-1.5 rounded-full bg-orange-500 mt-1.5 mr-3 flex-shrink-0"></div>
-                <span>Clients can reset their password after first login</span>
+              <li className="flex items-center">
+                <div className="size-1.5 rounded-full bg-yellow-500 mr-2"></div>
+                <span>Phone number is optional but recommended</span>
               </li>
             </ul>
           </div>

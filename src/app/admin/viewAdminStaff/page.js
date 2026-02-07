@@ -661,7 +661,7 @@ export default function ViewStaffPage() {
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all flex items-center"
+                className="px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-semibold rounded-lg hover:from-teal-700 hover:to-teal-700 transition-all flex items-center"
               >
                 <Save className="size-4 mr-2" />
                 Update {editingStaff.role === 'admin' ? 'Admin' : 'Staff'}

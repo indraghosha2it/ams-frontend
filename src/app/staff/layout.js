@@ -131,7 +131,7 @@ export default function StaffLayout({ children }) {
               </div>
               {sidebarOpen && (
                 <div>
-                  <h1 className="text-lg font-bold text-gray-900 dark:text-white">ScheduleFlow</h1>
+                  <h1 className="text-lg font-bold text-gray-900 dark:text-white">DocScheduler</h1>
                   <p className="text-xs text-gray-500 dark:text-gray-400">Staff Portal</p>
                 </div>
               )}
@@ -318,7 +318,7 @@ export default function StaffLayout({ children }) {
         <footer className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-4">
           <div className="justify-items-center items-center justify-between">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              © {new Date().getFullYear()} ScheduleFlow Staff Portal. All rights reserved.
+              © {new Date().getFullYear()} DocScheduler Staff Portal. All rights reserved.
             </p>
          
           </div>

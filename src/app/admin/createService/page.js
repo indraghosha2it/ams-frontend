@@ -1600,7 +1600,7 @@ const handleSubmit = async (e) => {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
-                    Designation *
+                    Designation * / Degree *
                   </label>
                   <input
                     type="text"

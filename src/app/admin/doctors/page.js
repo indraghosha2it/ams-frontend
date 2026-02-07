@@ -713,8 +713,9 @@ const DoctorsPage = () => {
                     <div className="flex justify-between items-center mb-2">
                       <div>
                         <p className="text-xs text-slate-500 uppercase font-semibold">Available Slots</p>
-                        <p className="text-2xl font-bold text-slate-900">{doctor.timeSlots?.length || 0}</p>
-                      </div>
+  <p className="text-2xl font-bold text-slate-900">
+        {doctor.timeSlots?.filter(slot => slot.status === 'available').length || 0}
+      </p>                      </div>
                       <button
                         onClick={() => generateSlots(doctor._id)}
                         className={`px-3 py-1.5 text-xs rounded-lg flex items-center gap-2 font-medium transition-all ${
