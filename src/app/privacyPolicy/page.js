@@ -54,13 +54,13 @@ export default function PrivacyPolicy() {
             {/* CTA Buttons */}
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => router.push('/')}
+                onClick={() => router.push('/signin')}
                 className="group relative px-6 py-2.5 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-medium hover:from-teal-700 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
               >
                 <span className="flex items-center">
                <ArrowLeft className="ml-2 size-4 group-hover:translate-x-1 transition-transform" />
 
-                Back to Home
+               Sign In
                 </span>
               </button>
             </div>

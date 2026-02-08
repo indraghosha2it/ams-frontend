@@ -203,7 +203,7 @@ const BookApp = () => {
                 <div key={doctor._id} className="flex flex-col h-full">
                   <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-200 hover:shadow-2xl transition-all duration-300 flex flex-col h-full">
                     {/* Doctor Image - Fixed Height */}
-                    <div className="relative h-48 bg-white">
+                    <div className="relative h-72 bg-white">
                       {doctor.image?.url ? (
                         <img 
                           src={doctor.image.url} 

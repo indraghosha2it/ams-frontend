@@ -59,7 +59,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "AppointmentPro - Professional Appointment Management",
+  title: "DocScheduler - Professional Appointment Management",
   description: "Streamline your appointments with our professional management system",
 };
 

@@ -634,7 +634,7 @@ const DoctorsPage = () => {
               <div key={doctor._id} className="bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 {/* Doctor Header - Square Image */}
                 <div className="relative">
-                  <div className="h-56 bg-white flex items-center justify-center">
+                  <div className="h-72 bg-white flex items-center justify-center">
                     {doctor.image?.url ? (
                       <img 
                         src={doctor.image.url} 
