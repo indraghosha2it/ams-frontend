@@ -378,6 +378,7 @@ import {
   Building2,
   Shield
 } from 'lucide-react';
+import RouteGuard from '../components/RouteGuard';
 
 export default function ClientLayout({ children }) {
   const router = useRouter();
@@ -472,6 +473,7 @@ export default function ClientLayout({ children }) {
   }
 
   return (
+      <RouteGuard allowedRoles={['client']}>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50 dark:from-gray-900 dark:to-gray-800">
       {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-xl border-r border-slate-200 dark:border-gray-700 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'}`}>
@@ -663,5 +665,6 @@ export default function ClientLayout({ children }) {
         </footer>
       </main>
     </div>
+    </RouteGuard>
   );
 }

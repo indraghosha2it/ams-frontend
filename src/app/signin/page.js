@@ -188,7 +188,7 @@
 //     setLoading(true);
     
 //     try {
-//       const response = await axios.post('http://localhost:5000/api/auth/login', loginData);
+//       const response = await axios.post('https://ams-backend-psi.vercel.app/api/auth/login', loginData);
       
 //       if (response.data.success) {
 //         // Show success toast that disappears after 3 seconds
@@ -296,7 +296,7 @@
 //     setLoading(true);
     
 //     try {
-//       const response = await axios.post('http://localhost:5000/api/auth/register/client', {
+//       const response = await axios.post('https://ams-backend-psi.vercel.app/api/auth/register/client', {
 //         name: registerData.name,
 //         email: registerData.email,
 //         phone: registerData.phone ? registerData.phone : '',
@@ -993,7 +993,7 @@ export default function SignInPage() {
     setLoading(true);
     
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', loginData);
+      const response = await axios.post('https://ams-backend-psi.vercel.app/api/auth/login', loginData);
       
       if (response.data.success) {
         toast.success('Welcome back!');
@@ -1086,7 +1086,7 @@ export default function SignInPage() {
     setLoading(true);
     
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register/client', {
+      const response = await axios.post('https://ams-backend-psi.vercel.app/api/auth/register/client', {
         name: registerData.name,
         email: registerData.email,
         phone: registerData.phone ? registerData.phone : '',

@@ -77,7 +77,7 @@ const StaffRescheduleAppointmentPage = () => {
   const fetchAppointmentDetails = async () => {
     try {
       setLoading(true);
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       const token = localStorage.getItem('token');
       
       // Fetch appointment details
@@ -107,7 +107,7 @@ const StaffRescheduleAppointmentPage = () => {
 
   const fetchDoctorAndSlots = async (doctorId, existingDate = null) => {
     try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       const token = localStorage.getItem('token');
       
       // Fetch doctor details
@@ -130,7 +130,7 @@ const StaffRescheduleAppointmentPage = () => {
 
   const fetchAvailableSlots = async (doctorId, existingDate = null) => {
     try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       const token = localStorage.getItem('token');
       
       const response = await axios.get(
@@ -338,7 +338,7 @@ const StaffRescheduleAppointmentPage = () => {
   //   setSubmitting(true);
     
   //   try {
-  //     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+  //     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
   //     const token = localStorage.getItem('token');
   //     const doctorId = appointment.doctorId._id || appointment.doctorId;
       
@@ -455,7 +455,7 @@ const handleReschedule = async () => {
     setSubmitting(true);
     
     try {
-        const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+        const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
         const token = localStorage.getItem('token');
         const doctorId = appointment.doctorId._id || appointment.doctorId;
         
@@ -591,7 +591,7 @@ const handleReschedule = async () => {
     if (!doctor) return;
     
     try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       const token = localStorage.getItem('token');
       
       toast.loading('Refreshing available slots...', { id: 'refresh' });

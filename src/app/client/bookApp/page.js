@@ -33,7 +33,7 @@ const BookApp = () => {
 
   const fetchDoctors = async () => {
     try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       const response = await axios.get(`${BACKEND_URL}/api/doctors`);
       
       if (response.data.success) {

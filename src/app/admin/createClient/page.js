@@ -228,7 +228,7 @@
 //   //     // Clean phone number - remove all non-digits
 //   //     const phoneDigits = formData.phone ? formData.phone.replace(/\D/g, '') : '';
       
-//   //     const response = await axios.post('http://localhost:5000/api/admin/users', {
+//   //     const response = await axios.post('https://ams-backend-psi.vercel.app/api/admin/users', {
 //   //       name: formData.name.trim(),
 //   //       email: formData.email.trim(),
 //   //       phone: phoneDigits,
@@ -448,7 +448,7 @@
     
 //     console.log('Sending request to create client...');
     
-//     const response = await axios.post('http://localhost:5000/api/admin/users', {
+//     const response = await axios.post('https://ams-backend-psi.vercel.app/api/admin/users', {
 //       name: formData.name.trim(),
 //       email: formData.email.trim(),
 //       phone: phoneDigits,
@@ -1191,7 +1191,7 @@ export default function CreateClientPage() {
       // Clean phone number - remove all non-digits
       const phoneDigits = formData.phone ? formData.phone.replace(/\D/g, '') : '';
       
-      const response = await axios.post('http://localhost:5000/api/admin/users', {
+      const response = await axios.post('https://ams-backend-psi.vercel.app/api/admin/users', {
         name: formData.name.trim(),
         email: formData.email.trim(),
         phone: phoneDigits,

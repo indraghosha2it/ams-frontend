@@ -71,7 +71,7 @@
 //         return;
 //       }
 
-//       const response = await axios.get('http://localhost:5000/api/admin/users', {
+//       const response = await axios.get('https://ams-backend-psi.vercel.app/api/admin/users', {
 //         headers: {
 //           'Authorization': `Bearer ${token}`
 //         }
@@ -237,7 +237,7 @@
 //       }
       
 //       const response = await axios.put(
-//         `http://localhost:5000/api/admin/users/${editingClient._id}`,
+//         `https://ams-backend-psi.vercel.app/api/admin/users/${editingClient._id}`,
 //         updateData,
 //         {
 //           headers: {
@@ -298,7 +298,7 @@
 //     try {
 //       const token = localStorage.getItem('token');
 //       const response = await axios.put(
-//         `http://localhost:5000/api/admin/users/${clientId}`,
+//         `https://ams-backend-psi.vercel.app/api/admin/users/${clientId}`,
 //         { isActive: !currentStatus },
 //         {
 //           headers: {
@@ -333,7 +333,7 @@
 //     try {
 //       const token = localStorage.getItem('token');
 //       const response = await axios.delete(
-//         `http://localhost:5000/api/admin/users/${clientToDelete.id}`,
+//         `https://ams-backend-psi.vercel.app/api/admin/users/${clientToDelete.id}`,
 //         {
 //           headers: {
 //             'Authorization': `Bearer ${token}`
@@ -993,7 +993,7 @@ export default function ViewClientsPage() {
         return;
       }
 
-      const response = await axios.get('http://localhost:5000/api/admin/users', {
+      const response = await axios.get('https://ams-backend-psi.vercel.app/api/admin/users', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -1176,7 +1176,7 @@ export default function ViewClientsPage() {
       }
       
       const response = await axios.put(
-        `http://localhost:5000/api/admin/users/${editingClient._id}`,
+        `https://ams-backend-psi.vercel.app/api/admin/users/${editingClient._id}`,
         updateData,
         {
           headers: {
@@ -1243,7 +1243,7 @@ export default function ViewClientsPage() {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.put(
-        `http://localhost:5000/api/admin/users/${clientId}`,
+        `https://ams-backend-psi.vercel.app/api/admin/users/${clientId}`,
         { isActive: !currentStatus },
         {
           headers: {
@@ -1278,7 +1278,7 @@ export default function ViewClientsPage() {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.delete(
-        `http://localhost:5000/api/admin/users/${clientToDelete.id}`,
+        `https://ams-backend-psi.vercel.app/api/admin/users/${clientToDelete.id}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`

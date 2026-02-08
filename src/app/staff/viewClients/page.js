@@ -55,7 +55,7 @@
 //     }
 
 //     // Use the staff-specific endpoint
-//     const response = await axios.get('http://localhost:5000/api/staff/clients', {
+//     const response = await axios.get('https://ams-backend-psi.vercel.app/api/staff/clients', {
 //       headers: {
 //         'Authorization': `Bearer ${token}`
 //       }
@@ -596,7 +596,7 @@ export default function StaffViewClientsPage() {
       }
 
       // Use the staff-specific endpoint
-      const response = await axios.get('http://localhost:5000/api/staff/clients', {
+      const response = await axios.get('https://ams-backend-psi.vercel.app/api/staff/clients', {
         headers: {
           'Authorization': `Bearer ${token}`
         }

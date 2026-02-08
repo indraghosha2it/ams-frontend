@@ -86,7 +86,7 @@
 //   const fetchAppointments = async () => {
 //     try {
 //       setLoading(true);
-//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
 //       const token = localStorage.getItem('token');
       
 //       const response = await axios.get(`${BACKEND_URL}/api/appointments`, {
@@ -109,7 +109,7 @@
 
 //   const fetchDoctors = async () => {
 //     try {
-//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
 //       const token = localStorage.getItem('token');
       
 //       const response = await axios.get(`${BACKEND_URL}/api/doctors`, {
@@ -288,7 +288,7 @@
 //   // Staff can update appointment status
 //   const handleStatusUpdate = async (appointmentId, newStatus) => {
 //     try {
-//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
 //       const token = localStorage.getItem('token');
       
 //       const response = await axios.put(
@@ -1269,7 +1269,7 @@ const StaffAppointments = () => {
   const fetchAppointments = async () => {
     try {
       setLoading(true);
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       const token = localStorage.getItem('token');
       
       const response = await axios.get(`${BACKEND_URL}/api/appointments`, {
@@ -1292,7 +1292,7 @@ const StaffAppointments = () => {
 
   const fetchDoctors = async () => {
     try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       const token = localStorage.getItem('token');
       
       const response = await axios.get(`${BACKEND_URL}/api/doctors`, {
@@ -1506,7 +1506,7 @@ const StaffAppointments = () => {
   // Staff can update appointment status
   const handleStatusUpdate = async (appointmentId, newStatus) => {
     try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       const token = localStorage.getItem('token');
       
       const response = await axios.put(

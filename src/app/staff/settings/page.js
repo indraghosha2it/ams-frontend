@@ -68,7 +68,7 @@ export default function StaffSettingsPage() {
       }
 
       // Get staff profile data from the endpoint
-      const response = await axios.get('http://localhost:5000/api/staff/profile', {
+      const response = await axios.get('https://ams-backend-psi.vercel.app/api/staff/profile', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -228,7 +228,7 @@ export default function StaffSettingsPage() {
       };
       
       const response = await axios.put(
-        'http://localhost:5000/api/staff/profile',
+        'https://ams-backend-psi.vercel.app/api/staff/profile',
         updateData,
         {
           headers: {
@@ -348,7 +348,7 @@ export default function StaffSettingsPage() {
       let response;
       try {
         response = await axios.put(
-          'http://localhost:5000/api/staff/password',
+          'https://ams-backend-psi.vercel.app/api/staff/password',
           updateData,
           {
             headers: {

@@ -111,7 +111,7 @@
 //   const fetchDoctorDetails = async () => {
 //     try {
 //       setLoading(true);
-//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       
 //       const response = await axios.get(`${BACKEND_URL}/api/doctors/${doctorId}`);
       
@@ -132,7 +132,7 @@
 
 //   const fetchAvailableSlots = async () => {
 //     try {
-//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       
 //       console.log('🔍 Fetching available slots for doctor:', doctorId);
       
@@ -444,7 +444,7 @@
 //     setSubmitting(true);
     
 //     try {
-//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
 //       const token = localStorage.getItem('token');
       
 //       const appointmentData = {
@@ -1403,7 +1403,7 @@ const formatDateForInput = (dateString) => {
   const fetchDoctorDetails = async () => {
     try {
       setLoading(true);
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       
       const response = await axios.get(`${BACKEND_URL}/api/doctors/${doctorId}`);
       
@@ -1424,7 +1424,7 @@ const formatDateForInput = (dateString) => {
 
   // const fetchAvailableSlots = async () => {
   //   try {
-  //     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+  //     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       
   //     console.log('🔍 Fetching available slots for doctor:', doctorId);
       
@@ -1499,7 +1499,7 @@ const formatDateForInput = (dateString) => {
 
   const fetchAvailableSlots = async () => {
   try {
-    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
     
     console.log('🔍 Fetching available slots for doctor:', doctorId);
     
@@ -1895,7 +1895,7 @@ const formatDateForInput = (dateString) => {
 //   setSubmitting(true);
   
 //   try {
-//     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+//     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
 //     const token = localStorage.getItem('token');
     
 //     const appointmentData = {
@@ -2002,7 +2002,7 @@ const handleSubmit = async (e) => {
   setSubmitting(true);
   
   try {
-    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
     const token = localStorage.getItem('token');
     
     const appointmentData = {

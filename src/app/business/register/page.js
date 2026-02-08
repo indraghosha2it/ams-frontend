@@ -38,7 +38,7 @@ export default function BusinessRegisterPage() {
     setLoading(true);
     
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register/business', {
+      const response = await axios.post('https://ams-backend-psi.vercel.app/api/auth/register/business', {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,

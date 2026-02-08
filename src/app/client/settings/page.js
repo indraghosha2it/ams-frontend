@@ -62,7 +62,7 @@
 //       }
 
 //       // Get user data - using client profile endpoint
-//       const response = await axios.get('http://localhost:5000/api/client/profile', {
+//       const response = await axios.get('https://ams-backend-psi.vercel.app/api/client/profile', {
 //         headers: {
 //           'Authorization': `Bearer ${token}`
 //         }
@@ -86,7 +86,7 @@
 //       if (error.response?.status === 404) {
 //         try {
 //           // Try the auth/me endpoint as fallback
-//           const fallbackResponse = await axios.get('http://localhost:5000/api/auth/me', {
+//           const fallbackResponse = await axios.get('https://ams-backend-psi.vercel.app/api/auth/me', {
 //             headers: {
 //               'Authorization': `Bearer ${token}`
 //             }
@@ -197,7 +197,7 @@
 //       };
       
 //       const response = await axios.put(
-//         `http://localhost:5000/api/client/profile`,
+//         `https://ams-backend-psi.vercel.app/api/client/profile`,
 //         updateData,
 //         {
 //           headers: {
@@ -249,7 +249,7 @@
 //     };
     
 //     const response = await axios.put(
-//       `http://localhost:5000/api/client/password`,
+//       `https://ams-backend-psi.vercel.app/api/client/password`,
 //       updateData,
 //       {
 //         headers: {
@@ -994,7 +994,7 @@ export default function ClientSettingsPage() {
       }
 
       // Get user data - using client profile endpoint
-      const response = await axios.get('http://localhost:5000/api/client/profile', {
+      const response = await axios.get('https://ams-backend-psi.vercel.app/api/client/profile', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -1021,7 +1021,7 @@ export default function ClientSettingsPage() {
       if (error.response?.status === 404) {
         try {
           // Try the auth/me endpoint as fallback
-          const fallbackResponse = await axios.get('http://localhost:5000/api/auth/me', {
+          const fallbackResponse = await axios.get('https://ams-backend-psi.vercel.app/api/auth/me', {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -1135,7 +1135,7 @@ export default function ClientSettingsPage() {
       };
       
       const response = await axios.put(
-        `http://localhost:5000/api/client/profile`,
+        `https://ams-backend-psi.vercel.app/api/client/profile`,
         updateData,
         {
           headers: {
@@ -1202,7 +1202,7 @@ export default function ClientSettingsPage() {
       };
       
       const response = await axios.put(
-        `http://localhost:5000/api/client/password`,
+        `https://ams-backend-psi.vercel.app/api/client/password`,
         updateData,
         {
           headers: {

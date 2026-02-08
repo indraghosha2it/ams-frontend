@@ -107,7 +107,7 @@
 //   const fetchAppointments = async () => {
 //     try {
 //       setLoading(true);
-//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
 //       const token = localStorage.getItem('token');
       
 //       const response = await axios.get(`${BACKEND_URL}/api/appointments`, {
@@ -130,7 +130,7 @@
 
 //   const fetchDoctors = async () => {
 //     try {
-//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
 //       const token = localStorage.getItem('token');
       
 //       const response = await axios.get(`${BACKEND_URL}/api/doctors`, {
@@ -270,7 +270,7 @@
 
 //   const handleStatusUpdate = async (appointmentId, newStatus) => {
 //     try {
-//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
 //       const token = localStorage.getItem('token');
       
 //       const response = await axios.put(
@@ -304,7 +304,7 @@
 //     if (!appointmentToDelete) return;
     
 //     try {
-//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
 //       const token = localStorage.getItem('token');
       
 //       const response = await axios.delete(
@@ -1314,7 +1314,7 @@ const AllAppointments = () => {
   const fetchAppointments = async () => {
     try {
       setLoading(true);
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       const token = localStorage.getItem('token');
       
       const response = await axios.get(`${BACKEND_URL}/api/appointments`, {
@@ -1337,7 +1337,7 @@ const AllAppointments = () => {
 
   const fetchDoctors = async () => {
     try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       const token = localStorage.getItem('token');
       
       const response = await axios.get(`${BACKEND_URL}/api/doctors`, {
@@ -1477,7 +1477,7 @@ const AllAppointments = () => {
 
   const handleStatusUpdate = async (appointmentId, newStatus) => {
     try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       const token = localStorage.getItem('token');
       
       const response = await axios.put(
@@ -1571,7 +1571,7 @@ const AllAppointments = () => {
     if (!appointmentToDelete) return;
     
     try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       const token = localStorage.getItem('token');
       
       const response = await axios.delete(

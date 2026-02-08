@@ -71,7 +71,7 @@
 //     // Try the admin endpoint first
 //     let response;
 //     try {
-//       response = await axios.post('http://localhost:5000/api/admin/users', {
+//       response = await axios.post('https://ams-backend-psi.vercel.app/api/admin/users', {
 //         name: formData.name,
 //         email: formData.email,
 //         phone: formData.phone,
@@ -113,7 +113,7 @@
       
 //       // If admin endpoint fails for other reasons, try business register endpoint as fallback
 //       try {
-//         response = await axios.post('http://localhost:5000/api/auth/register/business', {
+//         response = await axios.post('https://ams-backend-psi.vercel.app/api/auth/register/business', {
 //           name: formData.name,
 //           email: formData.email,
 //           phone: formData.phone,
@@ -636,7 +636,7 @@ export default function CreateUsersPage() {
       // Try the admin endpoint first
       let response;
       try {
-        response = await axios.post('http://localhost:5000/api/admin/users', {
+        response = await axios.post('https://ams-backend-psi.vercel.app/api/admin/users', {
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
@@ -696,7 +696,7 @@ export default function CreateUsersPage() {
         
         // If admin endpoint fails for other reasons, try business register endpoint as fallback
         try {
-          response = await axios.post('http://localhost:5000/api/auth/register/business', {
+          response = await axios.post('https://ams-backend-psi.vercel.app/api/auth/register/business', {
             name: formData.name,
             email: formData.email,
             phone: formData.phone,

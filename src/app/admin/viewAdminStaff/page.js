@@ -74,7 +74,7 @@ export default function ViewStaffPage() {
         return;
       }
 
-      const response = await axios.get('http://localhost:5000/api/admin/users', {
+      const response = await axios.get('https://ams-backend-psi.vercel.app/api/admin/users', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -264,7 +264,7 @@ export default function ViewStaffPage() {
       }
       
       const response = await axios.put(
-        `http://localhost:5000/api/admin/users/${editingStaff._id}`,
+        `https://ams-backend-psi.vercel.app/api/admin/users/${editingStaff._id}`,
         updateData,
         {
           headers: {
@@ -351,7 +351,7 @@ export default function ViewStaffPage() {
       }
       
       const response = await axios.put(
-        `http://localhost:5000/api/admin/users/${staffId}`,
+        `https://ams-backend-psi.vercel.app/api/admin/users/${staffId}`,
         { isActive: !currentStatus },
         {
           headers: {
@@ -394,7 +394,7 @@ export default function ViewStaffPage() {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.delete(
-        `http://localhost:5000/api/admin/users/${staffToDelete.id}`,
+        `https://ams-backend-psi.vercel.app/api/admin/users/${staffToDelete.id}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`

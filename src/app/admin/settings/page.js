@@ -67,7 +67,7 @@ export default function AdminSettingsPage() {
       }
 
       // Get admin profile data from the new endpoint
-      const response = await axios.get('http://localhost:5000/api/admin/profile', {
+      const response = await axios.get('https://ams-backend-psi.vercel.app/api/admin/profile', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -227,7 +227,7 @@ export default function AdminSettingsPage() {
       };
       
       const response = await axios.put(
-        'http://localhost:5000/api/admin/profile',
+        'https://ams-backend-psi.vercel.app/api/admin/profile',
         updateData,
         {
           headers: {
@@ -348,7 +348,7 @@ const handlePasswordSubmit = async (e) => {
     let response;
     try {
       response = await axios.put(
-        'http://localhost:5000/api/admin/password',
+        'https://ams-backend-psi.vercel.app/api/admin/password',
         updateData,
         {
           headers: {

@@ -30,6 +30,7 @@ import {
   Filter,
   MoreVertical
 } from 'lucide-react';
+import RouteGuard from '../components/RouteGuard';
 
 export default function StaffLayout({ children }) {
   const router = useRouter();
@@ -119,6 +120,7 @@ export default function StaffLayout({ children }) {
   }
 
   return (
+      <RouteGuard allowedRoles={['staff']}>
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-50 bg-white dark:bg-gray-800 shadow-xl transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'}`}>
@@ -325,5 +327,6 @@ export default function StaffLayout({ children }) {
         </footer>
       </main>
     </div>
+    </RouteGuard>
   );
 }

@@ -118,7 +118,7 @@ const EditDoctorPage = () => {
   const fetchDoctor = async () => {
     try {
       setLoading(true);
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       const response = await axios.get(`${BACKEND_URL}/api/doctors/${doctorId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -315,7 +315,7 @@ const EditDoctorPage = () => {
     try {
       setGeneratingSlots(true);
       const token = localStorage.getItem('token');
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       
       toast.loading('Generating time slots...', { id: 'slot-generation' });
       
@@ -456,7 +456,7 @@ const EditDoctorPage = () => {
 
 //       console.log('📤 Sending doctor update data:', doctorData);
       
-//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
 //       const token = localStorage.getItem('token');
       
 //       // Check if token exists
@@ -679,7 +679,7 @@ const handleSubmit = async (e) => {
 
     console.log('📤 Sending doctor update data:', doctorData);
     
-    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
     const token = localStorage.getItem('token');
     
     // Check if token exists

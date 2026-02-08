@@ -16,7 +16,7 @@
 
 //   const fetchDoctors = async () => {
 //     try {
-//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
 //       const response = await axios.get(`${BACKEND_URL}/api/doctors`, {
 //         headers: {
 //           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -36,7 +36,7 @@
 
 //   const generateSlots = async (doctorId) => {
 //     try {
-//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       
 //       toast.loading('Generating time slots...', { id: 'slots' });
       
@@ -69,7 +69,7 @@
 //     if (!confirm(`Are you sure you want to delete Dr. ${doctorName}?`)) return;
     
 //     try {
-//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+//       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
 //       const response = await axios.delete(
 //         `${BACKEND_URL}/api/doctors/${doctorId}`,
 //         {
@@ -406,7 +406,7 @@ const DoctorsPage = () => {
 
   const fetchDoctors = async () => {
     try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       const response = await axios.get(`${BACKEND_URL}/api/doctors`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -426,7 +426,7 @@ const DoctorsPage = () => {
 
   const generateSlots = async (doctorId) => {
     try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       
       toast.loading('Generating time slots...', { id: 'slots' });
       
@@ -472,7 +472,7 @@ const DoctorsPage = () => {
     if (!doctorToDelete) return;
 
     try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ams-backend-psi.vercel.app';
       const response = await axios.delete(
         `${BACKEND_URL}/api/doctors/${doctorToDelete.id}`,
         {
